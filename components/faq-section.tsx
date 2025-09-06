@@ -12,7 +12,7 @@ export function FAQSection() {
     },
     {
       question: "What is your cancellation and refund policy?",
-      answer: "All classes must be paid in full at booking with no cancellations, refunds, or transfers for any reason. This strict policy allows us to maintain our affordable $10/class pricing and ensures spots are reserved for committed students. Classes in your pack never expire, so you can use them for future bookings."
+      answer: "All classes must be paid in full at booking with no cancellations, refunds, or transfers for any reason. This strict policy allows us to maintain our affordable $11/class pricing and ensures spots are reserved for committed students. Classes in your pack never expire, so you can use them for future bookings."
     },
     {
       question: "Are classes suitable for beginners?",
@@ -36,23 +36,23 @@ export function FAQSection() {
     },
     {
       question: "How do I pay for classes?",
-      answer: "We use Zelle for all payments - it's instant, secure, and has no fees! When you book a class, you'll be guided through sending payment via Zelle to our phone number. Most major banks support Zelle through their mobile apps. We verify payments quickly and you'll receive confirmation within minutes."
+      answer: "We use Stripe for all payments - it's secure, instant, and accepts all major credit cards, debit cards, and digital wallets! When you book a class, you'll be guided through a secure payment process. Your payment is processed instantly and you'll receive confirmation immediately."
     },
     {
-      question: "Why Zelle instead of credit cards?",
-      answer: "Zelle allows us to keep costs low since there are no processing fees (unlike credit cards that charge 2.9% + fees). This savings gets passed directly to you with our affordable $10 class pricing! Plus, Zelle is instant and secure since it's built into your banking app."
+      question: "Why Stripe instead of other payment methods?",
+      answer: "Stripe provides bank-level security and is trusted by millions of businesses worldwide. It accepts all major payment methods, processes payments instantly, and provides automatic fraud protection. This ensures a smooth, secure experience for all our students."
     },
     {
-      question: "What if my bank doesn't support Zelle?",
-      answer: "Most major banks support Zelle, including Chase, Bank of America, Wells Fargo, and hundreds of others. If your bank doesn't support Zelle, please contact us directly and we can arrange alternative payment methods on a case-by-case basis."
+      question: "Is my payment information secure?",
+      answer: "Absolutely! We never store your payment information. Stripe handles all payment processing with bank-level security and PCI compliance. Your card details are encrypted and processed securely through Stripe's industry-leading infrastructure."
     }
   ];
 
   return (
     <div className="py-12">
       <div className="text-center mb-8">
-        <h2 className="mb-4 text-gray-800">Frequently Asked Questions</h2>
-        <p className="text-gray-600 max-w-2xl mx-auto">
+        <h2 className="mb-4 text-3xl font-heading text-foreground">Frequently Asked Questions</h2>
+        <p className="text-muted-foreground max-w-2xl mx-auto font-body">
           Everything you need to know about joining our virtual yoga community
         </p>
       </div>
@@ -61,10 +61,10 @@ export function FAQSection() {
         <Accordion type="single" collapsible className="w-full">
           {faqs.map((faq, index) => (
             <AccordionItem key={index} value={`item-${index}`}>
-              <AccordionTrigger className="text-left hover:text-primary">
+              <AccordionTrigger className="text-left hover:text-primary font-body text-foreground">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-gray-600 leading-relaxed">
+              <AccordionContent className="text-muted-foreground leading-relaxed font-body">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>

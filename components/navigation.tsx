@@ -53,7 +53,7 @@ export function Navigation({
             <NirvaLogo size="sm" />
           </button>
           
-          <div className="hidden md:flex items-center gap-8 font-body" style={{ fontSize: 'var(--font-size-base)' }}>
+          <div className="hidden md:flex items-center gap-6 lg:gap-8 font-body" style={{ fontSize: 'var(--font-size-base)' }}>
             <button 
               onClick={onNavigateHome}
               className={`transition-all duration-200 py-2 px-3 rounded-md ${

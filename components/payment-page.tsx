@@ -1,510 +1,446 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Separator } from "./ui/separator";
-import { ArrowLeft, Smartphone, Copy, CheckCircle } from "lucide-react";
-import { NirvaLogo } from "./nirva-logo";
-import { sendAdminNotification, sendStudentConfirmation } from "../utils/admin-notifications";
-import { getZoomMeetingForClass } from "../utils/zoom-meeting-generator";
-import { toast } from "sonner";
+import { useState } from 'react';
+import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Separator } from './ui/separator';
+import { ArrowLeft, CreditCard, Mail, Calendar, Clock, User, AlertTriangle, CheckCircle } from 'lucide-react';
+import { ClassManagementService, ClassBooking } from '../utils/class-management';
 
 interface PaymentPageProps {
   onBack: () => void;
-  selectedClass?: {
+  selectedClass: {
     className: string;
     teacher: string;
     time: string;
     day: string;
     classId?: string;
   } | null;
-  user?: {
-    email: string;
-    name?: string;
-    classPacks: {
-      fivePack: number;
-      tenPack: number;
-    };
+  selectedPackage: {
+    type: 'single' | 'five' | 'ten';
+    price: number;
+    name: string;
   } | null;
+  user: { email: string; name?: string; classPacks: { fivePack: number; tenPack: number } } | null;
   onPackagePurchase?: (packageType: 'single' | 'five' | 'ten') => void;
   onUseClassPack?: () => void;
 }
 
-export function PaymentPage({ onBack, selectedClass, user, onPackagePurchase, onUseClassPack }: PaymentPageProps) {
-  const [selectedPackage, setSelectedPackage] = useState<"single" | "five" | "ten">("single");
-  const [zelleData, setZelleData] = useState({
-    name: "",
-    email: "",
-    confirmationCode: ""
+export function PaymentPage({ 
+  onBack, 
+  selectedClass, 
+  selectedPackage,
+  user, 
+  onPackagePurchase, 
+  onUseClassPack 
+}: PaymentPageProps) {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [bookingComplete, setBookingComplete] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState<ClassBooking | null>(null);
+  const [studentInfo, setStudentInfo] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: ''
   });
-  const [paymentStep, setPaymentStep] = useState<"select" | "zelle" | "confirm">("select");
-  const [copiedPhone, setCopiedPhone] = useState(false);
-  
-  // Nirva Yoga Studio Zelle information
-  const ZELLE_PHONE = "(805) 807-4894";
-  const STUDIO_NAME = "Nirva Yoga Studio";
+  const [paymentMethod, setPaymentMethod] = useState<'zelle' | 'package'>('zelle');
+  const [zelleEmail, setZelleEmail] = useState('');
 
-  const packagePrices = {
-    single: { price: 10.00, description: "Single Class" },
-    five: { price: 48.00, description: "5-Class Package", savings: 2.00, originalPrice: 50.00 },
-    ten: { price: 95.00, description: "10-Class Package", savings: 5.00, originalPrice: 100.00 }
-  };
+  const totalClasses = user ? user.classPacks.fivePack + user.classPacks.tenPack : 0;
+  const canUsePackage = totalClasses > 0 && selectedClass; // Can only use package for class bookings, not package purchases
 
-  const copyPhoneNumber = () => {
-    navigator.clipboard.writeText('8058074894');
-    setCopiedPhone(true);
-    toast.success('Phone number copied to clipboard!');
-    setTimeout(() => setCopiedPhone(false), 2000);
-  };
+  const isPackagePurchase = selectedPackage && !selectedClass;
+  const isClassBooking = selectedClass && !selectedPackage;
 
-  const handleZelleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!zelleData.name || !zelleData.email) {
-      toast.error('Please fill in all required fields');
+  const handleBooking = async () => {
+    if (!studentInfo.name || !studentInfo.email) {
+      alert('Please fill in all required fields');
       return;
     }
 
-    // Process Zelle payment confirmation
-    if (onPackagePurchase) {
-      onPackagePurchase(selectedPackage);
+    if (paymentMethod === 'zelle' && !zelleEmail) {
+      alert('Please provide your Zelle email for payment');
+      return;
     }
 
-    // Send admin notification with Zelle payment details
-    if (selectedClass && user) {
-      try {
-        const bookingDetails = {
-          studentName: zelleData.name,
-          studentEmail: user.email,
+    setIsProcessing(true);
+    
+    try {
+      if (isPackagePurchase && selectedPackage) {
+        // Handle package purchase - only for 'five' and 'ten' packages
+        if (selectedPackage.type === 'single') {
+          alert('Single class purchases should be handled as class bookings');
+          setIsProcessing(false);
+          return;
+        }
+
+        const success = await ClassManagementService.purchasePackage({
+          studentName: studentInfo.name,
+          studentEmail: studentInfo.email,
+          packageType: selectedPackage.type as 'five' | 'ten',
+          packagePrice: selectedPackage.price,
+          classesAdded: selectedPackage.type === 'five' ? 5 : 10,
+          totalClasses: totalClasses + (selectedPackage.type === 'five' ? 5 : 10)
+        });
+
+        if (success) {
+          // Update user's class packs
+          if (onPackagePurchase) {
+            onPackagePurchase(selectedPackage.type);
+          }
+          
+          setBookingComplete(true);
+          setBookingDetails({
+            id: 'package-purchase',
+            studentName: studentInfo.name,
+            studentEmail: studentInfo.email,
+            className: selectedPackage.name,
+            teacher: 'Package Purchase',
+            date: new Date().toLocaleDateString(),
+            time: 'N/A',
+            timestamp: new Date(),
+            paymentMethod: 'Zelle',
+            amount: selectedPackage.price
+          });
+        } else {
+          alert('Failed to purchase package. Please try again.');
+        }
+      } else if (isClassBooking && selectedClass) {
+        // Handle class booking
+        const booking = await ClassManagementService.bookClass({
+          studentName: studentInfo.name,
+          studentEmail: studentInfo.email,
           className: selectedClass.className,
           teacher: selectedClass.teacher,
           date: selectedClass.day,
-          time: selectedClass.time
-        };
-
-        // Generate unique Zoom meeting for this specific class session
-        const zoomMeeting = getZoomMeetingForClass(
-          selectedClass.classId || 'default',
-          selectedClass.className,
-          selectedClass.day,
-          selectedClass.teacher
-        );
-
-        await sendAdminNotification({
-          ...bookingDetails,
-          paymentMethod: `Zelle - ${zelleData.confirmationCode || 'Pending Confirmation'}`,
-          amount: packagePrices[selectedPackage].price,
-          zoomLink: zoomMeeting.zoomLink,
-          meetingId: zoomMeeting.meetingId,
-          passcode: zoomMeeting.passcode
+          time: selectedClass.time,
+          paymentMethod: paymentMethod === 'zelle' ? 'Zelle' : 'Class Package',
+          amount: paymentMethod === 'zelle' ? 10.00 : 0.00
         });
-        await sendStudentConfirmation({
-          ...bookingDetails,
-          zoomLink: zoomMeeting.zoomLink,
-          meetingId: zoomMeeting.meetingId, 
-          passcode: zoomMeeting.passcode
-        });
-        
-        // Show updated class pack info
-        let packInfo = "";
-        if (selectedPackage === 'five') {
-          packInfo = `\n🎫 5 classes will be added after payment verification!`;
-        } else if (selectedPackage === 'ten') {
-          packInfo = `\n🎫 10 classes will be added after payment verification!`;
+
+        if (booking) {
+          setBookingDetails(booking);
+          setBookingComplete(true);
+          
+          // Use class pack if applicable
+          if (paymentMethod === 'package' && onUseClassPack) {
+            onUseClassPack();
+          }
+        } else {
+          alert('Failed to book class. Please try again.');
         }
-        
-        alert(`✅ Zelle payment submitted!\n📧 Admin notified for verification.${packInfo}\n\nYour class will be confirmed within 1 hour after payment verification.`);
-      } catch (error) {
-        console.error('Error sending notifications:', error);
-        alert(`✅ Zelle payment submitted!\n\nWe'll verify your payment and confirm your booking within 1 hour.`);
       }
-    } else {
-      // Package purchase without specific class
-      let packInfo = "";
-      if (selectedPackage === 'five') {
-        packInfo = `\n🎫 5 classes will be added after verification!`;
-      } else if (selectedPackage === 'ten') {
-        packInfo = `\n🎫 10 classes will be added after verification!`;
-      }
-      alert(`✅ Zelle payment submitted!${packInfo}\n\nWe'll verify your payment within 1 hour.`);
+    } catch (error) {
+      console.error('Booking error:', error);
+      alert('An error occurred. Please try again.');
+    } finally {
+      setIsProcessing(false);
     }
-    
-    onBack();
   };
 
-  const handleProceedToZelle = () => {
-    setPaymentStep("zelle");
-  };
+  if (bookingComplete && bookingDetails) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-2xl mx-auto">
+            <Card className="border-2 border-green-200 bg-green-50">
+              <CardHeader className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-green-600" />
+                </div>
+                <CardTitle className="text-2xl text-green-800">
+                  {isPackagePurchase ? 'Package Purchased Successfully!' : 'Class Booked Successfully!'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="bg-white p-4 rounded-lg border">
+                  <h3 className="font-semibold text-lg mb-3">
+                    {isPackagePurchase ? 'Package Details' : 'Class Details'}
+                  </h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                      <span><strong>{isPackagePurchase ? 'Package:' : 'Class:'}</strong> {bookingDetails.className}</span>
+                    </div>
+                    {isClassBooking && selectedClass && (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4 text-muted-foreground" />
+                          <span><strong>Teacher:</strong> {selectedClass.teacher}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-muted-foreground" />
+                          <span><strong>Date & Time:</strong> {selectedClass.day} at {selectedClass.time}</span>
+                        </div>
+                      </>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="w-4 h-4 text-muted-foreground" />
+                      <span><strong>Payment:</strong> {bookingDetails.paymentMethod}</span>
+                    </div>
+                  </div>
+                </div>
 
-  const canUseClassPack = user && (user.classPacks.fivePack > 0 || user.classPacks.tenPack > 0) && selectedClass;
+                {isPackagePurchase && (
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h3 className="font-semibold text-lg mb-3 text-blue-800">How to Use Your Package</h3>
+                    <div className="space-y-2 text-sm">
+                      <p>• Visit our class schedule to book any available class</p>
+                      <p>• When booking, select "Use Class Package" instead of paying</p>
+                      <p>• One class will be deducted from your package</p>
+                      <p>• You'll receive Zoom details when you book a specific class</p>
+                      <p>• Classes never expire - use them anytime!</p>
+                    </div>
+                  </div>
+                )}
+
+                {isClassBooking && bookingDetails.zoomLink && (
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h3 className="font-semibold text-lg mb-3 text-blue-800">Zoom Meeting Details</h3>
+                    <div className="space-y-2">
+                      <p><strong>Meeting ID:</strong> {bookingDetails.zoomMeetingId}</p>
+                      {bookingDetails.zoomPassword && (
+                        <p><strong>Password:</strong> {bookingDetails.zoomPassword}</p>
+                      )}
+                      <div className="mt-3">
+                        <Button 
+                          onClick={() => window.open(bookingDetails.zoomLink, '_blank')}
+                          className="w-full bg-blue-600 hover:bg-blue-700"
+                        >
+                          Join Zoom Meeting
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                  <h4 className="font-semibold text-yellow-800 mb-2">Important Reminders:</h4>
+                  <ul className="text-sm text-yellow-700 space-y-1">
+                    {isPackagePurchase ? (
+                      <>
+                        <li>• Check your email for package confirmation</li>
+                        <li>• Visit the class schedule to book your first class</li>
+                        <li>• Your package credits never expire</li>
+                      </>
+                    ) : (
+                      <>
+                        <li>• Please join 5 minutes before class starts</li>
+                        <li>• Have your yoga mat ready</li>
+                        <li>• Ensure you have a quiet space for practice</li>
+                        <li>• Wear comfortable clothing</li>
+                      </>
+                    )}
+                  </ul>
+                </div>
+
+                <div className="text-center">
+                  <Button onClick={onBack} variant="outline" className="mr-4">
+                    Back to Home
+                  </Button>
+                  {isClassBooking && bookingDetails.zoomLink && (
+                    <Button 
+                      onClick={() => window.open(bookingDetails.zoomLink, '_blank')}
+                    >
+                      Join Class Now
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Button 
-            variant="ghost" 
-            onClick={onBack}
-            className="flex items-center gap-2 mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Schedule
-          </Button>
-          <div className="flex items-center gap-4 mb-4">
-            <NirvaLogo size="sm" />
-            <h1>Complete Your Booking</h1>
+        <div className="max-w-2xl mx-auto">
+          {/* Header */}
+          <div className="flex items-center gap-4 mb-8">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onBack}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Button>
+            <h1 className="text-2xl font-heading">Payment</h1>
           </div>
-        </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Booking Summary */}
-          <Card>
+          {/* Payment Method - Zelle Only */}
+          <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Choose Your Package</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                Payment Method
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {selectedClass && (
-                <div className="p-4 bg-accent rounded-lg mb-4">
-                  <h3 className="mb-2">{selectedClass.className}</h3>
-                  <p className="text-muted-foreground">
-                    {selectedClass.day} at {selectedClass.time}
-                  </p>
-                  <p className="text-muted-foreground">
-                    with {selectedClass.teacher}
-                  </p>
+            <CardContent>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <h3 className="font-semibold text-green-800">Zelle Payment Required</h3>
                 </div>
-              )}
-
-              {canUseClassPack && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg mb-4">
-                  <h4 className="font-medium text-green-800 mb-2">Use Existing Class Pack</h4>
-                  <div className="space-y-2 text-sm">
-                    {user.classPacks.fivePack > 0 && (
-                      <p className="text-green-700">5-Class Package: {user.classPacks.fivePack} classes available</p>
-                    )}
-                    {user.classPacks.tenPack > 0 && (
-                      <p className="text-green-700">10-Class Package: {user.classPacks.tenPack} classes available</p>
-                    )}
-                  </div>
-                  <Button 
-                    className="mt-3 w-full" 
-                    onClick={async () => {
-                      // Use one class from the pack
-                      if (onUseClassPack) {
-                        onUseClassPack();
-                      }
-
-                      // Send admin notification for class pack booking
-                      if (selectedClass && user) {
-                        try {
-                          const bookingDetails = {
-                            studentName: user.name || user.email.split('@')[0],
-                            studentEmail: user.email,
-                            className: selectedClass.className,
-                            teacher: selectedClass.teacher,
-                            date: selectedClass.day,
-                            time: selectedClass.time
-                          };
-
-                          // Generate unique Zoom meeting for this class session
-                          const zoomMeeting = getZoomMeetingForClass(
-                            selectedClass.classId || 'default',
-                            selectedClass.className,
-                            selectedClass.day,
-                            selectedClass.teacher
-                          );
-
-                          await sendAdminNotification({
-                            ...bookingDetails,
-                            zoomLink: zoomMeeting.zoomLink,
-                            meetingId: zoomMeeting.meetingId,
-                            passcode: zoomMeeting.passcode
-                          });
-                          await sendStudentConfirmation({
-                            ...bookingDetails,
-                            zoomLink: zoomMeeting.zoomLink,
-                            meetingId: zoomMeeting.meetingId,
-                            passcode: zoomMeeting.passcode
-                          });
-                          
-                          // Calculate remaining classes
-                          const remainingFive = Math.max(0, (user.classPacks.fivePack || 0) - (user.classPacks.tenPack > 0 ? 0 : 1));
-                          const remainingTen = Math.max(0, (user.classPacks.tenPack || 0) - (user.classPacks.tenPack > 0 ? 1 : 0));
-                          const totalRemaining = remainingFive + remainingTen;
-                          
-                          alert(`✅ Class booked using your package!\n\n📧 Confirmation emails sent.\n🎫 You have ${totalRemaining} classes remaining in your packages.`);
-                        } catch (error) {
-                          console.error('Error sending notifications:', error);
-                          const totalRemaining = (user.classPacks.fivePack || 0) + (user.classPacks.tenPack || 0) - 1;
-                          alert(`✅ Class booked using your package!\n🎫 You have ${totalRemaining} classes remaining.`);
-                        }
-                      } else {
-                        alert("Class booked using your existing package!");
-                      }
-                      onBack();
-                    }}
-                  >
-                    Book with Class Pack - FREE
-                  </Button>
-                </div>
-              )}
-
-              <div className="space-y-3">
-                <h4 className="font-medium">Or Purchase New Package:</h4>
-                
-                {/* Single Class */}
-                <div 
-                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                    selectedPackage === 'single' 
-                      ? 'border-primary bg-primary/5' 
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                  onClick={() => setSelectedPackage('single')}
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="font-medium">Single Class</h4>
-                      <p className="text-sm text-muted-foreground">$10/class</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">$10.00</p>
-                      <p className="text-xs text-muted-foreground">inc. processing</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 5-Class Package */}
-                <div 
-                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                    selectedPackage === 'five' 
-                      ? 'border-primary bg-primary/5' 
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                  onClick={() => setSelectedPackage('five')}
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="font-medium">5-Class Package</h4>
-                      <p className="text-sm text-muted-foreground">$9.60/class • Never expires</p>
-                      <p className="text-xs text-green-600">Save $2.00!</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">$48.00</p>
-                      <p className="text-xs text-muted-foreground line-through">$50.00</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 10-Class Package */}
-                <div 
-                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                    selectedPackage === 'ten' 
-                      ? 'border-primary bg-primary/5' 
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                  onClick={() => setSelectedPackage('ten')}
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="font-medium">10-Class Package</h4>
-                      <p className="text-sm text-muted-foreground">$9.50/class • Never expires • Best Value!</p>
-                      <p className="text-xs text-green-600">Save $5.00!</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">$95.00</p>
-                      <p className="text-xs text-muted-foreground line-through">$100.00</p>
-                    </div>
+                <p className="text-green-700 text-sm mb-3">
+                  Please send your payment using Zelle to the number below. Include your name and class/package details in the memo.
+                </p>
+                <div className="bg-white border border-green-300 rounded p-3">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 mb-1">Send Zelle payment to:</p>
+                    <p className="text-2xl font-bold text-green-800">(805) 807-4894</p>
+                    <p className="text-sm text-gray-600 mt-1">Include: Your Name + {selectedClass ? 'Class Details' : 'Package Type'}</p>
                   </div>
                 </div>
               </div>
-              
-              <div className="mt-6 p-4 bg-muted rounded-lg">
-                <h4 className="mb-2">What's Included</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Live virtual classes via Zoom</li>
-                  <li>• Interactive instruction from certified teachers</li>
-                  <li>• Class recordings available upon request</li>
-                  <li>• Pose modifications for all levels</li>
-                  <li>• Community support and guidance</li>
-                  {selectedPackage !== 'single' && <li>• Classes never expire!</li>}
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                  <h4 className="font-semibold text-yellow-800">Important Notes</h4>
+                </div>
+                <ul className="text-yellow-700 text-sm space-y-1">
+                  <li>• Payment must be sent via Zelle to (805) 807-4894</li>
+                  <li>• Include your full name in the Zelle memo</li>
+                  <li>• Include class/package details in the memo</li>
+                  <li>• No refunds - all sales are final</li>
+                  <li>• You will receive confirmation via email after payment</li>
                 </ul>
               </div>
             </CardContent>
           </Card>
 
-          {/* Payment Form */}
-          <Card>
+          {/* Order Summary */}
+          <Card className="mb-6">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Smartphone className="w-5 h-5" />
-                Pay with Zelle
-              </CardTitle>
+              <CardTitle>Order Summary</CardTitle>
             </CardHeader>
             <CardContent>
-              {paymentStep === "select" && (
-                <div className="space-y-6">
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 className="font-medium text-blue-800 mb-2">Why Zelle?</h4>
-                    <ul className="text-sm text-blue-700 space-y-1">
-                      <li>✓ No processing fees - more value for you</li>
-                      <li>✓ Instant transfers from your bank</li>
-                      <li>✓ Secure and trusted by major banks</li>
-                      <li>✓ No need to share card details</li>
-                    </ul>
+              {selectedClass ? (
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="font-medium">Single Class</span>
+                    <span className="font-bold">$10.00</span>
                   </div>
-
-                  <div className="space-y-3">
-                    <h4 className="font-medium">Payment Details</h4>
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium">Amount to Pay:</span>
-                        <span className="font-bold text-lg">${packagePrices[selectedPackage].price.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">Package:</span>
-                        <span>{packagePrices[selectedPackage].description}</span>
-                      </div>
-                    </div>
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    <p><strong>Class:</strong> {selectedClass.className}</p>
+                    <p><strong>Teacher:</strong> {selectedClass.teacher}</p>
+                    <p><strong>Date:</strong> {selectedClass.day}</p>
+                    <p><strong>Time:</strong> {selectedClass.time}</p>
                   </div>
-
-                  <Button 
-                    onClick={handleProceedToZelle} 
-                    className="w-full" 
-                    size="lg"
-                  >
-                    Continue with Zelle Payment
-                  </Button>
                 </div>
-              )}
-
-              {paymentStep === "zelle" && (
-                <div className="space-y-6">
-                  <div className="p-4 bg-accent rounded-lg">
-                    <h4 className="font-medium mb-3">Step 1: Send Payment via Zelle</h4>
-                    
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 bg-white rounded border">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Send to:</p>
-                          <p className="font-medium">{STUDIO_NAME}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-3 bg-white rounded border">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Phone Number:</p>
-                          <p className="font-bold text-lg">{ZELLE_PHONE}</p>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={copyPhoneNumber}
-                          className="flex items-center gap-1"
-                        >
-                          {copiedPhone ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                          {copiedPhone ? 'Copied!' : 'Copy'}
-                        </Button>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-3 bg-white rounded border">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Amount:</p>
-                          <p className="font-bold text-lg text-primary">${packagePrices[selectedPackage].price.toFixed(2)}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="p-3 bg-white rounded border">
-                        <p className="text-sm text-muted-foreground mb-1">Message (Include this):</p>
-                        <p className="font-medium">
-                          {selectedClass 
-                            ? `${selectedClass.className} - ${selectedClass.day} ${selectedClass.time}`
-                            : packagePrices[selectedPackage].description
-                          }
-                        </p>
-                      </div>
-                    </div>
+              ) : selectedPackage ? (
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="font-medium">{selectedPackage.name}</span>
+                    <span className="font-bold">${selectedPackage.price.toFixed(2)}</span>
                   </div>
-
-                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-sm text-yellow-800">
-                      💡 <strong>Open your bank app</strong> and find "Zelle" or "Send Money" to send ${packagePrices[selectedPackage].price.toFixed(2)} to {ZELLE_PHONE}
-                    </p>
+                  <div className="text-sm text-muted-foreground">
+                    <p><strong>Package Type:</strong> {selectedPackage.type === 'single' ? 'Single Class' : selectedPackage.type === 'five' ? '5-Class Package' : '10-Class Package'}</p>
+                    <p><strong>Classes Included:</strong> {selectedPackage.type === 'single' ? '1' : selectedPackage.type === 'five' ? '5' : '10'}</p>
                   </div>
-
-                  <form onSubmit={handleZelleSubmit} className="space-y-4">
-                    <h4 className="font-medium">Step 2: Confirm Your Payment</h4>
-                    
-                    <div>
-                      <Label htmlFor="fullName">
-                        Full Name <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="fullName"
-                        type="text"
-                        placeholder="Enter your full name"
-                        value={zelleData.name}
-                        onChange={(e) => setZelleData({...zelleData, name: e.target.value})}
-                        required
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Must match the name on your Zelle account
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="confirmEmail">
-                        Email Address <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="confirmEmail"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={zelleData.email}
-                        onChange={(e) => setZelleData({...zelleData, email: e.target.value})}
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="confirmationCode">
-                        Zelle Confirmation Code (Optional)
-                      </Label>
-                      <Input
-                        id="confirmationCode"
-                        type="text"
-                        placeholder="e.g., ZLE123456 (if available)"
-                        value={zelleData.confirmationCode}
-                        onChange={(e) => setZelleData({...zelleData, confirmationCode: e.target.value})}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Check your Zelle confirmation for this code
-                      </p>
-                    </div>
-                    
-                    <Button type="submit" className="w-full mt-6" size="lg">
-                      Confirm Zelle Payment Sent
-                    </Button>
-                  </form>
                 </div>
-              )}
+              ) : null}
+
+              <Separator className="my-4" />
               
-              <div className="mt-6 pt-4 border-t border-border">
-                <div className="text-sm text-muted-foreground space-y-2">
-                  <p className="flex items-center gap-2">
-                    <span>🔒</span> Your information is secure and private
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <span>⚡</span> Payment verification typically takes 5-10 minutes
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <span>✉️</span> You'll receive email confirmation once verified
+              <div className="flex justify-between text-lg font-bold">
+                <span>Total</span>
+                <span>${selectedClass ? '10.00' : selectedPackage ? selectedPackage.price.toFixed(2) : '0.00'}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Student Information Form */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Student Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="studentName">Full Name *</Label>
+                  <Input
+                    id="studentName"
+                    value={studentInfo.name}
+                    onChange={(e) => setStudentInfo(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="studentEmail">Email Address *</Label>
+                  <Input
+                    id="studentEmail"
+                    type="email"
+                    value={studentInfo.email}
+                    onChange={(e) => setStudentInfo(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="Enter your email address"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="studentPhone">Phone Number</Label>
+                  <Input
+                    id="studentPhone"
+                    value={studentInfo.phone}
+                    onChange={(e) => setStudentInfo(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Payment Instructions */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Payment Instructions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-blue-800 mb-2">Step 1: Send Zelle Payment</h4>
+                  <ol className="text-blue-700 text-sm space-y-1 list-decimal list-inside">
+                    <li>Open your Zelle app or bank's Zelle feature</li>
+                    <li>Send payment to: <strong>(805) 807-4894</strong></li>
+                    <li>Amount: <strong>${selectedClass ? '10.00' : selectedPackage ? selectedPackage.price.toFixed(2) : '0.00'}</strong></li>
+                    <li>Memo: <strong>{studentInfo.name} - {selectedClass ? selectedClass.className : selectedPackage?.name}</strong></li>
+                  </ol>
+                </div>
+
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-800 mb-2">Step 2: Complete Booking</h4>
+                  <p className="text-gray-700 text-sm">
+                    After sending the Zelle payment, click "Complete Booking" below. 
+                    You will receive a confirmation email with your class details and Zoom link (for single classes) 
+                    or package confirmation (for packages).
                   </p>
                 </div>
               </div>
             </CardContent>
           </Card>
+
+          {/* Complete Booking Button */}
+          <div className="flex gap-4">
+            <Button
+              onClick={onBack}
+              variant="outline"
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleBooking}
+              disabled={isProcessing || !studentInfo.name || !studentInfo.email || (paymentMethod === 'zelle' && !zelleEmail)}
+              className="flex-1"
+            >
+              {isProcessing ? 'Processing...' : 'Complete Booking'}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

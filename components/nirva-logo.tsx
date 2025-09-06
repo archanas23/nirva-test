@@ -1,6 +1,6 @@
 interface NirvaLogoProps {
   className?: string;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
   showText?: boolean;
 }
 
@@ -9,14 +9,18 @@ export function NirvaLogo({ className = "", size = "md", showText = true }: Nirv
     sm: "w-8 h-8",
     md: "w-12 h-12", 
     lg: "w-16 h-16",
-    xl: "w-24 h-24"
+    xl: "w-24 h-24",
+    "2xl": "w-32 h-32",
+    "3xl": "w-40 h-40"
   };
 
   const textSizeClasses = {
     sm: "text-lg",
     md: "text-xl",
     lg: "text-2xl",
-    xl: "text-3xl"
+    xl: "text-3xl",
+    "2xl": "text-4xl",
+    "3xl": "text-5xl"
   };
 
   return (

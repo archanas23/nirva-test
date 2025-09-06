@@ -4,8 +4,8 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
-import { Separator } from "./ui/separator";
-import { Users, Calendar, DollarSign, Clock, Mail, User, Phone } from "lucide-react";
+import { Users, Calendar, DollarSign, Clock, Mail, User, Video, Copy, ExternalLink } from "lucide-react";
+import { ScheduleEditor } from "./schedule-editor";
 
 interface ClassBooking {
   id: string;
@@ -18,6 +18,21 @@ interface ClassBooking {
   timestamp: Date;
   paymentMethod: string;
   amount: number;
+  zoomMeetingId?: string;
+  zoomPassword?: string;
+  zoomLink?: string;
+}
+
+interface ClassWithZoom {
+  className: string;
+  teacher: string;
+  date: string;
+  time: string;
+  zoomMeetingId: string;
+  zoomPassword: string;
+  zoomLink: string;
+  studentCount: number;
+  students: ClassBooking[];
 }
 
 // Mock data - in production this would come from your database
@@ -32,7 +47,10 @@ const mockBookings: ClassBooking[] = [
     time: "8:00 AM - 9:00 AM",
     timestamp: new Date("2025-09-05T14:30:00"),
     paymentMethod: "Credit Card",
-    amount: 10.00
+    amount: 11.00,
+    zoomMeetingId: "123456789",
+    zoomPassword: "yoga123",
+    zoomLink: "https://zoom.us/j/123456789?pwd=yoga123"
   },
   {
     id: "2", 
@@ -43,8 +61,11 @@ const mockBookings: ClassBooking[] = [
     date: "September 11, 2025",
     time: "7:00 PM - 8:00 PM",
     timestamp: new Date("2025-09-05T16:45:00"),
-    paymentMethod: "PayPal",
-    amount: 10.00
+    paymentMethod: "Credit Card",
+    amount: 11.00,
+    zoomMeetingId: "987654321",
+    zoomPassword: "restore456",
+    zoomLink: "https://zoom.us/j/987654321?pwd=restore456"
   },
   {
     id: "3",
@@ -56,13 +77,17 @@ const mockBookings: ClassBooking[] = [
     time: "6:00 PM - 7:00 PM",
     timestamp: new Date("2025-09-05T18:20:00"),
     paymentMethod: "5-Class Pack",
-    amount: 0.00
+    amount: 0.00,
+    zoomMeetingId: "456789123",
+    zoomPassword: "power789",
+    zoomLink: "https://zoom.us/j/456789123?pwd=power789"
   }
 ];
 
 export function AdminPanel() {
   const [bookings, setBookings] = useState<ClassBooking[]>(mockBookings);
   const [selectedClass, setSelectedClass] = useState<string>("all");
+  const [showZoomSetup, setShowZoomSetup] = useState(false);
 
   // Listen for new bookings
   useEffect(() => {
@@ -72,7 +97,7 @@ export function AdminPanel() {
         id: Date.now().toString(),
         timestamp: new Date(),
         paymentMethod: "Credit Card",
-        amount: 10.00,
+        amount: 11.00,
         ...bookingData
       };
       
@@ -94,14 +119,28 @@ export function AdminPanel() {
     ? bookings 
     : bookings.filter(b => b.className === selectedClass);
 
-  // Group bookings by class
-  const bookingsByClass = bookings.reduce((acc, booking) => {
-    if (!acc[booking.className]) {
-      acc[booking.className] = [];
-    }
-    acc[booking.className].push(booking);
-    return acc;
-  }, {} as Record<string, ClassBooking[]>);
+  // Group bookings by class with Zoom info
+  const classesWithZoom: ClassWithZoom[] = Object.entries(
+    bookings.reduce((acc, booking) => {
+      const key = `${booking.className}-${booking.teacher}-${booking.date}-${booking.time}`;
+      if (!acc[key]) {
+        acc[key] = {
+          className: booking.className,
+          teacher: booking.teacher,
+          date: booking.date,
+          time: booking.time,
+          zoomMeetingId: booking.zoomMeetingId || '',
+          zoomPassword: booking.zoomPassword || '',
+          zoomLink: booking.zoomLink || '',
+          studentCount: 0,
+          students: []
+        };
+      }
+      acc[key].students.push(booking);
+      acc[key].studentCount++;
+      return acc;
+    }, {} as Record<string, ClassWithZoom>)
+  ).map(([_, classInfo]) => classInfo);
 
   // Calculate statistics
   const totalRevenue = bookings.reduce((sum, b) => sum + b.amount, 0);
@@ -110,13 +149,17 @@ export function AdminPanel() {
     new Date(b.timestamp).toDateString() === new Date().toDateString()
   ).length;
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="mb-2">Nirva Yoga Studio - Admin Dashboard</h1>
           <p className="text-muted-foreground">
-            Manage class bookings and view student enrollment
+            Manage class bookings, view student enrollment, and access Zoom links
           </p>
         </div>
 
@@ -163,11 +206,124 @@ export function AdminPanel() {
           </Card>
         </div>
 
-        <Tabs defaultValue="all-bookings" className="space-y-6">
+        <Tabs defaultValue="zoom-classes" className="space-y-6">
           <TabsList>
+            <TabsTrigger value="zoom-classes">Zoom Classes</TabsTrigger>
             <TabsTrigger value="all-bookings">All Bookings</TabsTrigger>
             <TabsTrigger value="by-class">By Class</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="zoom-classes" className="space-y-6">
+            <div className="grid gap-6">
+              {classesWithZoom.map((classInfo, index) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Video className="h-5 w-5 text-blue-600" />
+                        <span>{classInfo.className}</span>
+                        <Badge variant="secondary">
+                          {classInfo.studentCount} {classInfo.studentCount === 1 ? 'student' : 'students'}
+                        </Badge>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {classInfo.date} • {classInfo.time}
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {/* Zoom Meeting Info */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-blue-800 mb-3">Zoom Meeting Details</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm font-medium text-blue-700">Meeting ID:</label>
+                            <div className="flex items-center gap-2 mt-1">
+                              <code className="bg-white px-2 py-1 rounded text-sm">{classInfo.zoomMeetingId}</code>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => copyToClipboard(classInfo.zoomMeetingId)}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-blue-700">Password:</label>
+                            <div className="flex items-center gap-2 mt-1">
+                              <code className="bg-white px-2 py-1 rounded text-sm">{classInfo.zoomPassword}</code>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => copyToClipboard(classInfo.zoomPassword)}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-3">
+                          <label className="text-sm font-medium text-blue-700">Join Link:</label>
+                          <div className="flex items-center gap-2 mt-1">
+                            <code className="bg-white px-2 py-1 rounded text-sm flex-1 truncate">
+                              {classInfo.zoomLink}
+                            </code>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => copyToClipboard(classInfo.zoomLink)}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => window.open(classInfo.zoomLink, '_blank')}
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Students List */}
+                      <div>
+                        <h4 className="font-semibold mb-3">Enrolled Students</h4>
+                        <div className="space-y-2">
+                          {classInfo.students.map((student) => (
+                            <div key={student.id} className="flex items-center justify-between p-3 border rounded-lg">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <User className="h-4 w-4 text-muted-foreground" />
+                                  <span className="font-medium">{student.studentName}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Mail className="h-3 w-3" />
+                                  <a href={`mailto:${student.studentEmail}`} className="hover:text-primary">
+                                    {student.studentEmail}
+                                  </a>
+                                </div>
+                              </div>
+                              <div className="text-right space-y-1">
+                                <Badge variant={student.amount > 0 ? "default" : "secondary"} className="text-xs">
+                                  {student.paymentMethod}
+                                </Badge>
+                                <div className="text-xs text-muted-foreground">
+                                  Booked: {student.timestamp.toLocaleDateString()}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
 
           <TabsContent value="all-bookings" className="space-y-6">
             <Card>
@@ -204,6 +360,7 @@ export function AdminPanel() {
                       <TableHead>Teacher</TableHead>
                       <TableHead>Date & Time</TableHead>
                       <TableHead>Payment</TableHead>
+                      <TableHead>Zoom</TableHead>
                       <TableHead>Booked</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -247,6 +404,20 @@ export function AdminPanel() {
                           </div>
                         </TableCell>
                         <TableCell>
+                          {booking.zoomLink ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(booking.zoomLink, '_blank')}
+                            >
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              Join
+                            </Button>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">No link</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <div className="text-sm text-muted-foreground">
                             {booking.timestamp.toLocaleDateString()} {booking.timestamp.toLocaleTimeString()}
                           </div>
@@ -267,7 +438,15 @@ export function AdminPanel() {
 
           <TabsContent value="by-class" className="space-y-6">
             <div className="grid gap-6">
-              {Object.entries(bookingsByClass).map(([className, classBookings]) => (
+              {Object.entries(
+                bookings.reduce((acc, booking) => {
+                  if (!acc[booking.className]) {
+                    acc[booking.className] = [];
+                  }
+                  acc[booking.className].push(booking);
+                  return acc;
+                }, {} as Record<string, ClassBooking[]>)
+              ).map(([className, classBookings]) => (
                 <Card key={className}>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
@@ -318,6 +497,7 @@ export function AdminPanel() {
               <p>📧 <strong>Email Notifications:</strong> All bookings automatically send notifications to nirvayogastudio@gmail.com</p>
               <p>🔄 <strong>Real-time Updates:</strong> New bookings appear instantly in this dashboard</p>
               <p>📊 <strong>Payment Tracking:</strong> Monitor both paid classes and class pack usage</p>
+              <p>🎥 <strong>Zoom Integration:</strong> Each class gets a unique Zoom meeting with shared link</p>
               <p>⚠️ <strong>Production Note:</strong> Connect to a real payment processor and email service for live environment</p>
             </div>
           </CardContent>

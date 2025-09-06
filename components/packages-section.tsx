@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+    import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Check, Star } from "lucide-react";
 
@@ -19,10 +19,11 @@ export function PackagesSection({ onPurchasePackage, user }: PackagesSectionProp
     {
       id: 'single',
       name: 'Single Class',
-      price: 10.00,
+      price: 11.00,
       originalPrice: null,
       savings: 0,
-      description: 'Perfect for trying out our classes - $10/class',
+      description: 'Perfect for trying out our classes',
+      perClassPrice: '$11.00/class',
       features: [
         'Live virtual class via Zoom',
         'Interactive instruction',
@@ -30,52 +31,56 @@ export function PackagesSection({ onPurchasePackage, user }: PackagesSectionProp
         'All levels welcome'
       ],
       popular: false,
-      buttonText: 'Book Now',
-      priceNote: 'inc. processing'
+      buttonText: 'Book Now - $11',
+      priceNote: 'Secure payment with Stripe'
     },
     {
       id: 'five',
       name: '5-Class Package',
-      price: 48.00,
-      originalPrice: 50.00,
+      price: 53.00,
+      originalPrice: 55.00,
       savings: 2.00,
-      description: 'Great for regular practice - $9.60/class',
+      description: 'Great for regular practice',
+      perClassPrice: '$10.60/class',
       features: [
         'All single class benefits',
         'Classes never expire',
         'Use anytime you want',
-        'Flexible scheduling'
+        'Flexible scheduling',
+        '4% savings'
       ],
       popular: false,
-      buttonText: 'Get 5 Classes',
-      priceNote: 'Save $2'
+      buttonText: 'Buy Package - $53',
+      priceNote: ''
     },
     {
       id: 'ten',
       name: '10-Class Package',
-      price: 95.00,
-      originalPrice: 100.00,
+      price: 105.00,
+      originalPrice: 110.00,
       savings: 5.00,
-      description: 'Best value for committed practice - $9.50/class',
+      description: 'Best value for committed students',
+      perClassPrice: '$10.50/class',
       features: [
-        'All package benefits',
-        'Maximum savings',
+        'All single class benefits',
         'Classes never expire',
-        'Priority booking',
-        'Free consultation call'
+        'Use anytime you want',
+        'Flexible scheduling',
+        '5% savings',
+        'Priority booking'
       ],
       popular: true,
-      buttonText: 'Get 10 Classes',
-      priceNote: 'Save $5 - Best Value!'
+      buttonText: 'Buy Package - $105',
+      priceNote: ''
     }
   ];
 
   return (
     <section className="w-full">
       <div className="text-center mb-12">
-        <h2 className="mb-4 font-heading" style={{ fontSize: 'var(--font-size-4xl)' }}>Class Packages</h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto font-body" style={{ fontSize: 'var(--font-size-lg)' }}>
-          Choose the package that works best for your yoga journey. All classes are $10/class and include live instruction, 
+        <h2 className="mb-4 text-3xl font-heading text-foreground">Class Packages</h2>
+        <p className="text-muted-foreground max-w-2xl mx-auto font-body text-lg">
+          Choose the package that works best for your yoga journey. All classes include live instruction, 
           recordings, and personal attention from our certified teachers.
         </p>
         
@@ -112,26 +117,29 @@ export function PackagesSection({ onPurchasePackage, user }: PackagesSectionProp
             )}
             
             <CardHeader className="text-center pb-4">
-              <CardTitle className="text-xl">{pkg.name}</CardTitle>
-              <p className="text-muted-foreground text-sm">{pkg.description}</p>
+              <CardTitle className="text-xl font-heading">{pkg.name}</CardTitle>
+              <p className="text-muted-foreground text-sm font-body">{pkg.description}</p>
               
               <div className="mt-4">
                 <div className="flex items-center justify-center gap-2">
-                  <span className="text-3xl font-bold">${pkg.price.toFixed(0)}</span>
+                  <span className="text-4xl font-bold text-primary">${pkg.price.toFixed(0)}</span>
                   {pkg.originalPrice && (
                     <span className="text-lg text-muted-foreground line-through">
                       ${pkg.originalPrice.toFixed(0)}
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{pkg.priceNote}</p>
+                <p className="text-sm text-muted-foreground mt-1 font-body">
+                  {pkg.perClassPrice}
+                </p>
+                <p className="text-xs text-primary font-semibold mt-1">{pkg.priceNote}</p>
               </div>
             </CardHeader>
             
             <CardContent className="space-y-4">
               <ul className="space-y-2">
                 {pkg.features.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-2 text-sm">
+                  <li key={index} className="flex items-start gap-2 text-sm font-body">
                     <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
                     <span>{feature}</span>
                   </li>
@@ -139,7 +147,7 @@ export function PackagesSection({ onPurchasePackage, user }: PackagesSectionProp
               </ul>
               
               <Button 
-                className="w-full mt-6" 
+                className="w-full mt-6 font-body" 
                 variant={pkg.popular ? "default" : "outline"}
                 onClick={() => onPurchasePackage(pkg.id as 'single' | 'five' | 'ten')}
               >
@@ -152,7 +160,7 @@ export function PackagesSection({ onPurchasePackage, user }: PackagesSectionProp
       
       <div className="text-center mt-8">
         <div className="inline-block p-4 bg-accent rounded-lg border border-primary/20 max-w-2xl">
-          <p className="text-sm">
+          <p className="text-sm font-body">
             <strong>Our Guarantee:</strong> All packages include personalized attention from our instructors 
             and guarantee progress in both your physical practice and mental well-being. 
             Classes never expire, so you can practice at your own pace.

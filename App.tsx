@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Suspense, lazy } from "react";
 import { Navigation } from "./components/navigation";
 import { HeroSection } from "./components/hero-section";
 import { ClassSchedule } from "./components/class-schedule";
@@ -20,6 +20,11 @@ import { AdminNotificationDisplay } from "./components/admin-notification-displa
 import { AdminPanel } from "./components/admin-panel";
 import { Button } from "./components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./components/ui/dialog";
+
+// Lazy load StripePaymentPage to avoid loading Stripe until needed
+const StripePaymentPage = lazy(() =>
+  import('./components/stripe-payment-page').then(m => ({ default: m.StripePaymentPage }))
+);
 
 interface ClassItem {
   id: string;
@@ -44,12 +49,18 @@ interface User {
 
 export default function App() {
   const [currentView, setCurrentView] = useState<"home" | "classes" | "teachers" | "packages" | "contact" | "faq" | "payment" | "admin">("home");
+  const [navigationHistory, setNavigationHistory] = useState<string[]>(["home"]);
   const [selectedClass, setSelectedClass] = useState<{
     className: string;
     teacher: string;
     time: string;
     day: string;
     classId?: string;
+  } | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<{
+    type: 'five' | 'ten' | 'single';
+    price: number;
+    name: string;
   } | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -74,22 +85,56 @@ export default function App() {
     setShowAccountModal(false);
   };
 
-  const handlePackagePurchase = (packageType: 'single' | 'five' | 'ten') => {
-    if (!user) return;
-    
-    setUser(prev => {
-      if (!prev) return prev;
-      const newClassPacks = { ...prev.classPacks };
+  const navigateTo = (view: string) => {
+    setNavigationHistory(prev => [...prev, view]);
+    setCurrentView(view as any);
+  };
+
+  const handleBack = () => {
+    if (navigationHistory.length > 1) {
+      const newHistory = [...navigationHistory];
+      newHistory.pop(); // Remove current view
+      const previousView = newHistory[newHistory.length - 1];
+      setNavigationHistory(newHistory);
+      setCurrentView(previousView as any);
+      setSelectedClass(null);
+      setSelectedPackage(null);
+    } else {
+      // If no history, go to home
+      setCurrentView("home");
+      setSelectedClass(null);
+      setSelectedPackage(null);
+    }
+  };
+
+  const handlePurchasePackage = (packageType: 'single' | 'five' | 'ten') => {
+    if (packageType === 'single') {
+      // Single class booking - go to payment
+      setSelectedPackage({
+        type: 'single',
+        price: 11, // Updated to $11
+        name: 'Single Class'
+      });
+      navigateTo("payment");
+    } else {
+      // Package purchase
+      const packagePrices = {
+        five: 53, // Updated to $53
+        ten: 105  // Updated to $105
+      };
       
-      if (packageType === 'five') {
-        newClassPacks.fivePack += 5;
-      } else if (packageType === 'ten') {
-        newClassPacks.tenPack += 10;
-      }
-      // Single classes are used immediately, no need to add to pack
+      const packageNames = {
+        five: '5-Class Package',
+        ten: '10-Class Package'
+      };
       
-      return { ...prev, classPacks: newClassPacks };
-    });
+      setSelectedPackage({
+        type: packageType as 'five' | 'ten',
+        price: packagePrices[packageType as 'five' | 'ten'],
+        name: packageNames[packageType as 'five' | 'ten']
+      });
+      navigateTo("payment");
+    }
   };
 
   const handleUseClassPack = () => {
@@ -121,38 +166,10 @@ export default function App() {
       teacher: classItem.teacher,
       time: classItem.time,
       day: day,
-      classId: classItem.id // Add unique class ID for Zoom link generation
+      classId: classItem.id
     });
-    setCurrentView("payment");
-  };
-
-  const handleBackToHome = () => {
-    setCurrentView("home");
-    setSelectedClass(null);
-  };
-
-  const handleNavigateToClasses = () => {
-    setCurrentView("classes");
-  };
-
-  const handleNavigateToTeachers = () => {
-    setCurrentView("teachers");
-  };
-
-  const handleNavigateToPackages = () => {
-    setCurrentView("packages");
-  };
-
-  const handleNavigateToContact = () => {
-    setCurrentView("contact");
-  };
-
-  const handleNavigateToFAQ = () => {
-    setCurrentView("faq");
-  };
-
-  const handleNavigateToAdmin = () => {
-    setCurrentView("admin");
+    setSelectedPackage(null); // Clear any selected package
+    navigateTo("payment");
   };
 
   const handlePayNow = () => {
@@ -160,31 +177,33 @@ export default function App() {
       setShowAuthModal(true);
       return;
     }
+    // This is for single class booking from home page
+    setSelectedPackage({
+      type: 'single',
+      price: 11, // Updated to $11
+      name: 'Single Class'
+    });
     setSelectedClass(null);
-    setCurrentView("payment");
-  };
-
-  const handlePurchasePackage = (packageType: 'single' | 'five' | 'ten') => {
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-    // For package purchases, we go to payment with no selected class
-    setSelectedClass(null);
-    setCurrentView("payment");
+    navigateTo("payment");
   };
 
   const renderCurrentView = () => {
     switch (currentView) {
       case "payment":
         return (
-          <PaymentPage 
-            onBack={handleBackToHome} 
-            selectedClass={selectedClass}
-            user={user}
-            onPackagePurchase={handlePackagePurchase}
-            onUseClassPack={handleUseClassPack}
-          />
+          <Suspense fallback={<div className="container mx-auto px-4 py-12 text-center">Loading payment...</div>}>
+            <StripePaymentPage
+              onBack={handleBack}
+              selectedClass={selectedClass}
+              selectedPackage={selectedPackage}
+              onSuccess={() => {
+                // Handle successful payment
+                setCurrentView('home');
+                setSelectedClass(null);
+                setSelectedPackage(null);
+              }}
+            />
+          </Suspense>
         );
       
       case "classes":
@@ -195,17 +214,17 @@ export default function App() {
               onLoginClick={() => setShowAuthModal(true)}
               onAccountClick={() => setShowAccountModal(true)}
               currentView={currentView}
-              onNavigateHome={() => setCurrentView("home")}
-              onNavigateClasses={() => setCurrentView("classes")}
-              onNavigateTeachers={() => setCurrentView("teachers")}
-              onNavigatePackages={() => setCurrentView("packages")}
-              onNavigateContact={() => setCurrentView("contact")}
-              onNavigateFAQ={() => setCurrentView("faq")}
-              onNavigateAdmin={() => setCurrentView("admin")}
+              onNavigateHome={() => navigateTo("home")}
+              onNavigateClasses={() => navigateTo("classes")}
+              onNavigateTeachers={() => navigateTo("teachers")}
+              onNavigatePackages={() => navigateTo("packages")}
+              onNavigateContact={() => navigateTo("contact")}
+              onNavigateFAQ={() => navigateTo("faq")}
+              onNavigateAdmin={() => navigateTo("admin")}
             />
             
             <div className="container mx-auto px-4 py-8">
-              <ClassSchedule onBookClass={handleBookClass} />
+              <ClassSchedule onBookClass={handleBookClass} user={user} />
             </div>
             
             <Footer 
@@ -223,13 +242,13 @@ export default function App() {
               onLoginClick={() => setShowAuthModal(true)}
               onAccountClick={() => setShowAccountModal(true)}
               currentView={currentView}
-              onNavigateHome={() => setCurrentView("home")}
-              onNavigateClasses={() => setCurrentView("classes")}
-              onNavigateTeachers={() => setCurrentView("teachers")}
-              onNavigatePackages={() => setCurrentView("packages")}
-              onNavigateContact={() => setCurrentView("contact")}
-              onNavigateFAQ={() => setCurrentView("faq")}
-              onNavigateAdmin={() => setCurrentView("admin")}
+              onNavigateHome={() => navigateTo("home")}
+              onNavigateClasses={() => navigateTo("classes")}
+              onNavigateTeachers={() => navigateTo("teachers")}
+              onNavigatePackages={() => navigateTo("packages")}
+              onNavigateContact={() => navigateTo("contact")}
+              onNavigateFAQ={() => navigateTo("faq")}
+              onNavigateAdmin={() => navigateTo("admin")}
             />
             
             <div className="container mx-auto px-4 py-8">
@@ -251,13 +270,13 @@ export default function App() {
               onLoginClick={() => setShowAuthModal(true)}
               onAccountClick={() => setShowAccountModal(true)}
               currentView={currentView}
-              onNavigateHome={() => setCurrentView("home")}
-              onNavigateClasses={() => setCurrentView("classes")}
-              onNavigateTeachers={() => setCurrentView("teachers")}
-              onNavigatePackages={() => setCurrentView("packages")}
-              onNavigateContact={() => setCurrentView("contact")}
-              onNavigateFAQ={() => setCurrentView("faq")}
-              onNavigateAdmin={() => setCurrentView("admin")}
+              onNavigateHome={() => navigateTo("home")}
+              onNavigateClasses={() => navigateTo("classes")}
+              onNavigateTeachers={() => navigateTo("teachers")}
+              onNavigatePackages={() => navigateTo("packages")}
+              onNavigateContact={() => navigateTo("contact")}
+              onNavigateFAQ={() => navigateTo("faq")}
+              onNavigateAdmin={() => navigateTo("admin")}
             />
             
             <div className="container mx-auto px-4 py-8">
@@ -282,13 +301,13 @@ export default function App() {
               onLoginClick={() => setShowAuthModal(true)}
               onAccountClick={() => setShowAccountModal(true)}
               currentView={currentView}
-              onNavigateHome={() => setCurrentView("home")}
-              onNavigateClasses={() => setCurrentView("classes")}
-              onNavigateTeachers={() => setCurrentView("teachers")}
-              onNavigatePackages={() => setCurrentView("packages")}
-              onNavigateContact={() => setCurrentView("contact")}
-              onNavigateFAQ={() => setCurrentView("faq")}
-              onNavigateAdmin={() => setCurrentView("admin")}
+              onNavigateHome={() => navigateTo("home")}
+              onNavigateClasses={() => navigateTo("classes")}
+              onNavigateTeachers={() => navigateTo("teachers")}
+              onNavigatePackages={() => navigateTo("packages")}
+              onNavigateContact={() => navigateTo("contact")}
+              onNavigateFAQ={() => navigateTo("faq")}
+              onNavigateAdmin={() => navigateTo("admin")}
             />
             
             <div className="container mx-auto px-4 py-8">
@@ -310,13 +329,13 @@ export default function App() {
               onLoginClick={() => setShowAuthModal(true)}
               onAccountClick={() => setShowAccountModal(true)}
               currentView={currentView}
-              onNavigateHome={() => setCurrentView("home")}
-              onNavigateClasses={() => setCurrentView("classes")}
-              onNavigateTeachers={() => setCurrentView("teachers")}
-              onNavigatePackages={() => setCurrentView("packages")}
-              onNavigateContact={() => setCurrentView("contact")}
-              onNavigateFAQ={() => setCurrentView("faq")}
-              onNavigateAdmin={() => setCurrentView("admin")}
+              onNavigateHome={() => navigateTo("home")}
+              onNavigateClasses={() => navigateTo("classes")}
+              onNavigateTeachers={() => navigateTo("teachers")}
+              onNavigatePackages={() => navigateTo("packages")}
+              onNavigateContact={() => navigateTo("contact")}
+              onNavigateFAQ={() => navigateTo("faq")}
+              onNavigateAdmin={() => navigateTo("admin")}
             />
             
             <div className="container mx-auto px-4 py-8">
@@ -341,13 +360,13 @@ export default function App() {
               onLoginClick={() => setShowAuthModal(true)}
               onAccountClick={() => setShowAccountModal(true)}
               currentView={currentView}
-              onNavigateHome={() => setCurrentView("home")}
-              onNavigateClasses={() => setCurrentView("classes")}
-              onNavigateTeachers={() => setCurrentView("teachers")}
-              onNavigatePackages={() => setCurrentView("packages")}
-              onNavigateContact={() => setCurrentView("contact")}
-              onNavigateFAQ={() => setCurrentView("faq")}
-              onNavigateAdmin={() => setCurrentView("admin")}
+              onNavigateHome={() => navigateTo("home")}
+              onNavigateClasses={() => navigateTo("classes")}
+              onNavigateTeachers={() => navigateTo("teachers")}
+              onNavigatePackages={() => navigateTo("packages")}
+              onNavigateContact={() => navigateTo("contact")}
+              onNavigateFAQ={() => navigateTo("faq")}
+              onNavigateAdmin={() => navigateTo("admin")}
             />
             
             <div className="container mx-auto px-4 py-8">
@@ -375,8 +394,6 @@ export default function App() {
               <div className="mb-12">
                 <VirtualInfo />
               </div>
-
-
 
               <Footer 
                 onShowTerms={() => setShowTermsModal(true)}
@@ -406,7 +423,18 @@ export default function App() {
       {/* Account Modal */}
       <Dialog open={showAccountModal} onOpenChange={setShowAccountModal}>
         <DialogContent className="sm:max-w-5xl">
-          <UserAccount user={user} onLogout={handleLogout} />
+          <UserAccount 
+            user={user} 
+            onLogout={handleLogout}
+            onNavigateToClasses={() => {
+              setShowAccountModal(false);
+              navigateTo("classes");
+            }}
+            onNavigateToPackages={() => {
+              setShowAccountModal(false);
+              navigateTo("packages");
+            }}
+          />
         </DialogContent>
       </Dialog>
 

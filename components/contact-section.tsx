@@ -4,7 +4,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Mail, Phone, MapPin, Clock } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function ContactSection() {
@@ -192,15 +192,23 @@ export function ContactSection() {
               <div className="flex items-start gap-3">
                 <Phone className="w-5 h-5 text-primary mt-1" />
                 <div>
-                  <p className="font-medium">Phone & Zelle Payments</p>
+                  <p className="font-medium">Phone</p>
                   <a 
                     href="tel:+18058074894"
                     className="text-muted-foreground hover:text-primary transition-colors"
                   >
                     (805) 807-4894
                   </a>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <CreditCard className="w-5 h-5 text-primary mt-1" />
+                <div>
+                  <p className="font-medium">Payment Method</p>
+                  <p className="text-muted-foreground">Secure payments via Stripe</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Use this number for Zelle payments
+                    All major credit cards, debit cards, and digital wallets accepted
                   </p>
                 </div>
               </div>

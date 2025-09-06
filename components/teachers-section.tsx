@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent } from "./ui/card";
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import archanaImage from './src/assets/teacher2.png';
@@ -25,6 +26,20 @@ const teachers = [
 ];
 
 export function TeachersSection() {
+  const [expandedTeachers, setExpandedTeachers] = useState<Set<string>>(new Set());
+
+  const toggleSpecialties = (teacherId: string) => {
+    setExpandedTeachers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(teacherId)) {
+        newSet.delete(teacherId);
+      } else {
+        newSet.add(teacherId);
+      }
+      return newSet;
+    });
+  };
+
   return (
     <div className="w-full">
       <div className="text-center mb-12">
@@ -36,53 +51,61 @@ export function TeachersSection() {
       </div>
       
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        {teachers.map((teacher) => (
-          <Card key={teacher.id} className="overflow-hidden">
-            <div className="aspect-square overflow-hidden">
-              <ImageWithFallback
-                src={teacher.image}
-                alt={`${teacher.name} - Yoga Teacher`}
-                className={`w-full h-full object-cover transition-transform hover:scale-105 ${
-                  teacher.name === "Archana Soundararajan" ? "object-bottom" : ""
-                }`}
-              />
-            </div>
-            <CardContent className="p-6">
-              <h3 className="mb-2">{teacher.name}</h3>
-              
-              <div className="mb-3">
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {teacher.specialties.slice(0, 2).map((specialty, index) => (
-                    <span 
-                      key={index}
-                      className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full"
-                    >
-                      {specialty}
-                    </span>
-                  ))}
-                  {teacher.specialties.length > 2 && (
-                    <span className="text-xs text-muted-foreground">
-                      +{teacher.specialties.length - 2} more
-                    </span>
-                  )}
-                </div>
+        {teachers.map((teacher) => {
+          const isExpanded = expandedTeachers.has(teacher.id);
+          const showMoreButton = teacher.specialties.length > 2;
+          
+          return (
+            <Card key={teacher.id} className="overflow-hidden">
+              <div className="aspect-square overflow-hidden">
+                <ImageWithFallback
+                  src={teacher.image}
+                  alt={`${teacher.name} - Yoga Teacher`}
+                  className={`w-full h-full object-cover transition-transform hover:scale-105 ${
+                    teacher.name === "Archana Soundararajan" ? "object-bottom" : ""
+                  }`}
+                />
               </div>
-              
-              <p className="text-sm text-muted-foreground mb-4">
-                {teacher.bio}
-              </p>
-              
-              <div className="space-y-2">
-                <div className="text-xs text-muted-foreground">
-                  <strong>Experience:</strong> {teacher.experience}
+              <CardContent className="p-6">
+                <h3 className="mb-2">{teacher.name}</h3>
+                
+                <div className="mb-3">
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {teacher.specialties.slice(0, isExpanded ? teacher.specialties.length : 2).map((specialty, index) => (
+                      <span 
+                        key={index}
+                        className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full"
+                      >
+                        {specialty}
+                      </span>
+                    ))}
+                    {showMoreButton && (
+                      <button
+                        onClick={() => toggleSpecialties(teacher.id)}
+                        className="text-xs text-primary hover:text-primary/80 underline cursor-pointer transition-colors"
+                      >
+                        {isExpanded ? 'Show less' : `+${teacher.specialties.length - 2} more`}
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  <strong>Certifications:</strong> {teacher.certifications.join(", ")}
+                
+                <p className="text-sm text-muted-foreground mb-4">
+                  {teacher.bio}
+                </p>
+                
+                <div className="space-y-2">
+                  <div className="text-xs text-muted-foreground">
+                    <strong>Experience:</strong> {teacher.experience}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    <strong>Certifications:</strong> {teacher.certifications.join(", ")}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
