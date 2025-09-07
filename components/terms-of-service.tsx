@@ -29,7 +29,6 @@ export function TermsOfService() {
             <div className="space-y-2 text-sm">
               <p>All classes, memberships, and events must be paid in full at the time of booking.</p>
               <p>Payments are final. We do not offer cancellations, refunds, or transfers for any reason, including missed or unused classes.</p>
-              <p>Please make sure you are able to attend before booking.</p>
             </div>
           </div>
 
