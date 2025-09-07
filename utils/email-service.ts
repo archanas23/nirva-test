@@ -25,7 +25,7 @@ export interface PackagePurchaseNotification {
 
 export class EmailService {
   private static readonly ADMIN_EMAIL = 'nirvayogastudio@gmail.com'
-  private static readonly FROM_EMAIL = 'noreply@nirva-yoga.com'
+  private static readonly FROM_EMAIL = 'noreply@nirvayogastudio.com'
 
   static async sendBookingNotification(data: ClassBookingNotification): Promise<void> {
     try {

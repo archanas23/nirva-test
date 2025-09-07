@@ -30,7 +30,7 @@ export function Navigation({
   onNavigateFAQ,
   onNavigateAdmin
 }: NavigationProps) {
-  const [showAdmin, setShowAdmin] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(true); // Always show admin for testing
 
   // Listen for admin access key combination (Ctrl+Shift+A)
   useEffect(() => {

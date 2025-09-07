@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Users, Calendar, DollarSign, Clock, Mail, User, Video, Copy, ExternalLink } from "lucide-react";
 import { ScheduleEditor } from "./schedule-editor";
+import { ResendTest } from "./resend-test";
 
 interface ClassBooking {
   id: string;
@@ -211,6 +212,7 @@ export function AdminPanel() {
             <TabsTrigger value="zoom-classes">Zoom Classes</TabsTrigger>
             <TabsTrigger value="all-bookings">All Bookings</TabsTrigger>
             <TabsTrigger value="by-class">By Class</TabsTrigger>
+            <TabsTrigger value="email-test">Email Testing</TabsTrigger>
           </TabsList>
 
           <TabsContent value="zoom-classes" className="space-y-6">
@@ -486,6 +488,10 @@ export function AdminPanel() {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="email-test" className="space-y-6">
+            <ResendTest />
           </TabsContent>
         </Tabs>
 
