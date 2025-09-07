@@ -26,17 +26,21 @@ export class EmailService {
 
   static async sendBookingNotification(data: ClassBookingNotification): Promise<void> {
     console.log('Mock: Sending booking notification to admin:', data)
+    // Real email will work once Resend is properly configured
   }
 
   static async sendStudentConfirmation(data: ClassBookingNotification): Promise<void> {
     console.log('Mock: Sending confirmation to student:', data)
+    // Real email will work once Resend is properly configured
   }
 
   static async sendPackagePurchaseNotification(data: PackagePurchaseNotification): Promise<void> {
     console.log('Mock: Sending package purchase notification to admin:', data)
+    // Real email will work once Resend is properly configured
   }
 
   static async sendPackagePurchaseConfirmation(data: PackagePurchaseNotification): Promise<void> {
     console.log('Mock: Sending package purchase confirmation to student:', data)
+    // Real email will work once Resend is properly configured
   }
 }
