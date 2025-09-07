@@ -27,7 +27,10 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    console.log('📧 Netlify function called with:', event.body);
     const { type, data } = JSON.parse(event.body);
+    console.log('📧 Email type:', type);
+    console.log('📧 Email data:', data);
 
     let emailData;
     let result;
@@ -35,7 +38,7 @@ exports.handler = async (event, context) => {
     switch (type) {
       case 'booking-notification':
         emailData = {
-          from: 'noreply@nirvayogastudio.com',
+          from: 'noreply@nirva-yoga.com',
           to: 'nirvayogastudio@gmail.com',
           subject: `New Class Booking - ${data.className}`,
           html: `
@@ -58,7 +61,7 @@ exports.handler = async (event, context) => {
 
       case 'student-confirmation':
         emailData = {
-          from: 'noreply@nirvayogastudio.com',
+          from: 'noreply@nirva-yoga.com',
           to: data.studentEmail,
           subject: `Class Booking Confirmed - ${data.className}`,
           html: `
@@ -89,7 +92,7 @@ exports.handler = async (event, context) => {
 
       case 'package-purchase':
         emailData = {
-          from: 'noreply@nirvayogastudio.com',
+          from: 'noreply@nirva-yoga.com',
           to: 'nirvayogastudio@gmail.com',
           subject: `New Package Purchase - ${data.packageType} classes`,
           html: `
@@ -111,7 +114,7 @@ exports.handler = async (event, context) => {
 
       case 'package-purchase-confirmation':
         emailData = {
-          from: 'noreply@nirvayogastudio.com',
+          from: 'noreply@nirva-yoga.com',
           to: data.studentEmail,
           subject: `Package Purchase Confirmed - ${data.packageType} classes`,
           html: `
@@ -146,7 +149,9 @@ exports.handler = async (event, context) => {
         };
     }
 
+    console.log('📧 Sending email with data:', emailData);
     result = await resend.emails.send(emailData);
+    console.log('📧 Resend response:', result);
 
     return {
       statusCode: 200,
