@@ -134,7 +134,7 @@ export function Navigation({
           <div className="flex items-center gap-6">
             <div className="bg-secondary px-4 py-2 rounded-full border border-border font-body" style={{ fontSize: 'var(--font-size-base)' }}>
               <span className="text-muted-foreground">Classes from</span>
-              <span className="ml-1 font-semibold text-primary">$10</span>
+              <span className="ml-1 font-semibold text-primary">$11</span>
             </div>
             
             {user ? (

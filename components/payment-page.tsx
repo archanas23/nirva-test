@@ -323,7 +323,7 @@ export function PaymentPage({
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="font-medium">Single Class</span>
-                    <span className="font-bold">$10.00</span>
+                    <span className="font-bold">$11.00</span>
                   </div>
                   <div className="space-y-1 text-sm text-muted-foreground">
                     <p><strong>Class:</strong> {selectedClass.className}</p>

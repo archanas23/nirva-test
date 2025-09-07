@@ -257,3 +257,43 @@ ZELLE_PHONE=(805) 807-4894
 ---
 
 **Ready to deploy?** Start with Phase 1 (Database Setup) and work through each phase systematically. Each phase builds on the previous one.
+
+## 🔧 **Fix 1: Mobile Menu**
+
+```93:93:components/mobile-menu.tsx
+                Classes from <span className="font-medium text-primary">$11</span>
+```
+
+## 🔧 **Fix 2: Navigation**
+
+```137:137:components/navigation.tsx
+              <span className="ml-1 font-semibold text-primary">$11</span>
+```
+
+## 🔧 **Fix 3: Studio Info**
+
+```14:14:components/studio-info.tsx
+          With live Zoom classes at just $11/class, we're committed to removing barriers 
+```
+
+## 🔧 **Fix 4: index.html (SEO Meta Tags)**
+
+```8:8:index.html
+    <meta name="description" content="Join Nirva Yoga Studio for virtual yoga classes with certified instructors. $11/class with flexible packages. Expert guidance for all levels with personalized attention." />
+```
+
+```15:15:index.html
+    <meta property="og:description" content="Join our virtual yoga community with certified instructors. $11/class with flexible packages and personalized attention." />
+```
+
+```21:21:index.html
+    <meta property="twitter:description" content="Join our virtual yoga community with certified instructors. $11/class with flexible packages and personalized attention." />
+```
+
+## 🚀 **After Making These Changes:**
+
+```bash
+<code_block_to_apply_changes_from>
+```
+
+**These are the last $11 references! Your pricing will be consistent at $11 everywhere.**

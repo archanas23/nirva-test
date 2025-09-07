@@ -90,7 +90,7 @@ export function MobileMenu({
             
             <div className="mt-6 pt-6 border-t border-border">
               <div className="text-sm text-muted-foreground text-center">
-                Classes from <span className="font-medium text-primary">$10</span>
+                Classes from <span className="font-medium text-primary">$11</span>
               </div>
             </div>
           </div>

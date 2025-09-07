@@ -35,7 +35,7 @@ export function HeroSection() {
           {/* Pricing badge */}
           <div className="inline-flex items-center px-4 sm:px-6 md:px-8 py-2 sm:py-3 bg-accent border-2 border-primary/20 rounded-full text-primary font-body text-sm sm:text-base md:text-lg font-semibold shadow-md hover:shadow-lg transition-shadow">
             <span className="mr-2"></span>
-            All Classes $10/session
+            All Classes $11/session
           </div>
 
           {/* Key benefits */}

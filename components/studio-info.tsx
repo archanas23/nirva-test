@@ -11,7 +11,7 @@ export function StudioInfo() {
           virtual practices, bringing the studio experience directly to your home.
         </p>
         <p className="mb-4">
-          With live Zoom classes at just $10/class, we're committed to removing barriers 
+          With live Zoom classes at just $11/class, we're committed to removing barriers 
           and helping our global community find balance, strength, and inner peace through yoga. 
           Join us from anywhere in the world for authentic, interactive yoga instruction.
         </p>

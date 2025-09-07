@@ -319,7 +319,7 @@ export function ClassSchedule({ onBookClass, user }: ClassScheduleProps) {
                         size="sm"
                         variant="outline"
                       >
-                        Pay $10 (Zelle)
+                        Pay $11 (Stripe)
                       </Button>
                     ) : (
                       <Button 

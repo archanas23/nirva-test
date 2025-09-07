@@ -169,7 +169,7 @@ export function UserAccount({ user, onLogout, onNavigateToClasses, onNavigateToP
           <div className="text-xs text-muted-foreground text-center space-y-1">
             <p>✨ Class packages never expire and can be used anytime!</p>
             <p>🧘‍♀️ When you book a class, it will be deducted from your packages automatically.</p>
-            <p>💰 Single classes can be paid via Zelle ($10 each).</p>
+            <p>💰 Single classes can be paid via Zelle ($11 each).</p>
             <p>🚫 All payments are final - no refunds policy applies.</p>
           </div>
         </CardContent>
