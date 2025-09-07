@@ -1,5 +1,4 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
-import HCaptcha from '@hcaptcha/react-hcaptcha'
 
 export function FAQSection() {
   const faqs = [
