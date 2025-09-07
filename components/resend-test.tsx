@@ -57,7 +57,7 @@ export function ResendTest() {
       await EmailService.sendPackagePurchaseNotification({
         studentName: 'Test Student',
         studentEmail: 'test@example.com',
-        packageType: '5-Class Package',
+        packageType: 'five',
         packagePrice: 75,
         classesAdded: 5,
         totalClasses: 5
