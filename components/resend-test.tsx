@@ -12,7 +12,7 @@ export function ResendTest() {
     try {
       await EmailService.sendBookingNotification({
         studentName: 'Test Student',
-        studentEmail: 'test@example.com',
+        studentEmail: 'nirvayogastudio@gmail.com', // Send to your email for testing
         className: 'Test Yoga Class',
         teacher: 'Test Teacher',
         date: new Date().toLocaleDateString(),
@@ -34,7 +34,7 @@ export function ResendTest() {
     try {
       await EmailService.sendStudentConfirmation({
         studentName: 'Test Student',
-        studentEmail: 'test@example.com',
+        studentEmail: 'nirvayogastudio@gmail.com', // Send to your email for testing
         className: 'Test Yoga Class',
         teacher: 'Test Teacher',
         date: new Date().toLocaleDateString(),
@@ -56,7 +56,7 @@ export function ResendTest() {
     try {
       await EmailService.sendPackagePurchaseNotification({
         studentName: 'Test Student',
-        studentEmail: 'test@example.com',
+        studentEmail: 'nirvayogastudio@gmail.com', // Send to your email for testing
         packageType: 'five',
         packagePrice: 75,
         classesAdded: 5,
