@@ -1,7 +1,8 @@
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Calendar, Clock, Users, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { ClassManagementService, ClassInstance } from "../utils/class-management";
 
 interface ClassItem {
   id: string;
@@ -38,19 +39,101 @@ interface ClassScheduleProps {
       bookedAt: string;
     };
   };
-  isClassInPast?: (classItem: ClassItem, day: string) => boolean;
   isClassBooked?: (classId: string) => boolean;
 }
 
-export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassInPast, isClassBooked }: ClassScheduleProps) {
+export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassBooked }: ClassScheduleProps) {
   const totalClasses = user ? user.classPacks.singleClasses + user.classPacks.fivePack + user.classPacks.tenPack : 0;
   const canBook = totalClasses > 0;
   
-  // State for calendar navigation
+  // State for calendar navigation and data
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
+  const [classInstances, setClassInstances] = useState<ClassInstance[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Generate classes for a given date
-  const generateClassesForDate = (date: Date): ClassItem[] => {
+  // Load class instances for the current week
+  useEffect(() => {
+    const loadClassInstances = async () => {
+      try {
+        setLoading(true);
+        const weekDates = getCurrentWeekDates();
+        const startDate = weekDates[0].toISOString().split('T')[0];
+        const endDate = weekDates[6].toISOString().split('T')[0];
+        
+        const instances = await ClassManagementService.getClassInstances(startDate, endDate);
+        setClassInstances(instances);
+      } catch (error) {
+        console.error('Error loading class instances:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadClassInstances();
+  }, [currentWeekOffset]);
+
+  // Convert ClassInstance to ClassItem format
+  const convertToClassItem = (instance: ClassInstance): ClassItem => {
+    const time = instance.class?.start_time || '00:00';
+    const timeFormatted = new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    return {
+      id: instance.id,
+      time: timeFormatted,
+      className: instance.class?.name || 'Unknown Class',
+      teacher: instance.class?.teacher || 'Unknown Teacher',
+      duration: `${instance.class?.duration || 60} min`,
+      level: instance.class?.level || 'All Levels',
+      registrationClosed: false,
+      maxStudents: instance.class?.max_students || 10,
+      currentEnrollment: 0
+    };
+  };
+
+  // Generate a week of dates starting from a given date
+  const generateWeekDates = (startDate: Date): Date[] => {
+    const dates: Date[] = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      dates.push(date);
+    }
+    return dates;
+  };
+
+  // Get the current week's dates (September 2025 only)
+  const getCurrentWeekDates = (): Date[] => {
+    const september2025 = new Date(2025, 8, 7); // September 7, 2025 (month is 0-indexed)
+    
+    // Calculate the start of the current week in September
+    const startOfWeek = new Date(september2025);
+    startOfWeek.setDate(september2025.getDate() - september2025.getDay() + (currentWeekOffset * 7));
+    
+    // Ensure we don't go beyond September 2025
+    if (startOfWeek.getMonth() !== 8) { // September is month 8 (0-indexed)
+      startOfWeek.setMonth(8, 1); // Reset to September 1st
+    }
+    
+    return generateWeekDates(startOfWeek);
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  const getDayName = (date: Date) => {
+    return date.toLocaleDateString('en-US', { weekday: 'long' });
+  };
+
+  // Generate fallback classes for a given date (when no Supabase data)
+  const generateFallbackClassesForDate = (date: Date): ClassItem[] => {
     const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
     const classes: ClassItem[] = [];
     
@@ -139,53 +222,22 @@ export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassIn
     return classes;
   };
 
-  // Generate a week of dates starting from a given date
-  const generateWeekDates = (startDate: Date): Date[] => {
-    const dates: Date[] = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(startDate);
-      date.setDate(startDate.getDate() + i);
-      dates.push(date);
-    }
-    return dates;
-  };
-
-  // Get the current week's dates
-  const getCurrentWeekDates = (): Date[] => {
-    const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay() + (currentWeekOffset * 7));
-    return generateWeekDates(startOfWeek);
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
-
-  const getDayName = (date: Date) => {
-    return date.toLocaleDateString('en-US', { weekday: 'long' });
-  };
-
-  // Filter out past classes for a given date
+  // Get classes for a given date (with fallback to generated classes)
   const getFutureClassesForDate = (date: Date): ClassItem[] => {
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
-    const classes = generateClassesForDate(date);
+    const dateStr = date.toISOString().split('T')[0];
     
-    if (isToday) {
-      // For today, only show classes that are at least 30 minutes in the future
-      return classes.filter(classItem => {
-        const classDateTime = new Date(date.toDateString() + ' ' + classItem.time);
-        const thirtyMinutesFromNow = new Date(now.getTime() + 30 * 60000);
-        return classDateTime > thirtyMinutesFromNow;
-      });
+    // Get class instances for this specific date
+    const instancesForDate = classInstances.filter(instance => 
+      instance.class_date === dateStr
+    );
+    
+    // If we have Supabase data, use it
+    if (instancesForDate.length > 0) {
+      return instancesForDate.map(convertToClassItem);
     }
     
-    // For future days, show all classes
-    return classes;
+    // Otherwise, use fallback generated classes
+    return generateFallbackClassesForDate(date);
   };
 
   // Navigation functions
@@ -288,67 +340,73 @@ export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassIn
       </div>
 
       {/* Schedule Grid */}
-      <div className="grid gap-4">
-        {getCurrentWeekDates().map((date) => {
-          const futureClasses = getFutureClassesForDate(date);
-          
-          // Only show days that have future classes
-          if (futureClasses.length === 0) return null;
-          
-          return (
-            <div key={date.toISOString()} className="border rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Calendar className="w-4 h-4 text-primary" />
-                <h3 className="font-semibold text-lg">
-                  {getDayName(date)} - {formatDate(date)}
-                </h3>
-              </div>
-              
-              <div className="grid gap-3">
-                {futureClasses.map((classItem) => (
-                  <div key={classItem.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium">{classItem.className}</h4>
-                        <Badge variant="outline" className="text-xs">
-                          {classItem.level}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {classItem.time}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Users className="w-3 h-3" />
-                          {classItem.teacher}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {classItem.duration}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      {classItem.registrationClosed ? (
-                        <Badge variant="secondary">Registration Closed</Badge>
-                      ) : isClassBooked?.(classItem.id) ? (
-                        <div className="flex flex-col items-end gap-1">
-                          <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                            ✅ Booked
+      {loading ? (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground mt-2">Loading classes...</p>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {getCurrentWeekDates().map((date) => {
+            const futureClasses = getFutureClassesForDate(date);
+            
+            // Only show days that have future classes
+            if (futureClasses.length === 0) return null;
+            
+            return (
+              <div key={date.toISOString()} className="border rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Calendar className="w-4 h-4 text-primary" />
+                  <h3 className="font-semibold text-lg">
+                    {getDayName(date)} - {formatDate(date)}
+                  </h3>
+                </div>
+                
+                <div className="grid gap-3">
+                  {futureClasses.map((classItem) => (
+                    <div key={classItem.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-medium">{classItem.className}</h4>
+                          <Badge variant="outline" className="text-xs">
+                            {classItem.level}
                           </Badge>
-                          {bookedClasses[classItem.id]?.zoomLink && (
-                            <Button 
-                              size="sm"
-                              variant="outline"
-                              className="text-xs"
-                              onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
-                            >
-                              Join Zoom
-                            </Button>
-                          )}
                         </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {classItem.time}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Users className="w-3 h-3" />
+                            {classItem.teacher}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {classItem.duration}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        {classItem.registrationClosed ? (
+                          <Badge variant="secondary">Registration Closed</Badge>
+                        ) : isClassBooked?.(classItem.id) ? (
+                          <div className="flex flex-col items-end gap-1">
+                            <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                              ✅ Booked
+                            </Badge>
+                            {bookedClasses[classItem.id]?.zoomLink && (
+                              <Button 
+                                size="sm"
+                                variant="outline"
+                                className="text-xs"
+                                onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
+                              >
+                                Join Zoom
+                              </Button>
+                            )}
+                          </div>
                       ) : !user ? (
                         <Button 
                           onClick={() => onBookClass?.(classItem, formatDate(date))}
@@ -371,17 +429,18 @@ export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassIn
                           size="sm"
                           className="bg-primary hover:bg-primary/90"
                         >
-                          Book (Free)
+                          Book Class
                         </Button>
                       )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Package Purchase CTA */}
       {user && totalClasses === 0 && (

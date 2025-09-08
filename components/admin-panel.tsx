@@ -9,6 +9,7 @@ import { ScheduleEditor } from "./schedule-editor";
 import { ResendTest } from "./resend-test";
 import { ZoomTest } from "./zoom-test";
 import { TestPayment } from "./test-payment";
+import { DatabaseSetup } from "./database-setup";
 import { DatabaseService } from "../utils/database";
 
 interface ClassBooking {
@@ -309,6 +310,7 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
             <TabsTrigger value="email-test">Email Testing</TabsTrigger>
             <TabsTrigger value="zoom-test">Zoom Testing</TabsTrigger>
             <TabsTrigger value="payment-test">Payment Testing</TabsTrigger>
+            <TabsTrigger value="database-setup">Database Setup</TabsTrigger>
           </TabsList>
 
           <TabsContent value="zoom-classes" className="space-y-6">
@@ -596,6 +598,10 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
 
           <TabsContent value="payment-test" className="space-y-6">
             <TestPayment />
+          </TabsContent>
+
+          <TabsContent value="database-setup" className="space-y-6">
+            <DatabaseSetup />
           </TabsContent>
         </Tabs>
 

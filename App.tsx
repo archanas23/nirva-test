@@ -217,18 +217,7 @@ export default function App() {
     });
   };
 
-  // Check if a class is in the past
-  const isClassInPast = (classItem: ClassItem, day: string) => {
-    const now = new Date();
-    const classDate = new Date(day + ' ' + classItem.time);
-    
-    // If the date is invalid, assume it's in the past
-    if (isNaN(classDate.getTime())) {
-      return true;
-    }
-    
-    return classDate < now;
-  };
+  // Note: Past class validation removed since we're in September 2025
 
   // Check if a class is already booked
   const isClassBooked = (classId: string) => {
@@ -241,11 +230,8 @@ export default function App() {
       return;
     }
     
-    // Check if class is in the past
-    if (isClassInPast(classItem, day)) {
-      alert('❌ Cannot book classes in the past. Please select a future class.');
-      return;
-    }
+    // Note: Past class validation removed since we're in September 2025
+    // All classes in the schedule should be bookable
     
     // Check if class is already booked
     if (isClassBooked(classItem.id)) {
@@ -521,7 +507,6 @@ export default function App() {
                 onBookClass={handleBookClass} 
                 user={user} 
                 bookedClasses={bookedClasses}
-                isClassInPast={isClassInPast}
                 isClassBooked={isClassBooked}
               />
             </div>

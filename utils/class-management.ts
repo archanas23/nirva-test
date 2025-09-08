@@ -1,178 +1,279 @@
-import { EmailService, ClassBookingNotification, PackagePurchaseNotification } from './email-service';
-import { ZoomService, ClassMeeting } from './zoom-service';
+import { createClient } from '@supabase/supabase-js'
 
-export interface ClassBooking {
-  id: string;
-  studentName: string;
-  studentEmail: string;
-  className: string;
-  teacher: string;
-  date: string;
-  time: string;
-  timestamp: Date;
-  paymentMethod: string;
-  amount: number;
-  zoomMeetingId?: string;   
-  zoomPassword?: string;
-  zoomLink?: string;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+export const supabase = createClient(supabaseUrl, supabaseKey)
+
+// Class schema
+export interface Class {
+  id: string
+  name: string
+  teacher: string
+  day_of_week: number // 0 = Sunday, 1 = Monday, etc.
+  start_time: string // "09:00" format
+  duration: number // minutes
+  level: string
+  max_students: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface ClassInstance {
+  id: string
+  class_id: string
+  class_date: string // "2025-09-07" format
+  zoom_meeting_id?: string
+  zoom_password?: string
+  zoom_link?: string
+  is_cancelled: boolean
+  created_at: string
+  updated_at: string
+  class?: Class // Joined class data
 }
 
 export class ClassManagementService {
-  private static meetings: Map<string, ClassMeeting> = new Map();
-  
-  // Book a class with email notifications and Zoom integration
-  static async bookClass(bookingData: {
-    studentName: string;
-    studentEmail: string;
-    className: string;
-    teacher: string;
-    date: string;
-    time: string;
-    paymentMethod: string;
-    amount: number;
-  }): Promise<ClassBooking | null> {
-    try {
-      // Generate unique booking ID
-      const bookingId = this.generateBookingId();
-      
-      // Get or create Zoom meeting for this class
-      const meeting = await this.getOrCreateClassMeeting(
-        bookingData.className,
-        bookingData.teacher,
-        bookingData.date,
-        bookingData.time
-      );
-      
-      // Create booking record
-      const booking: ClassBooking = {
-        id: bookingId,
-        studentName: bookingData.studentName,
-        studentEmail: bookingData.studentEmail,
-        className: bookingData.className,
-        teacher: bookingData.teacher,
-        date: bookingData.date,
-        time: bookingData.time,
-        timestamp: new Date(),
-        paymentMethod: bookingData.paymentMethod,
-        amount: bookingData.amount,
-        zoomMeetingId: meeting?.zoomMeeting.meeting_id,
-        zoomPassword: meeting?.zoomMeeting.password,
-        zoomLink: meeting?.zoomMeeting.join_url
-      };
-      
-      // Send email notifications for class booking
-      await this.sendBookingNotifications(booking);
-      
-      // Store booking (in production, save to database)
-      this.storeBooking(booking);
-      
-      return booking;
-    } catch (error) {
-      console.error('Failed to book class:', error);
-      return null;
-    }
+  // Get all active classes
+  static async getClasses(): Promise<Class[]> {
+    const { data, error } = await supabase
+      .from('classes')
+      .select('*')
+      .eq('is_active', true)
+      .order('day_of_week', { ascending: true })
+      .order('start_time', { ascending: true })
+    
+    if (error) throw error
+    return data || []
   }
 
-  // Purchase a class package (no Zoom links generated)
-  static async purchasePackage(purchaseData: {
-    studentName: string;
-    studentEmail: string;
-    packageType: 'five' | 'ten';
-    packagePrice: number;
-    classesAdded: number;
-    totalClasses: number;
-  }): Promise<boolean> {
-    try {
-      const purchase: PackagePurchaseNotification = {
-        studentName: purchaseData.studentName,
-        studentEmail: purchaseData.studentEmail,
-        packageType: purchaseData.packageType,
-        packagePrice: purchaseData.packagePrice,
-        classesAdded: purchaseData.classesAdded,
-        totalClasses: purchaseData.totalClasses
-      };
-
-      // Send package purchase notifications (no Zoom links)
-      await EmailService.sendPackagePurchaseNotification(purchase);
-      await EmailService.sendPackagePurchaseConfirmation(purchase);
-      
-      // Store package purchase (in production, save to database)
-      this.storePackagePurchase(purchase);
-      
-      return true;
-    } catch (error) {
-      console.error('Failed to process package purchase:', error);
-      return false;
-    }
-  }
-  
-  // Get or create Zoom meeting for a class
-  private static async getOrCreateClassMeeting(
-    className: string,
-    teacher: string,
-    date: string,
-    time: string
-  ): Promise<ClassMeeting | null> {
-    const meetingKey = `${className}-${teacher}-${date}-${time}`;
+  // Get class instances for a date range
+  static async getClassInstances(startDate: string, endDate: string): Promise<ClassInstance[]> {
+    const { data, error } = await supabase
+      .from('class_instances')
+      .select(`
+        *,
+        class:classes(*)
+      `)
+      .gte('class_date', startDate)
+      .lte('class_date', endDate)
+      .eq('is_cancelled', false)
+      .order('class_date', { ascending: true })
+      .order('start_time', { ascending: true })
     
-    // Check if meeting already exists
-    if (this.meetings.has(meetingKey)) {
-      return this.meetings.get(meetingKey)!;
-    }
-    
-    // Create new meeting
-    const meeting = await ZoomService.createClassMeeting(className, teacher, date, time);
-    if (meeting) {
-      this.meetings.set(meetingKey, meeting);
-    }
-    
-    return meeting;
-  }
-  
-  // Send email notifications for class booking (with Zoom links)
-  private static async sendBookingNotifications(booking: ClassBooking): Promise<void> {
-    const notificationData: ClassBookingNotification = {
-      studentName: booking.studentName,
-      studentEmail: booking.studentEmail,
-      className: booking.className,
-      teacher: booking.teacher,
-      date: booking.date,
-      time: booking.time,
-      zoomMeetingId: booking.zoomMeetingId,
-      zoomPassword: booking.zoomPassword,
-      zoomLink: booking.zoomLink
-    };
-    
-    // Send notification to admin
-    await EmailService.sendBookingNotification(notificationData);
-    
-    // Send confirmation to student
-    await EmailService.sendStudentConfirmation(notificationData);
-  }
-  
-  // Store booking (in production, this would save to database)
-  private static storeBooking(booking: ClassBooking): void {
-    console.log('Storing booking:', booking);
+    if (error) throw error
+    return data || []
   }
 
-  // Store package purchase (in production, this would save to database)
-  private static storePackagePurchase(purchase: PackagePurchaseNotification): void {
-    console.log('Storing package purchase:', purchase);
+  // Create a class instance for a specific date
+  static async createClassInstance(classId: string, classDate: string, zoomData?: {
+    meetingId: string
+    password: string
+    joinUrl: string
+  }): Promise<ClassInstance> {
+    const { data, error } = await supabase
+      .from('class_instances')
+      .insert([{
+        class_id: classId,
+        class_date: classDate,
+        zoom_meeting_id: zoomData?.meetingId,
+        zoom_password: zoomData?.password,
+        zoom_link: zoomData?.joinUrl,
+        is_cancelled: false
+      }])
+      .select(`
+        *,
+        class:classes(*)
+      `)
+      .single()
+    
+    if (error) throw error
+    return data
   }
-  
-  // Get all bookings (for admin panel)
-  static async getAllBookings(): Promise<ClassBooking[]> {
-    // TODO: Implement database retrieval
-    return [];
+
+  // Get or create class instance for a specific date
+  static async getOrCreateClassInstance(classId: string, classDate: string): Promise<ClassInstance> {
+    // First try to get existing instance
+    const { data: existing } = await supabase
+      .from('class_instances')
+      .select(`
+        *,
+        class:classes(*)
+      `)
+      .eq('class_id', classId)
+      .eq('class_date', classDate)
+      .single()
+
+    if (existing) {
+      return existing
+    }
+
+    // If no existing instance, create one
+    return await this.createClassInstance(classId, classDate)
   }
-  
-  // Get bookings for a specific class
-  static async getClassBookings(className: string, date: string): Promise<ClassBooking[]> {
-    // TODO: Implement database query
-    return [];
-  }
-  
-  private static generateBookingId(): string {
-    return 'booking_' + Math.random().toString(36).substring(2, 15);
+
+  // Initialize default classes (run once to set up the database)
+  static async initializeDefaultClasses(): Promise<void> {
+    const defaultClasses = [
+      // Sunday classes
+      {
+        name: "Sunday Restore",
+        teacher: "Harshada",
+        day_of_week: 0,
+        start_time: "09:00",
+        duration: 60,
+        level: "All Levels",
+        max_students: 10
+      },
+      {
+        name: "Sunset Flow",
+        teacher: "Archana",
+        day_of_week: 0,
+        start_time: "17:00",
+        duration: 60,
+        level: "All Levels",
+        max_students: 10
+      },
+      // Monday-Friday classes
+      {
+        name: "Morning Flow",
+        teacher: "Harshada",
+        day_of_week: 1,
+        start_time: "08:00",
+        duration: 60,
+        level: "All Levels",
+        max_students: 10
+      },
+      {
+        name: "Evening Restore",
+        teacher: "Archana",
+        day_of_week: 1,
+        start_time: "18:00",
+        duration: 60,
+        level: "All Levels",
+        max_students: 10
+      },
+      // Tuesday
+      {
+        name: "Morning Flow",
+        teacher: "Harshada",
+        day_of_week: 2,
+        start_time: "08:00",
+        duration: 60,
+        level: "All Levels",
+        max_students: 10
+      },
+      {
+        name: "Evening Restore",
+        teacher: "Archana",
+        day_of_week: 2,
+        start_time: "18:00",
+        duration: 60,
+        level: "All Levels",
+        max_students: 10
+      },
+      // Wednesday
+      {
+        name: "Morning Flow",
+        teacher: "Harshada",
+        day_of_week: 3,
+        start_time: "08:00",
+        duration: 60,
+        level: "All Levels",
+        max_students: 10
+      },
+      {
+        name: "Evening Restore",
+        teacher: "Archana",
+        day_of_week: 3,
+        start_time: "18:00",
+        duration: 60,
+        level: "All Levels",
+        max_students: 10
+      },
+      // Thursday
+      {
+        name: "Morning Flow",
+        teacher: "Harshada",
+        day_of_week: 4,
+        start_time: "08:00",
+        duration: 60,
+        level: "All Levels",
+        max_students: 10
+      },
+      {
+        name: "Evening Restore",
+        teacher: "Archana",
+        day_of_week: 4,
+        start_time: "18:00",
+        duration: 60,
+        level: "All Levels",
+        max_students: 10
+      },
+      // Friday
+      {
+        name: "Morning Flow",
+        teacher: "Harshada",
+        day_of_week: 5,
+        start_time: "08:00",
+        duration: 60,
+        level: "All Levels",
+        max_students: 10
+      },
+      {
+        name: "Evening Restore",
+        teacher: "Archana",
+        day_of_week: 5,
+        start_time: "18:00",
+        duration: 60,
+        level: "All Levels",
+        max_students: 10
+      },
+      // Saturday classes
+      {
+        name: "Saturday Flow",
+        teacher: "Harshada",
+        day_of_week: 6,
+        start_time: "09:00",
+        duration: 60,
+        level: "All Levels",
+        max_students: 10
+      },
+      {
+        name: "Weekend Restore",
+        teacher: "Archana",
+        day_of_week: 6,
+        start_time: "17:00",
+        duration: 60,
+        level: "All Levels",
+        max_students: 10
+      }
+    ]
+
+    // Check if classes already exist
+    const { data: existingClasses } = await supabase
+      .from('classes')
+      .select('id')
+      .limit(1)
+
+    if (existingClasses && existingClasses.length > 0) {
+      console.log('Classes already exist, skipping initialization')
+      return
+    }
+
+    // Insert default classes
+    const { error } = await supabase
+      .from('classes')
+      .insert(defaultClasses.map(cls => ({
+        ...cls,
+        is_active: true
+      })))
+
+    if (error) {
+      console.error('Error initializing classes:', error)
+      throw error
+    }
+
+    console.log('✅ Default classes initialized successfully')
   }
 }

@@ -5,7 +5,8 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Separator } from './ui/separator';
 import { ArrowLeft, CreditCard, Mail, Calendar, Clock, User, AlertTriangle, CheckCircle } from 'lucide-react';
-import { ClassManagementService, ClassBooking } from '../utils/class-management';
+import { ClassManagementService } from '../utils/class-management';
+import { DatabaseService } from '../utils/database';
 
 interface PaymentPageProps {
   onBack: () => void;
@@ -36,7 +37,7 @@ export function PaymentPage({
 }: PaymentPageProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [bookingComplete, setBookingComplete] = useState(false);
-  const [bookingDetails, setBookingDetails] = useState<ClassBooking | null>(null);
+  const [bookingDetails, setBookingDetails] = useState<any | null>(null);
   const [studentInfo, setStudentInfo] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -73,13 +74,11 @@ export function PaymentPage({
           return;
         }
 
-        const success = await ClassManagementService.purchasePackage({
-          studentName: studentInfo.name,
-          studentEmail: studentInfo.email,
-          packageType: selectedPackage.type as 'five' | 'ten',
-          packagePrice: selectedPackage.price,
-          classesAdded: selectedPackage.type === 'five' ? 5 : 10,
-          totalClasses: totalClasses + (selectedPackage.type === 'five' ? 5 : 10)
+        const success = await DatabaseService.createPackage({
+          student_email: studentInfo.email,
+          package_type: selectedPackage.type as 'five' | 'ten',
+          total_classes: selectedPackage.type === 'five' ? 5 : 10,
+          remaining_classes: selectedPackage.type === 'five' ? 5 : 10
         });
 
         if (success) {
@@ -106,15 +105,18 @@ export function PaymentPage({
         }
       } else if (isClassBooking && selectedClass) {
         // Handle class booking
-        const booking = await ClassManagementService.bookClass({
-          studentName: studentInfo.name,
-          studentEmail: studentInfo.email,
-          className: selectedClass.className,
+        const booking = await DatabaseService.createBooking({
+          student_name: studentInfo.name,
+          student_email: studentInfo.email,
+          class_name: selectedClass.className,
           teacher: selectedClass.teacher,
-          date: selectedClass.day,
-          time: selectedClass.time,
-          paymentMethod: paymentMethod === 'zelle' ? 'Zelle' : 'Class Package',
-          amount: paymentMethod === 'zelle' ? 10.00 : 0.00
+          class_date: selectedClass.day,
+          class_time: selectedClass.time,
+          payment_method: paymentMethod === 'zelle' ? 'Zelle' : 'Class Package',
+          amount: paymentMethod === 'zelle' ? 10.00 : 0.00,
+          zoom_meeting_id: '',
+          zoom_password: '',
+          zoom_link: ''
         });
 
         if (booking) {
