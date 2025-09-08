@@ -137,6 +137,13 @@ export default function App() {
           const time = booking.class_time;
           const className = booking.class_name;
           
+          console.log('📚 Processing booking:', { 
+            className, 
+            class_date: booking.class_date, 
+            class_time: time, 
+            dayOfWeek 
+          });
+          
           let classId;
           if (dayOfWeek === 0) { // Sunday
             classId = time.includes('9:00') ? `sun-morning-${booking.class_date}` : `sun-evening-${booking.class_date}`;
@@ -145,6 +152,8 @@ export default function App() {
           } else { // Weekdays
             classId = time.includes('8:00') ? `weekday-morning-${booking.class_date}` : `weekday-evening-${booking.class_date}`;
           }
+          
+          console.log('📚 Generated classId:', classId);
           
           acc[classId] = {
             className: booking.class_name,
@@ -173,7 +182,9 @@ export default function App() {
         }
       });
       
+      // Set the booked classes state with loaded data
       setBookedClasses(bookedClassesData);
+      console.log('📚 Set booked classes state:', bookedClassesData);
       
       console.log('✅ User logged in:', email, 'Credits:', credits, 'Booked classes:', Object.keys(bookedClassesData).length);
     } catch (error) {

@@ -171,13 +171,20 @@ export class DatabaseService {
   }
 
   static async getUserCredits(userId: string) {
+    console.log('💰 DatabaseService.getUserCredits called with userId:', userId);
+    
     const { data, error } = await supabase
       .from('user_class_credits')
       .select('*')
       .eq('user_id', userId)
       .single()
     
-    if (error && error.code !== 'PGRST116') throw error
+    if (error && error.code !== 'PGRST116') {
+      console.error('💰 Database getUserCredits error:', JSON.stringify(error, null, 2));
+      throw new Error(`Database error: ${JSON.stringify(error)}`);
+    }
+    
+    console.log('💰 Database getUserCredits success:', data);
     return data
   }
 
@@ -211,8 +218,8 @@ export class DatabaseService {
       .order('booked_at', { ascending: false })
     
     if (error) {
-      console.error('📚 Database getUserBookedClasses error:', error);
-      throw error;
+      console.error('📚 Database getUserBookedClasses error:', JSON.stringify(error, null, 2));
+      throw new Error(`Database error: ${JSON.stringify(error)}`);
     }
     
     console.log('📚 Database getUserBookedClasses success:', data);
