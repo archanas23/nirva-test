@@ -246,6 +246,22 @@ export function ClassSchedule({ onBookClass, user }: ClassScheduleProps) {
           All classes are 60 minutes via Zoom • Maximum 10 students per class
         </p>
         
+        {/* Private Classes Information */}
+        <div className="bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20 rounded-lg p-6 max-w-2xl mx-auto mb-6">
+          <h3 className="text-xl font-semibold text-primary mb-2">Private Classes Available</h3>
+          <p className="text-muted-foreground mb-3">
+            Looking for personalized attention? Book a private one-on-one session with our certified instructors.
+          </p>
+          <div className="flex items-center justify-center gap-4 text-lg font-semibold">
+            <span className="text-primary">$60/hour</span>
+            <span className="text-muted-foreground">•</span>
+            <span className="text-foreground">Customized to your needs</span>
+          </div>
+          <p className="text-sm text-muted-foreground mt-2">
+            Contact us to schedule your private session
+          </p>
+        </div>
+        
         {user && (
           <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 max-w-md mx-auto">
             <div className="flex items-center justify-center gap-2 mb-2">
