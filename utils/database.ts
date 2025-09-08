@@ -239,11 +239,15 @@ export class DatabaseService {
     
     const { data, error } = await supabase
       .from('user_booked_classes')
-      .insert([{
+      .upsert([{
         user_id: userId,
         ...classData,
-        booked_at: new Date().toISOString()
-      }])
+        booked_at: new Date().toISOString(),
+        is_cancelled: false,
+        cancelled_at: null
+      }], {
+        onConflict: 'user_id,class_name,class_date,class_time'
+      })
       .select()
       .single()
     
