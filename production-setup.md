@@ -72,12 +72,12 @@ CREATE TABLE payments (
 
 -- Insert sample classes
 INSERT INTO classes (name, teacher, day_of_week, start_time, end_time, duration, level) VALUES
-('Morning Flow', 'Harshada Madiraju', 1, '08:00:00', '09:00:00', '60 min', 'All Levels'),
-('Power Flow', 'Archana Soundararajan', 1, '18:00:00', '19:00:00', '60 min', 'Intermediate'),
-('Evening Restore', 'Harshada Madiraju', 2, '19:00:00', '20:00:00', '60 min', 'Beginner'),
-('Vinyasa Flow', 'Archana Soundararajan', 3, '07:00:00', '08:00:00', '60 min', 'All Levels'),
-('Gentle Flow', 'Harshada Madiraju', 4, '18:30:00', '19:30:00', '60 min', 'Beginner'),
-('Strong Flow', 'Archana Soundararajan', 5, '17:00:00', '18:00:00', '60 min', 'Advanced');
+('Morning Flow', 'Harshada', 1, '08:00:00', '09:00:00', '60 min', 'All Levels'),
+('Power Flow', 'Archana', 1, '18:00:00', '19:00:00', '60 min', 'Intermediate'),
+('Evening Restore', 'Harshada', 2, '19:00:00', '20:00:00', '60 min', 'Beginner'),
+('Vinyasa Flow', 'Archana', 3, '07:00:00', '08:00:00', '60 min', 'All Levels'),
+('Gentle Flow', 'Harshada', 4, '18:30:00', '19:30:00', '60 min', 'Beginner'),
+('Strong Flow', 'Archana', 5, '17:00:00', '18:00:00', '60 min', 'Advanced');
 ```
 
 ### 1.3 Row Level Security (RLS) Policies
