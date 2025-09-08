@@ -575,10 +575,59 @@ export default function App() {
                 console.log('Selected class:', selectedClass);
                 console.log('Selected package:', selectedPackage);
                 console.log('Current user:', user);
+                console.log('Current user classPacks:', user?.classPacks);
                 
                 try {
                   if (selectedClass) {
                     console.log('📅 Processing single class purchase...');
+                    console.log('Class details:', selectedClass);
+                    console.log('User email:', user?.email);
+                    console.log('About to call createOrUpdateUser...');
+                    
+                    // Get or create user in database
+                    console.log('Calling createOrUpdateUser with:', { email: user?.email || '', name: user?.name });
+                    const userRecord = await DatabaseService.createOrUpdateUser({
+                      email: user?.email || '',
+                      name: user?.name
+                    });
+                    console.log('User record created/updated:', userRecord);
+                    
+                    // Calculate new credits - add 1 single class
+                    const currentCredits = user?.classPacks || { singleClasses: 0, fivePack: 0, tenPack: 0 };
+                    console.log('Current credits before update:', currentCredits);
+                    const newCredits = { ...currentCredits };
+                    newCredits.singleClasses += 1;
+                    console.log('➕ Adding 1 single class');
+                    console.log('New credits after update:', newCredits);
+                    
+                    // Update credits in database
+                    try {
+                      console.log('Updating credits in database with userRecord.id:', userRecord.id);
+                      console.log('Credits to update:', {
+                        single_classes: newCredits.singleClasses,
+                        five_pack_classes: newCredits.fivePack,
+                        ten_pack_classes: newCredits.tenPack
+                      });
+                      await DatabaseService.updateUserCredits(userRecord.id, {
+                        single_classes: newCredits.singleClasses,
+                        five_pack_classes: newCredits.fivePack,
+                        ten_pack_classes: newCredits.tenPack
+                      });
+                      console.log('✅ Credits updated in database');
+                    } catch (creditsError) {
+                      console.log('⚠️ Failed to update credits in database:', creditsError);
+                    }
+                    
+                    // Update local state
+                    setUser(prev => {
+                      if (!prev) return prev;
+                      console.log('📊 Updated class packs after single class purchase:', newCredits);
+                      const updatedUser = { ...prev, classPacks: newCredits };
+                      console.log('📊 Updated user state:', updatedUser);
+                      return updatedUser;
+                    });
+                    
+                    console.log('✅ Single class credit added successfully');
                     console.log('Note: User will need to book the class separately using their credits');
                   } else if (selectedPackage) {
                     console.log('📦 Processing package purchase...');
