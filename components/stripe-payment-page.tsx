@@ -12,7 +12,7 @@ interface StripePaymentPageProps {
   selectedPackage?: any;
   onSuccess: () => void;
   user?: {
-    name: string;
+    name?: string;
     email: string;
   } | null;
 }

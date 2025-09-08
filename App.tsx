@@ -344,6 +344,82 @@ export default function App() {
     }
   };
 
+  const handleCancelClass = async (classId: string) => {
+    if (!user) {
+      return;
+    }
+
+    // Confirm cancellation
+    const confirmed = window.confirm('Are you sure you want to cancel this class? Your credit will be restored.');
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      console.log('🚫 Cancelling class:', classId);
+      
+      // Get the booked class details
+      const bookedClass = bookedClasses[classId];
+      if (!bookedClass) {
+        console.error('❌ Class not found in booked classes');
+        return;
+      }
+
+      // Remove from booked classes state
+      setBookedClasses(prev => {
+        const newBookedClasses = { ...prev };
+        delete newBookedClasses[classId];
+        return newBookedClasses;
+      });
+
+      // Restore one class to user's account
+      setUser(prev => {
+        if (!prev) return prev;
+        const newClassPacks = { ...prev.classPacks };
+        
+        // Restore to single classes first, then packages
+        if (bookedClass.className.includes('Single') || newClassPacks.singleClasses > 0) {
+          newClassPacks.singleClasses += 1;
+          console.log('➕ Restored 1 single class');
+        } else if (newClassPacks.fivePack < 5) {
+          newClassPacks.fivePack += 1;
+          console.log('➕ Restored 1 class to fivePack');
+        } else if (newClassPacks.tenPack < 10) {
+          newClassPacks.tenPack += 1;
+          console.log('➕ Restored 1 class to tenPack');
+        }
+        
+        console.log('📊 Updated class packs after cancellation:', newClassPacks);
+        return { ...prev, classPacks: newClassPacks };
+      });
+
+      // Send cancellation email notification
+      try {
+        console.log('📧 Sending cancellation email...');
+        await EmailService.sendEmail({
+          type: 'class-cancellation',
+          data: {
+            studentName: user.name || user.email || 'Unknown',
+            studentEmail: user.email || '',
+            className: bookedClass.className,
+            teacher: bookedClass.teacher,
+            date: bookedClass.day,
+            time: bookedClass.time
+          }
+        });
+        console.log('✅ Cancellation email sent');
+      } catch (emailError) {
+        console.log('⚠️ Email sending failed, but cancellation was successful:', emailError);
+      }
+
+      alert('✅ Class cancelled successfully! Your credit has been restored.');
+      
+    } catch (error) {
+      console.error('❌ Error cancelling class:', error);
+      alert('❌ Failed to cancel class. Please try again.');
+    }
+  };
+
   const handlePayNow = () => {
     if (!user) {
       setShowAuthModal(true);
@@ -368,6 +444,7 @@ export default function App() {
               onBack={handleBack}
               selectedClass={selectedClass}
               selectedPackage={selectedPackage}
+              user={user}
               onSuccess={async () => {
                 // Handle successful payment
                 console.log('🎉 Payment success callback triggered!');
@@ -592,6 +669,7 @@ export default function App() {
             <div className="container mx-auto px-4 py-8">
               <ClassSchedule 
                 onBookClass={handleBookClass} 
+                onCancelClass={handleCancelClass}
                 user={user} 
                 bookedClasses={bookedClasses}
                 isClassBooked={isClassBooked}

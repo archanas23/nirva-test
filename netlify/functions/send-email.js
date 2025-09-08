@@ -139,6 +139,34 @@ exports.handler = async (event, context) => {
         };
         break;
 
+      case 'class-cancellation':
+        emailData = {
+          from: 'noreply@nirva-yoga.com',
+          to: data.studentEmail,
+          subject: `Class Cancelled - ${data.className}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #2D3748;">Class Cancelled ✅</h2>
+              <p>Hi ${data.studentName},</p>
+              <p>Your class has been successfully cancelled and your credit has been restored.</p>
+              
+              <div style="background: #F7FAFC; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h3 style="color: #2D3748; margin-top: 0;">Cancelled Class Details</h3>
+                <p><strong>Class:</strong> ${data.className}</p>
+                <p><strong>Teacher:</strong> ${data.teacher}</p>
+                <p><strong>Date:</strong> ${data.date}</p>
+                <p><strong>Time:</strong> ${data.time}</p>
+                <p style="color: #38A169; font-weight: bold;">✅ 1 class credit has been restored to your account</p>
+              </div>
+              
+              <p>You can now book any available class using your restored credit.</p>
+              <p>If you have any questions, feel free to reach out to us at nirvayogastudio@gmail.com</p>
+              <p style="color: #718096;">Best regards,<br>The Nirva Yoga Team</p>
+            </div>
+          `
+        };
+        break;
+
       default:
         return {
           statusCode: 400,

@@ -18,6 +18,7 @@ interface ClassItem {
 
 interface ClassScheduleProps {
   onBookClass?: (classItem: ClassItem, day: string) => Promise<void>;
+  onCancelClass?: (classId: string) => Promise<void>;
   user?: {
     email: string;
     name?: string;
@@ -42,7 +43,7 @@ interface ClassScheduleProps {
   isClassBooked?: (classId: string) => boolean;
 }
 
-export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassBooked }: ClassScheduleProps) {
+export function ClassSchedule({ onBookClass, onCancelClass, user, bookedClasses = {}, isClassBooked }: ClassScheduleProps) {
   const totalClasses = user ? user.classPacks.singleClasses + user.classPacks.fivePack + user.classPacks.tenPack : 0;
   const canBook = totalClasses > 0;
   
@@ -396,16 +397,26 @@ export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassBo
                             <Badge variant="default" className="bg-green-600 hover:bg-green-700">
                               ✅ Booked
                             </Badge>
-                            {bookedClasses[classItem.id]?.zoomLink && (
+                            <div className="flex gap-1">
+                              {bookedClasses[classItem.id]?.zoomLink && (
+                                <Button 
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs"
+                                  onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
+                                >
+                                  Join Zoom
+                                </Button>
+                              )}
                               <Button 
                                 size="sm"
-                                variant="outline"
+                                variant="destructive"
                                 className="text-xs"
-                                onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
+                                onClick={() => onCancelClass?.(classItem.id || '')}
                               >
-                                Join Zoom
+                                Cancel
                               </Button>
-                            )}
+                            </div>
                           </div>
                       ) : !user ? (
                         <Button 

@@ -136,4 +136,33 @@ export class EmailService {
       console.error('❌ Failed to send package purchase confirmation:', error)
     }
   }
+
+  // Generic email sending method
+  static async sendEmail({ type, data }: { type: string, data: any }): Promise<void> {
+    try {
+      console.log(`📧 Sending ${type} email via Netlify function...`)
+      
+      const response = await fetch('/.netlify/functions/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: type,
+          data: data
+        })
+      })
+
+      const result = await response.json()
+      
+      if (result.success) {
+        console.log(`✅ ${type} email sent successfully`)
+        console.log('📧 Response:', result)
+      } else {
+        console.error(`❌ Failed to send ${type} email:`, result.error)
+      }
+    } catch (error) {
+      console.error(`❌ Failed to send ${type} email:`, error)
+    }
+  }
 }
