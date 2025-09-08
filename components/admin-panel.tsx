@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
-import { Users, Calendar, DollarSign, Clock, Mail, User, Video, Copy, ExternalLink } from "lucide-react";
+import { Users, Calendar, DollarSign, Clock, Mail, User, Video, Copy, ExternalLink, Shield, AlertTriangle } from "lucide-react";
 import { ScheduleEditor } from "./schedule-editor";
 import { ResendTest } from "./resend-test";
 import { ZoomTest } from "./zoom-test";
@@ -35,6 +35,11 @@ interface ClassWithZoom {
   zoomLink: string;
   studentCount: number;
   students: ClassBooking[];
+}
+
+interface AdminPanelProps {
+  user?: { email: string; name?: string } | null;
+  onBack?: () => void;
 }
 
 // Mock data - in production this would come from your database
@@ -86,10 +91,13 @@ const mockBookings: ClassBooking[] = [
   }
 ];
 
-export function AdminPanel() {
+export function AdminPanel({ user, onBack }: AdminPanelProps) {
   const [bookings, setBookings] = useState<ClassBooking[]>(mockBookings);
   const [selectedClass, setSelectedClass] = useState<string>("all");
   const [showZoomSetup, setShowZoomSetup] = useState(false);
+
+  // Check if user is authorized to access admin panel
+  const isAuthorized = user?.email === 'nirvayogastudio@gmail.com';
 
   // Listen for new bookings
   useEffect(() => {
@@ -154,6 +162,43 @@ export function AdminPanel() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
+
+  // Show unauthorized access message if user is not authorized
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4">
+          <CardContent className="p-8 text-center">
+            <div className="mb-6">
+              <Shield className="h-16 w-16 text-red-500 mx-auto mb-4" />
+              <h1 className="text-2xl font-bold text-foreground mb-2">Access Denied</h1>
+              <p className="text-muted-foreground">
+                You don't have permission to access the admin panel.
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 text-yellow-800 mb-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span className="font-medium">Admin Access Required</span>
+                </div>
+                <p className="text-sm text-yellow-700">
+                  Only authorized administrators can access this panel.
+                </p>
+              </div>
+              
+              {onBack && (
+                <Button onClick={onBack} className="w-full">
+                  Go Back
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

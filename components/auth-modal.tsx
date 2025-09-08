@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: (email: string) => void;
+  onLogin: (email: string, password?: string) => void;
 }
 
 export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
@@ -19,7 +19,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-      onLogin(email);
+      onLogin(email, password);
       onClose();
     }
   };
@@ -27,7 +27,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
     if (email && name) {
-      onLogin(email);
+      onLogin(email, password);
       onClose();
     }
   };
@@ -118,7 +118,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
         </Tabs>
         
         <div className="text-center text-sm text-muted-foreground mt-4">
-          <p>🔒 Demo mode - Any email will work for testing</p>
+          <p>🔒 Secure login required for all purchases</p>
         </div>
       </DialogContent>
     </Dialog>

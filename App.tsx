@@ -68,7 +68,16 @@ export default function App() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
-  const handleLogin = (email: string) => {
+  const handleLogin = (email: string, password?: string) => {
+    // Check for admin authentication
+    if (email === 'nirvayogastudio@gmail.com') {
+      // Admin password validation
+      if (password !== 'nirva2024') {
+        alert('Incorrect password for admin account. Please try again.');
+        return;
+      }
+    }
+    
     // Mock user data - in real app this would come from backend
     setUser({
       email,
@@ -108,6 +117,12 @@ export default function App() {
   };
 
   const handlePurchasePackage = (packageType: 'single' | 'five' | 'ten') => {
+    // Require authentication for all purchases
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
     if (packageType === 'single') {
       // Single class booking - go to payment
       setSelectedPackage({
@@ -350,7 +365,24 @@ export default function App() {
         );
         
       case "admin":
-        return <AdminPanel />;
+        return (
+          <div className="min-h-screen bg-background">
+            <Navigation 
+              user={user}
+              onLoginClick={() => setShowAuthModal(true)}
+              onAccountClick={() => setShowAccountModal(true)}
+              currentView={currentView}
+              onNavigateHome={() => navigateTo("home")}
+              onNavigateClasses={() => navigateTo("classes")}
+              onNavigateTeachers={() => navigateTo("teachers")}
+              onNavigatePackages={() => navigateTo("packages")}
+              onNavigateContact={() => navigateTo("contact")}
+              onNavigateFAQ={() => navigateTo("faq")}
+              onNavigateAdmin={() => navigateTo("admin")}
+            />
+            <AdminPanel user={user} onBack={handleBack} />
+          </div>
+        );
         
       default: // "home"
         return (

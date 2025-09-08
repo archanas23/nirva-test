@@ -30,12 +30,15 @@ export function Navigation({
   onNavigateFAQ,
   onNavigateAdmin
 }: NavigationProps) {
-  const [showAdmin, setShowAdmin] = useState(true); // Always show admin for testing
+  const [showAdmin, setShowAdmin] = useState(false); // Only show admin for authorized users
 
-  // Listen for admin access key combination (Ctrl+Shift+A)
+  // Check if user is authorized for admin access
+  const isAdminAuthorized = user?.email === 'nirvayogastudio@gmail.com';
+
+  // Listen for admin access key combination (Ctrl+Shift+A) - only for authorized users
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.shiftKey && event.key === 'A') {
+      if (event.ctrlKey && event.shiftKey && event.key === 'A' && isAdminAuthorized) {
         event.preventDefault();
         setShowAdmin(true);
       }
@@ -43,7 +46,16 @@ export function Navigation({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [isAdminAuthorized]);
+
+  // Show admin button for authorized users
+  useEffect(() => {
+    if (isAdminAuthorized) {
+      setShowAdmin(true);
+    } else {
+      setShowAdmin(false);
+    }
+  }, [isAdminAuthorized]);
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-lg">
