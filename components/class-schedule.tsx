@@ -1,6 +1,7 @@
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { Calendar, Clock, Users, BookOpen } from "lucide-react";
+import { Calendar, Clock, Users, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
 
 interface ClassItem {
   id: string;
@@ -44,15 +45,20 @@ interface ClassScheduleProps {
 export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassInPast, isClassBooked }: ClassScheduleProps) {
   const totalClasses = user ? user.classPacks.singleClasses + user.classPacks.fivePack + user.classPacks.tenPack : 0;
   const canBook = totalClasses > 0;
+  
+  // State for calendar navigation
+  const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
 
-  // Monthly schedule starting fresh from Monday, September 9th, 2025
-  // All classes standardized to 60 minutes with unique Zoom meetings per session
-  const monthlySchedule: { [date: string]: { dayName: string; classes: ClassItem[] } } = {
-    "2025-09-08": {
-      dayName: "Sun",
-      classes: [
+  // Generate classes for a given date
+  const generateClassesForDate = (date: Date): ClassItem[] => {
+    const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const classes: ClassItem[] = [];
+    
+    // Sunday classes
+    if (dayOfWeek === 0) {
+      classes.push(
         { 
-          id: "1", 
+          id: `sun-morning-${date.toISOString().split('T')[0]}`, 
           time: "9:00 am", 
           className: "Sunday Restore", 
           teacher: "Harshada", 
@@ -63,7 +69,7 @@ export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassIn
           currentEnrollment: 0
         },
         { 
-          id: "2", 
+          id: `sun-evening-${date.toISOString().split('T')[0]}`, 
           time: "5:00 pm", 
           className: "Sunset Flow", 
           teacher: "Archana", 
@@ -73,13 +79,13 @@ export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassIn
           maxStudents: 10,
           currentEnrollment: 0
         }
-      ]
-    },
-    "2025-09-09": {
-      dayName: "Mon",
-      classes: [
+      );
+    }
+    // Monday-Friday classes
+    else if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+      classes.push(
         { 
-          id: "3", 
+          id: `weekday-morning-${date.toISOString().split('T')[0]}`, 
           time: "8:00 am", 
           className: "Morning Flow", 
           teacher: "Harshada", 
@@ -90,7 +96,7 @@ export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassIn
           currentEnrollment: 0
         },
         { 
-          id: "4", 
+          id: `weekday-evening-${date.toISOString().split('T')[0]}`, 
           time: "6:00 pm", 
           className: "Evening Restore", 
           teacher: "Archana", 
@@ -100,121 +106,13 @@ export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassIn
           maxStudents: 10,
           currentEnrollment: 0
         }
-      ]
-    },
-    "2025-09-10": {
-      dayName: "Tue",
-      classes: [
+      );
+    }
+    // Saturday classes
+    else if (dayOfWeek === 6) {
+      classes.push(
         { 
-          id: "5", 
-          time: "8:00 am", 
-          className: "Morning Flow", 
-          teacher: "Harshada", 
-          duration: "60 min", 
-          level: "All Levels",
-          registrationClosed: false,
-          maxStudents: 10,
-          currentEnrollment: 0
-        },
-        { 
-          id: "6", 
-          time: "6:00 pm", 
-          className: "Evening Restore", 
-          teacher: "Archana", 
-          duration: "60 min", 
-          level: "All Levels",
-          registrationClosed: false,
-          maxStudents: 10,
-          currentEnrollment: 0
-        }
-      ]
-    },
-    "2025-09-11": {
-      dayName: "Wed",
-      classes: [
-        { 
-          id: "7", 
-          time: "8:00 am", 
-          className: "Morning Flow", 
-          teacher: "Harshada", 
-          duration: "60 min", 
-          level: "All Levels",
-          registrationClosed: false,
-          maxStudents: 10,
-          currentEnrollment: 0
-        },
-        { 
-          id: "8", 
-          time: "6:00 pm", 
-          className: "Evening Restore", 
-          teacher: "Archana", 
-          duration: "60 min", 
-          level: "All Levels",
-          registrationClosed: false,
-          maxStudents: 10,
-          currentEnrollment: 0
-        }
-      ]
-    },
-    "2025-09-12": {
-      dayName: "Thu",
-      classes: [
-        { 
-          id: "9", 
-          time: "8:00 am", 
-          className: "Morning Flow", 
-          teacher: "Harshada", 
-          duration: "60 min", 
-          level: "All Levels",
-          registrationClosed: false,
-          maxStudents: 10,
-          currentEnrollment: 0
-        },
-        { 
-          id: "10", 
-          time: "6:00 pm", 
-          className: "Evening Restore", 
-          teacher: "Archana", 
-          duration: "60 min", 
-          level: "All Levels",
-          registrationClosed: false,
-          maxStudents: 10,
-          currentEnrollment: 0
-        }
-      ]
-    },
-    "2025-09-13": {
-      dayName: "Fri",
-      classes: [
-        { 
-          id: "11", 
-          time: "8:00 am", 
-          className: "Morning Flow", 
-          teacher: "Harshada", 
-          duration: "60 min", 
-          level: "All Levels",
-          registrationClosed: false,
-          maxStudents: 10,
-          currentEnrollment: 0
-        },
-        { 
-          id: "12", 
-          time: "6:00 pm", 
-          className: "Evening Restore", 
-          teacher: "Archana", 
-          duration: "60 min", 
-          level: "All Levels",
-          registrationClosed: false,
-          maxStudents: 10,
-          currentEnrollment: 0
-        }
-      ]
-    },
-    "2025-09-14": {
-      dayName: "Sat",
-      classes: [
-        { 
-          id: "13", 
+          id: `sat-morning-${date.toISOString().split('T')[0]}`, 
           time: "9:00 am", 
           className: "Saturday Flow", 
           teacher: "Harshada", 
@@ -225,7 +123,7 @@ export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassIn
           currentEnrollment: 0
         },
         { 
-          id: "14", 
+          id: `sat-evening-${date.toISOString().split('T')[0]}`, 
           time: "5:00 pm", 
           className: "Weekend Restore", 
           teacher: "Archana", 
@@ -235,21 +133,72 @@ export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassIn
           maxStudents: 10,
           currentEnrollment: 0
         }
-      ]
+      );
     }
+    
+    return classes;
   };
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+  // Generate a week of dates starting from a given date
+  const generateWeekDates = (startDate: Date): Date[] => {
+    const dates: Date[] = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      dates.push(date);
+    }
+    return dates;
+  };
+
+  // Get the current week's dates
+  const getCurrentWeekDates = (): Date[] => {
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay() + (currentWeekOffset * 7));
+    return generateWeekDates(startOfWeek);
+  };
+
+  const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { 
       month: 'short', 
       day: 'numeric' 
     });
   };
 
-  const getDayName = (dateStr: string) => {
-    const date = new Date(dateStr);
+  const getDayName = (date: Date) => {
     return date.toLocaleDateString('en-US', { weekday: 'long' });
+  };
+
+  // Filter out past classes for a given date
+  const getFutureClassesForDate = (date: Date): ClassItem[] => {
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const classes = generateClassesForDate(date);
+    
+    if (isToday) {
+      // For today, only show classes that are at least 30 minutes in the future
+      return classes.filter(classItem => {
+        const classDateTime = new Date(date.toDateString() + ' ' + classItem.time);
+        const thirtyMinutesFromNow = new Date(now.getTime() + 30 * 60000);
+        return classDateTime > thirtyMinutesFromNow;
+      });
+    }
+    
+    // For future days, show all classes
+    return classes;
+  };
+
+  // Navigation functions
+  const goToPreviousWeek = () => {
+    setCurrentWeekOffset(prev => prev - 1);
+  };
+
+  const goToNextWeek = () => {
+    setCurrentWeekOffset(prev => prev + 1);
+  };
+
+  const goToCurrentWeek = () => {
+    setCurrentWeekOffset(0);
   };
 
   return (
@@ -296,95 +245,142 @@ export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassIn
         )}
       </div>
 
+      {/* Calendar Navigation */}
+      <div className="flex items-center justify-between mb-6">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={goToPreviousWeek}
+          className="flex items-center gap-2"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Previous Week
+        </Button>
+        
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={goToCurrentWeek}
+            className={currentWeekOffset === 0 ? "bg-primary text-primary-foreground" : ""}
+          >
+            This Week
+          </Button>
+          <h3 className="text-lg font-semibold">
+            {(() => {
+              const weekDates = getCurrentWeekDates();
+              const startDate = weekDates[0];
+              const endDate = weekDates[6];
+              return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+            })()}
+          </h3>
+        </div>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={goToNextWeek}
+          className="flex items-center gap-2"
+        >
+          Next Week
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
+
       {/* Schedule Grid */}
       <div className="grid gap-4">
-        {Object.entries(monthlySchedule).map(([date, dayData]) => (
-          <div key={date} className="border rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Calendar className="w-4 h-4 text-primary" />
-              <h3 className="font-semibold text-lg">
-                {getDayName(date)} - {formatDate(date)}
-              </h3>
-            </div>
-            
-            <div className="grid gap-3">
-              {dayData.classes.map((classItem) => (
-                <div key={classItem.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium">{classItem.className}</h4>
-                      <Badge variant="outline" className="text-xs">
-                        {classItem.level}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {classItem.time}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="w-3 h-3" />
-                        {classItem.teacher}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {classItem.duration}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    {classItem.registrationClosed ? (
-                      <Badge variant="secondary">Registration Closed</Badge>
-                    ) : isClassBooked?.(classItem.id) ? (
-                      <div className="flex flex-col items-end gap-1">
-                        <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                          ✅ Booked
+        {getCurrentWeekDates().map((date) => {
+          const futureClasses = getFutureClassesForDate(date);
+          
+          // Only show days that have future classes
+          if (futureClasses.length === 0) return null;
+          
+          return (
+            <div key={date.toISOString()} className="border rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Calendar className="w-4 h-4 text-primary" />
+                <h3 className="font-semibold text-lg">
+                  {getDayName(date)} - {formatDate(date)}
+                </h3>
+              </div>
+              
+              <div className="grid gap-3">
+                {futureClasses.map((classItem) => (
+                  <div key={classItem.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-medium">{classItem.className}</h4>
+                        <Badge variant="outline" className="text-xs">
+                          {classItem.level}
                         </Badge>
-                        {bookedClasses[classItem.id]?.zoomLink && (
-                          <Button 
-                            size="sm"
-                            variant="outline"
-                            className="text-xs"
-                            onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
-                          >
-                            Join Zoom
-                          </Button>
-                        )}
                       </div>
-                    ) : isClassInPast?.(classItem, formatDate(date)) ? (
-                      <Badge variant="secondary">Past Class</Badge>
-                    ) : !user ? (
-                      <Button 
-                        onClick={() => onBookClass?.(classItem, formatDate(date))}
-                        size="sm"
-                        variant="outline"
-                      >
-                        Login to Book
-                      </Button>
-                    ) : !canBook ? (
-                      <Button 
-                        onClick={() => onBookClass?.(classItem, formatDate(date))}
-                        size="sm"
-                        variant="outline"
-                      >
-                        Pay $11
-                      </Button>
-                    ) : (
-                      <Button 
-                        onClick={() => onBookClass?.(classItem, formatDate(date))}
-                        size="sm"
-                        className="bg-primary hover:bg-primary/90"
-                      >
-                        Book (Free)
-                      </Button>
-                    )}
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {classItem.time}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Users className="w-3 h-3" />
+                          {classItem.teacher}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {classItem.duration}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      {classItem.registrationClosed ? (
+                        <Badge variant="secondary">Registration Closed</Badge>
+                      ) : isClassBooked?.(classItem.id) ? (
+                        <div className="flex flex-col items-end gap-1">
+                          <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                            ✅ Booked
+                          </Badge>
+                          {bookedClasses[classItem.id]?.zoomLink && (
+                            <Button 
+                              size="sm"
+                              variant="outline"
+                              className="text-xs"
+                              onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
+                            >
+                              Join Zoom
+                            </Button>
+                          )}
+                        </div>
+                      ) : !user ? (
+                        <Button 
+                          onClick={() => onBookClass?.(classItem, formatDate(date))}
+                          size="sm"
+                          variant="outline"
+                        >
+                          Login to Book
+                        </Button>
+                      ) : !canBook ? (
+                        <Button 
+                          onClick={() => onBookClass?.(classItem, formatDate(date))}
+                          size="sm"
+                          variant="outline"
+                        >
+                          Pay $11
+                        </Button>
+                      ) : (
+                        <Button 
+                          onClick={() => onBookClass?.(classItem, formatDate(date))}
+                          size="sm"
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          Book (Free)
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Package Purchase CTA */}

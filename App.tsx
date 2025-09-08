@@ -22,6 +22,7 @@ import { Button } from "./components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./components/ui/dialog";
 import { DatabaseService } from "./utils/database";
 import { ZoomService } from "./utils/zoom-service";
+import { EmailService } from "./utils/email-service";
 
 // Lazy load StripePaymentPage to avoid loading Stripe until needed
 const StripePaymentPage = lazy(() =>
@@ -370,6 +371,24 @@ export default function App() {
                       console.log('📊 Updated class packs after booking:', newClassPacks);
                       return { ...prev, classPacks: newClassPacks };
                     });
+                    
+                    // Send confirmation email to student
+                    try {
+                      console.log('📧 Sending class booking confirmation email...');
+                      await EmailService.sendStudentConfirmation({
+                        studentName: user?.name || user?.email || 'Unknown',
+                        studentEmail: user?.email || '',
+                        className: selectedClass.className,
+                        teacher: selectedClass.teacher,
+                        date: selectedClass.day,
+                        time: selectedClass.time,
+                        zoomLink: zoomMeeting?.zoomMeeting?.join_url || '',
+                        zoomPassword: zoomMeeting?.zoomMeeting?.password || ''
+                      });
+                      console.log('✅ Class booking confirmation email sent');
+                    } catch (emailError) {
+                      console.log('⚠️ Email sending failed, but booking completed:', emailError);
+                    }
                     
                     console.log('✅ Class booking completed with Zoom link');
                   } else if (selectedPackage) {
