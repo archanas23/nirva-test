@@ -242,6 +242,7 @@ export default function App() {
                 
                 try {
                   if (selectedClass) {
+                    console.log('📅 Processing class booking...');
                     // Handle class booking
                     await DatabaseService.createBooking({
                       student_name: user?.name || user?.email || 'Unknown',
@@ -258,29 +259,56 @@ export default function App() {
                     });
                     console.log('✅ Class booking saved to database');
                   } else if (selectedPackage && selectedPackage.type !== 'single') {
+                    console.log('📦 Processing package purchase...');
+                    console.log('Package details:', selectedPackage);
+                    console.log('User email:', user?.email);
+                    
                     // Handle package purchase
-                    await DatabaseService.createPackage({
+                    const packageResult = await DatabaseService.createPackage({
                       student_email: user?.email || '',
                       package_type: selectedPackage.type as 'five' | 'ten',
                       total_classes: selectedPackage.type === 'five' ? 5 : 10,
                       remaining_classes: selectedPackage.type === 'five' ? 5 : 10
                     });
-                    console.log('✅ Package purchase saved to database');
+                    console.log('✅ Package purchase saved to database:', packageResult);
                     
                     // Update user's class packs in state
+                    console.log('🔄 Updating user state...');
+                    console.log('Current user class packs:', user?.classPacks);
+                    
                     setUser(prev => {
-                      if (!prev) return prev;
+                      if (!prev) {
+                        console.log('❌ No previous user state found');
+                        return prev;
+                      }
                       const newClassPacks = { ...prev.classPacks };
                       if (selectedPackage.type === 'five') {
                         newClassPacks.fivePack += 5;
+                        console.log('➕ Added 5 classes to fivePack');
                       } else if (selectedPackage.type === 'ten') {
                         newClassPacks.tenPack += 10;
+                        console.log('➕ Added 10 classes to tenPack');
                       }
+                      console.log('📊 New class packs:', newClassPacks);
                       return { ...prev, classPacks: newClassPacks };
                     });
+                    
+                    console.log('✅ User state updated');
+                  } else {
+                    console.log('❌ No valid class or package selected');
+                    console.log('Selected class:', selectedClass);
+                    console.log('Selected package:', selectedPackage);
                   }
                 } catch (error) {
                   console.error('❌ Error saving to database:', error);
+                  console.error('❌ Error details:', error);
+                }
+                
+                // Show success message
+                if (selectedPackage && selectedPackage.type !== 'single') {
+                  alert(`✅ Payment successful! You now have ${selectedPackage.type === 'five' ? '5' : '10'} classes available.`);
+                } else if (selectedClass) {
+                  alert(`✅ Class booked successfully! Check your account for details.`);
                 }
                 
                 setCurrentView('home');
