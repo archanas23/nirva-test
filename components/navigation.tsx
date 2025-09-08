@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { NirvaLogo } from './nirva-logo';
 import { Button } from './ui/button';
-import { User, Settings } from 'lucide-react';
+import { User, Settings, Menu } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 
 interface NavigationProps {
   user: { email: string; name?: string } | null;
@@ -30,7 +31,8 @@ export function Navigation({
   onNavigateFAQ,
   onNavigateAdmin
 }: NavigationProps) {
-  const [showAdmin, setShowAdmin] = useState(false); // Only show admin for authorized users
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Check if user is authorized for admin access
   const isAdminAuthorized = user?.email === 'nirvayogastudio@gmail.com';
@@ -57,15 +59,22 @@ export function Navigation({
     }
   }, [isAdminAuthorized]);
 
+  const handleMobileNavigate = (navigateFunc?: () => void) => {
+    navigateFunc?.();
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-lg">
-      <div className="container mx-auto px-6 py-4">
+      <div className="container mx-auto px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between">
+          {/* Logo */}
           <button onClick={onNavigateHome} className="flex items-center hover:opacity-80 transition-opacity">
             <NirvaLogo size="sm" />
           </button>
           
-          <div className="hidden md:flex items-center gap-6 lg:gap-8 font-body" style={{ fontSize: 'var(--font-size-base)' }}>
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center gap-6 xl:gap-8 font-body" style={{ fontSize: 'var(--font-size-base)' }}>
             <button 
               onClick={onNavigateHome}
               className={`transition-all duration-200 py-2 px-3 rounded-md ${
@@ -143,32 +152,160 @@ export function Navigation({
             )}
           </div>
           
-          <div className="flex items-center gap-6">
-            <div className="bg-secondary px-4 py-2 rounded-full border border-border font-body" style={{ fontSize: 'var(--font-size-base)' }}>
+          {/* Right side - Price and Auth */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* Price - Hidden on very small screens */}
+            <div className="hidden sm:flex bg-secondary px-3 py-2 rounded-full border border-border font-body text-sm">
               <span className="text-muted-foreground">Classes from</span>
               <span className="ml-1 font-semibold text-primary">$11</span>
             </div>
             
-            {user ? (
-              <Button
-                variant="outline"
-                size="default"
-                onClick={onAccountClick}
-                className="flex items-center gap-2 font-medium border-primary/20 hover:bg-accent"
-              >
-                <User className="w-4 h-4" />
-                Account
-              </Button>
-            ) : (
-              <Button
-                size="default"
-                onClick={onLoginClick}
-                className="flex items-center gap-2 font-medium bg-primary hover:bg-primary/90"
-              >
-                <User className="w-4 h-4" />
-                Login
-              </Button>
-            )}
+            {/* Mobile Menu Button */}
+            <div className="lg:hidden">
+              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="p-2">
+                    <Menu className="w-5 h-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-80">
+                  <div className="flex flex-col gap-2 mt-8">
+                    <button 
+                      onClick={() => handleMobileNavigate(onNavigateHome)}
+                      className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
+                        currentView === "home" 
+                          ? "bg-primary/10 text-primary font-medium" 
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      Home
+                    </button>
+                    <button 
+                      onClick={() => handleMobileNavigate(onNavigateClasses)}
+                      className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
+                        currentView === "classes" 
+                          ? "bg-primary/10 text-primary font-medium" 
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      Classes
+                    </button>
+                    <button 
+                      onClick={() => handleMobileNavigate(onNavigatePackages)}
+                      className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
+                        currentView === "packages" 
+                          ? "bg-primary/10 text-primary font-medium" 
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      Packages
+                    </button>
+                    <button 
+                      onClick={() => handleMobileNavigate(onNavigateTeachers)}
+                      className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
+                        currentView === "teachers" 
+                          ? "bg-primary/10 text-primary font-medium" 
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      Teachers
+                    </button>
+                    <button 
+                      onClick={() => handleMobileNavigate(onNavigateContact)}
+                      className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
+                        currentView === "contact" 
+                          ? "bg-primary/10 text-primary font-medium" 
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      Contact
+                    </button>
+                    <button 
+                      onClick={() => handleMobileNavigate(onNavigateFAQ)}
+                      className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
+                        currentView === "faq" 
+                          ? "bg-primary/10 text-primary font-medium" 
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      FAQ
+                    </button>
+                    
+                    {showAdmin && (
+                      <button 
+                        onClick={() => handleMobileNavigate(onNavigateAdmin)}
+                        className={`text-left py-3 px-4 rounded-lg transition-colors flex items-center gap-2 ${ 
+                          currentView === "admin" 
+                            ? "bg-primary/10 text-primary font-medium" 
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <Settings className="w-4 h-4" />
+                        Admin Panel
+                      </button>
+                    )}
+                    
+                    <div className="mt-6 pt-6 border-t border-border">
+                      <div className="text-sm text-muted-foreground text-center mb-4">
+                        Classes from <span className="font-medium text-primary">$11</span>
+                      </div>
+                      
+                      {/* Mobile Auth Button */}
+                      {user ? (
+                        <Button
+                          variant="outline"
+                          size="default"
+                          onClick={() => {
+                            onAccountClick();
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className="w-full flex items-center justify-center gap-2 font-medium border-primary/20 hover:bg-accent"
+                        >
+                          <User className="w-4 h-4" />
+                          Account
+                        </Button>
+                      ) : (
+                        <Button
+                          size="default"
+                          onClick={() => {
+                            onLoginClick();
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className="w-full flex items-center justify-center gap-2 font-medium bg-primary hover:bg-primary/90"
+                        >
+                          <User className="w-4 h-4" />
+                          Login
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+            
+            {/* Desktop Auth Button */}
+            <div className="hidden lg:block">
+              {user ? (
+                <Button
+                  variant="outline"
+                  size="default"
+                  onClick={onAccountClick}
+                  className="flex items-center gap-2 font-medium border-primary/20 hover:bg-accent"
+                >
+                  <User className="w-4 h-4" />
+                  Account
+                </Button>
+              ) : (
+                <Button
+                  size="default"
+                  onClick={onLoginClick}
+                  className="flex items-center gap-2 font-medium bg-primary hover:bg-primary/90"
+                >
+                  <User className="w-4 h-4" />
+                  Login
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
