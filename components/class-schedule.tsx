@@ -53,7 +53,7 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
   const [classInstances, setClassInstances] = useState<ClassInstance[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load class instances for the current week
+  // Load class instances for the current week 
   useEffect(() => {
     const loadClassInstances = async () => {
       try {
