@@ -30,7 +30,7 @@ export class ZoomService {
     try {
       console.log('🎥 Creating Zoom meeting via Netlify function...')
       
-      const response = await fetch('/.netlify/functions/create-zoom-meeting', {
+      const response = await fetch('/.netlify/functions/create-zoom-meeting-fetch', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export class ZoomService {
     try {
       console.log('🎥 Creating Zoom meeting via Netlify function...')
       
-      const response = await fetch('/.netlify/functions/create-zoom-meeting', {
+      const response = await fetch('/.netlify/functions/create-zoom-meeting-fetch', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
