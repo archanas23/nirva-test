@@ -454,7 +454,7 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                           size="sm"
                           variant="outline"
                         >
-                          Pay $11
+                          Book Class
                         </Button>
                       ) : (
                         <Button 
