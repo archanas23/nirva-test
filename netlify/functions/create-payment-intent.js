@@ -25,18 +25,31 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    // Check if Stripe is properly initialized
+    if (!stripe) {
+      console.error('❌ Stripe not initialized - check STRIPE_SECRET_KEY');
+      return {
+        statusCode: 500,
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ 
+          error: 'Stripe not initialized',
+          details: 'STRIPE_SECRET_KEY environment variable is missing or invalid'
+        }),
+      };
+    }
+
     const { amount, currency = 'usd', metadata } = JSON.parse(event.body);
     
     console.log('💳 Creating payment intent for amount:', amount);
     console.log('💳 Currency:', currency);
     console.log('💳 Metadata:', metadata);
+    console.log('💳 Stripe initialized:', !!stripe);
 
     // Create payment intent with Stripe
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // Convert to cents
       currency: currency,
       metadata: metadata || {},
-      payment_method_types: ['card'],
       automatic_payment_methods: {
         enabled: true,
       },
@@ -57,6 +70,8 @@ exports.handler = async (event, context) => {
 
   } catch (error) {
     console.error('❌ Error creating payment intent:', error);
+    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error name:', error.name);
     
     return {
       statusCode: 500,
@@ -65,7 +80,8 @@ exports.handler = async (event, context) => {
       },
       body: JSON.stringify({ 
         error: 'Failed to create payment intent',
-        details: error.message 
+        details: error.message,
+        type: error.name
       }),
     };
   }
