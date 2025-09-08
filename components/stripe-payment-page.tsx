@@ -62,9 +62,9 @@ export function StripePaymentPage({ onBack, selectedClass, selectedPackage, onSu
           }
         );
         console.log('Payment processing completed');
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error in payment processing:', error);
-        setError('Payment processing failed: ' + error.message);
+        setError('Payment processing failed: ' + (error?.message || 'Unknown error'));
       }
       
     } catch (error: any) {
