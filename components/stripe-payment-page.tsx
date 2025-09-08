@@ -38,11 +38,15 @@ export function StripePaymentPage({ onBack, selectedClass, selectedPackage, onSu
         packageDetails: selectedPackage,
       };
 
+      console.log('Creating payment intent with data:', paymentData);
       const clientSecret = await StripePaymentService.createPaymentIntent(paymentData);
       
       if (!clientSecret) {
         throw new Error('Failed to create payment intent');
       }
+
+      console.log('Payment intent created, client secret:', clientSecret);
+      console.log('Processing payment...');
 
       await StripePaymentService.processPayment(
         clientSecret,
@@ -52,6 +56,7 @@ export function StripePaymentPage({ onBack, selectedClass, selectedPackage, onSu
           onSuccess();
         },
         (errorMessage) => {
+          console.error('Payment failed:', errorMessage);
           setError(errorMessage);
         }
       );

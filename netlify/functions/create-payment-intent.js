@@ -36,6 +36,7 @@ exports.handler = async (event, context) => {
       amount: Math.round(amount * 100), // Convert to cents
       currency: currency,
       metadata: metadata || {},
+      payment_method_types: ['card'],
       automatic_payment_methods: {
         enabled: true,
       },

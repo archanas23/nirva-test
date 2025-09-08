@@ -74,24 +74,23 @@ export class StripePaymentService {
         throw new Error('Stripe failed to load');
       }
 
-      const result = await stripe.confirmPayment({
-        clientSecret,
-        confirmParams: {
-          return_url: `${window.location.origin}/payment-success`,
-        },
-      });
+      // Use confirmCardPayment for better control in SPAs
+      const result = await stripe.confirmCardPayment(clientSecret);
 
       if (result.error) {
+        console.error('Stripe payment error:', result.error);
         onError(result.error.message || 'Payment failed');
         return;
       }
 
-      if ('paymentIntent' in result && (result as any).paymentIntent?.status === 'succeeded') {
-        onSuccess((result as any).paymentIntent);
+      if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+        console.log('Payment succeeded:', result.paymentIntent);
+        onSuccess(result.paymentIntent);
       } else {
         onError('Payment was not completed');
       }
     } catch (error: any) {
+      console.error('Payment processing error:', error);
       onError(error.message || 'Payment processing failed');
     }
   }
