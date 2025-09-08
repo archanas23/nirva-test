@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Users, Calendar, DollarSign, Clock, Mail, User, Video, Copy, ExternalLink } from "lucide-react";
 import { ScheduleEditor } from "./schedule-editor";
 import { ResendTest } from "./resend-test";
+import { ZoomTest } from "./zoom-test";
 
 interface ClassBooking {
   id: string;
@@ -43,7 +44,7 @@ const mockBookings: ClassBooking[] = [
     studentName: "Sarah Johnson",
     studentEmail: "sarah.j@email.com",
     className: "Morning Flow",
-    teacher: "Harshada Madiraju",
+    teacher: "Harshada",
     date: "September 10, 2025",
     time: "8:00 AM - 9:00 AM",
     timestamp: new Date("2025-09-05T14:30:00"),
@@ -58,7 +59,7 @@ const mockBookings: ClassBooking[] = [
     studentName: "Mike Chen",
     studentEmail: "mike.chen@email.com",
     className: "Evening Restore",
-    teacher: "Archana Soundararajan",
+    teacher: "Archana",
     date: "September 11, 2025",
     time: "7:00 PM - 8:00 PM",
     timestamp: new Date("2025-09-05T16:45:00"),
@@ -73,7 +74,7 @@ const mockBookings: ClassBooking[] = [
     studentName: "Emma Davis",
     studentEmail: "emma.davis@email.com", 
     className: "Power Flow",
-    teacher: "Archana Soundararajan",
+    teacher: "Archana",
     date: "September 12, 2025",
     time: "6:00 PM - 7:00 PM",
     timestamp: new Date("2025-09-05T18:20:00"),
@@ -213,6 +214,7 @@ export function AdminPanel() {
             <TabsTrigger value="all-bookings">All Bookings</TabsTrigger>
             <TabsTrigger value="by-class">By Class</TabsTrigger>
             <TabsTrigger value="email-test">Email Testing</TabsTrigger>
+            <TabsTrigger value="zoom-test">Zoom Testing</TabsTrigger>
           </TabsList>
 
           <TabsContent value="zoom-classes" className="space-y-6">
@@ -492,6 +494,10 @@ export function AdminPanel() {
 
           <TabsContent value="email-test" className="space-y-6">
             <ResendTest />
+          </TabsContent>
+
+          <TabsContent value="zoom-test" className="space-y-6">
+            <ZoomTest />
           </TabsContent>
         </Tabs>
 

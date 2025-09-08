@@ -28,7 +28,7 @@ export function UserZoomClasses({ userEmail }: UserZoomClassesProps) {
     {
       id: "3",
       className: "Power Yoga",
-      teacher: "Archana Soundararajan",
+      teacher: "Archana",
       date: "Monday, Sep 9, 2025",
       time: "7:30 AM EST",
       zoomLink: "https://zoom.us/j/487291635?pwd=pow123",
@@ -40,7 +40,7 @@ export function UserZoomClasses({ userEmail }: UserZoomClassesProps) {
     {
       id: "4",
       className: "Gentle Hatha",
-      teacher: "Harshada Madiraju", 
+      teacher: "Harshada", 
       date: "Monday, Sep 9, 2025",
       time: "6:30 PM EST",
       zoomLink: "https://zoom.us/j/592847163?pwd=gen456",
@@ -52,7 +52,7 @@ export function UserZoomClasses({ userEmail }: UserZoomClassesProps) {
     {
       id: "5",
       className: "Vinyasa Flow",
-      teacher: "Archana Soundararajan",
+      teacher: "Archana",
       date: "Tuesday, Sep 10, 2025", 
       time: "6:30 PM EST",
       zoomLink: "https://zoom.us/j/738294516?pwd=vin789",

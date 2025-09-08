@@ -33,7 +33,7 @@ export function ZoomLinkManagement({ onUpdateClass }: ZoomLinkManagementProps) {
     {
       id: "1",
       className: "Power Yoga",
-      teacher: "Archana Soundararajan",
+      teacher: "Archana",
       date: "Mon 9 Sep 2025",
       time: "7:30 AM EST",
       zoomLink: "https://zoom.us/j/1234567890?pwd=power123",
@@ -46,7 +46,7 @@ export function ZoomLinkManagement({ onUpdateClass }: ZoomLinkManagementProps) {
     {
       id: "2", 
       className: "Gentle Hatha",
-      teacher: "Harshada Madiraju",
+      teacher: "Harshada",
       date: "Mon 9 Sep 2025", 
       time: "6:30 PM EST",
       zoomLink: "https://zoom.us/j/0987654321?pwd=hatha456",
@@ -59,7 +59,7 @@ export function ZoomLinkManagement({ onUpdateClass }: ZoomLinkManagementProps) {
     {
       id: "3",
       className: "Vinyasa Flow",
-      teacher: "Archana Soundararajan", 
+      teacher: "Archana", 
       date: "Tue 10 Sep 2025",
       time: "6:30 PM EST",
       zoomLink: "https://zoom.us/j/1122334455?pwd=vinyasa789",
@@ -148,7 +148,7 @@ export function ZoomLinkManagement({ onUpdateClass }: ZoomLinkManagementProps) {
     // Reset form
     setFormData({
       className: "",
-      teacher: "Harshada Madiraju",
+      teacher: "Harshada",
       date: "", 
       time: "",
       zoomLink: "",
@@ -211,8 +211,8 @@ export function ZoomLinkManagement({ onUpdateClass }: ZoomLinkManagementProps) {
             className="w-full p-2 border border-border rounded-md bg-background"
             required
           >
-            <option value="Harshada Madiraju">Harshada Madiraju</option>
-            <option value="Archana Soundararajan">Archana Soundararajan</option>
+            <option value="Harshada">Harshada</option>
+            <option value="Archana">Archana</option>
           </select>
         </div>
       </div>
@@ -320,7 +320,7 @@ export function ZoomLinkManagement({ onUpdateClass }: ZoomLinkManagementProps) {
             }
             setFormData({
               className: "",
-              teacher: "Harshada Madiraju",
+              teacher: "Harshada",
               date: "",
               time: "",
               zoomLink: "",

@@ -20,32 +20,56 @@ export interface ClassMeeting {
 }
 
 export class ZoomService {
-  private static accessToken: string | null = null
-  private static readonly ZOOM_API_KEY = import.meta.env.VITE_ZOOM_API_KEY
-  private static readonly ZOOM_API_SECRET = import.meta.env.VITE_ZOOM_API_SECRET
-  private static readonly ZOOM_ACCOUNT_ID = import.meta.env.VITE_ZOOM_ACCOUNT_ID
-
   static async createClassMeeting(
     className: string,
     teacher: string,
     date: string,
-    time: string
+    time: string,
+    duration: number = 60
   ): Promise<ClassMeeting | null> {
-    // Mock implementation for now
-    return {
-      classId: 'mock_' + Date.now(),
-      className,
-      teacher,
-      date,
-      time,
-      duration: 60,
-      zoomMeeting: {
-        meeting_id: '123456789',
-        password: 'yoga123',
-        join_url: 'https://zoom.us/j/123456789?pwd=yoga123',
-        start_time: new Date().toISOString(),
-        duration: 60
+    try {
+      console.log('🎥 Creating Zoom meeting via Netlify function...')
+      
+      const response = await fetch('/.netlify/functions/create-zoom-meeting', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          className,
+          teacher,
+          date,
+          time,
+          duration
+        })
+      })
+
+      const result = await response.json()
+      
+      if (result.success && result.meeting) {
+        console.log('✅ Zoom meeting created successfully')
+        return {
+          classId: result.meeting.meeting_id,
+          className,
+          teacher,
+          date,
+          time,
+          duration,
+          zoomMeeting: {
+            meeting_id: result.meeting.meeting_id,
+            password: result.meeting.password,
+            join_url: result.meeting.join_url,
+            start_time: result.meeting.start_time,
+            duration: result.meeting.duration
+          }
+        }
+      } else {
+        console.error('❌ Failed to create Zoom meeting:', result.error)
+        return null
       }
+    } catch (error) {
+      console.error('❌ Failed to create Zoom meeting:', error)
+      return null
     }
   }
 
@@ -53,27 +77,43 @@ export class ZoomService {
     className: string,
     teacher: string,
     date: string,
-    time: string
+    time: string,
+    duration: number = 60
   ): Promise<ZoomMeeting | null> {
-    // Mock implementation for now
-    return {
-      meeting_id: '123456789',
-      password: 'yoga123',
-      join_url: 'https://zoom.us/j/123456789?pwd=yoga123',
-      start_time: new Date().toISOString(),
-      duration: 60
-    }
-  }
-
-  private static async getAccessToken(): Promise<string | null> {
-    if (this.accessToken) return this.accessToken
-
     try {
-      // Mock implementation for now
-      this.accessToken = 'mock_access_token'
-      return this.accessToken
+      console.log('🎥 Creating Zoom meeting via Netlify function...')
+      
+      const response = await fetch('/.netlify/functions/create-zoom-meeting', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          className,
+          teacher,
+          date,
+          time,
+          duration
+        })
+      })
+
+      const result = await response.json()
+      
+      if (result.success && result.meeting) {
+        console.log('✅ Zoom meeting created successfully')
+        return {
+          meeting_id: result.meeting.meeting_id,
+          password: result.meeting.password,
+          join_url: result.meeting.join_url,
+          start_time: result.meeting.start_time,
+          duration: result.meeting.duration
+        }
+      } else {
+        console.error('❌ Failed to create Zoom meeting:', result.error)
+        return null
+      }
     } catch (error) {
-      console.error('Failed to get Zoom access token:', error)
+      console.error('❌ Failed to create Zoom meeting:', error)
       return null
     }
   }

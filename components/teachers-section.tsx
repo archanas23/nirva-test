@@ -7,7 +7,7 @@ import harshadaImage from './src/assets/teacher1.png';
 const teachers = [
   {
     id: "1",
-    name: "Harshada Madiraju",
+    name: "Harshada",
     specialties: ["Vinyasa Flow", "Power Yoga", "Alignment-Based Practice", "Gentle Yoga"],
     bio: "Harshada brings 10 years of experience and a gentle, nurturing approach to yoga. She provides special attention to each student, ensuring proper alignment and modifications using props like blocks, straps, and bolsters to support all levels. Her virtual classes guarantee progress in both flexibility and mental clarity through personalized guidance that honors each individual's unique needs and abilities.",
     image: harshadaImage,
@@ -16,7 +16,7 @@ const teachers = [
   },
   {
     id: "2", 
-    name: "Archana Soundararajan",
+    name: "Archana",
     specialties: ["Vinyasa Flow", "Power Yoga", "Strength Building", "Dynamic Flow"],
     bio: "Archana combines strength and dynamic teaching style to create transformative yoga experiences. She provides individualized attention to help each student progress safely while building physical strength. Her classes guarantee measurable improvements in strength, balance, and mental focus through her energetic and supportive approach.",
     image: archanaImage,
@@ -62,7 +62,7 @@ export function TeachersSection() {
                   src={teacher.image}
                   alt={`${teacher.name} - Yoga Teacher`}
                   className={`w-full h-full object-cover transition-transform hover:scale-105 ${
-                    teacher.name === "Archana Soundararajan" ? "object-bottom" : ""
+                    teacher.name === "Archana" ? "object-bottom" : ""
                   }`}
                 />
               </div>
