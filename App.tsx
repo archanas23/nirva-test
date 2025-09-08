@@ -669,77 +669,49 @@ export default function App() {
                     console.log('📦 Processing package purchase...');
                     console.log('Package details:', selectedPackage);
                     console.log('Package type:', selectedPackage.type);
-                    console.log('Package type check:', selectedPackage.type === 'single');
                     console.log('User email:', user?.email);
                     
-                    // Handle package purchase
+                    // Get or create user in database
+                    const userRecord = await DatabaseService.createOrUpdateUser({
+                      email: user?.email || '',
+                      name: user?.name
+                    });
+                    
+                    // Calculate new credits
+                    const currentCredits = user?.classPacks || { singleClasses: 0, fivePack: 0, tenPack: 0 };
+                    let newCredits = { ...currentCredits };
+                    
                     if (selectedPackage.type === 'single') {
-                      console.log('📅 Processing single class purchase...');
-                      // For single class, we need to add 1 class to the user's account
-                      // This allows them to book a class later
-                      
-                      // Update user's class packs in state to add 1 single class
-                      console.log('🔄 Updating user state for single class...');
-                      console.log('Current user class packs:', user?.classPacks);
-                      
-                      setUser(prev => {
-                        if (!prev) {
-                          console.log('❌ No previous user state found');
-                          return prev;
-                        }
-                        console.log('🔄 Previous user state:', prev);
-                        const newClassPacks = { ...prev.classPacks };
-                        // Add 1 to singleClasses for single class purchases
-                        newClassPacks.singleClasses += 1;
-                        console.log('➕ Added 1 single class');
-                        console.log('📊 New class packs:', newClassPacks);
-                        const newUser = { ...prev, classPacks: newClassPacks };
-                        console.log('🔄 New user state:', newUser);
-                        return newUser;
-                      });
-                      
-                      console.log('✅ Single class added to user account');
-                    } else {
-                      console.log('📦 Processing package purchase...');
-                      try {
-                        const packageResult = await DatabaseService.createPackage({
-                          student_email: user?.email || '',
-                          package_type: selectedPackage.type as 'five' | 'ten',
-                          total_classes: selectedPackage.type === 'five' ? 5 : 10,
-                          remaining_classes: selectedPackage.type === 'five' ? 5 : 10
-                        });
-                        console.log('✅ Package purchase saved to database:', packageResult);
-                      } catch (dbError) {
-                        console.log('⚠️ Database insert failed (RLS policy), but continuing with state update:', dbError);
-                        // Continue with state update even if database insert fails
-                      }
-                      
-                      // Update user's class packs in state
-                      console.log('🔄 Updating user state...');
-                      console.log('Current user class packs:', user?.classPacks);
-                      
-                      setUser(prev => {
-                        if (!prev) {
-                          console.log('❌ No previous user state found');
-                          return prev;
-                        }
-                        console.log('🔄 Previous user state:', prev);
-                        const newClassPacks = { ...prev.classPacks };
-                        if (selectedPackage.type === 'five') {
-                          newClassPacks.fivePack += 5;
-                          console.log('➕ Added 5 classes to fivePack');
-                        } else if (selectedPackage.type === 'ten') {
-                          newClassPacks.tenPack += 10;
-                          console.log('➕ Added 10 classes to tenPack');
-                        }
-                        console.log('📊 New class packs:', newClassPacks);
-                        const newUser = { ...prev, classPacks: newClassPacks };
-                        console.log('🔄 New user state:', newUser);
-                        return newUser;
-                      });
-                      
-                      console.log('✅ User state updated');
+                      newCredits.singleClasses += 1;
+                      console.log('➕ Adding 1 single class');
+                    } else if (selectedPackage.type === 'five') {
+                      newCredits.fivePack += 5;
+                      console.log('➕ Adding 5 classes to fivePack');
+                    } else if (selectedPackage.type === 'ten') {
+                      newCredits.tenPack += 10;
+                      console.log('➕ Adding 10 classes to tenPack');
                     }
+                    
+                    // Update credits in database
+                    try {
+                      await DatabaseService.updateUserCredits(userRecord.id, {
+                        single_classes: newCredits.singleClasses,
+                        five_pack_classes: newCredits.fivePack,
+                        ten_pack_classes: newCredits.tenPack
+                      });
+                      console.log('✅ Credits updated in database');
+                    } catch (creditsError) {
+                      console.log('⚠️ Failed to update credits in database:', creditsError);
+                    }
+                    
+                    // Update local state
+                    setUser(prev => {
+                      if (!prev) return prev;
+                      console.log('📊 Updated class packs after purchase:', newCredits);
+                      return { ...prev, classPacks: newCredits };
+                    });
+                    
+                    console.log('✅ User credits updated successfully');
                   } else {
                     console.log('❌ No valid class or package selected');
                     console.log('Selected class:', selectedClass);

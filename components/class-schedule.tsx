@@ -255,6 +255,14 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
     setCurrentWeekOffset(0);
   };
 
+  // Check if we're at the end of September (no more weeks to show)
+  const isAtEndOfSeptember = () => {
+    const weekDates = getCurrentWeekDates();
+    const lastDayOfWeek = weekDates[6];
+    const lastDayOfSeptember = new Date(2025, 8, 30); // September 30, 2025 (month is 0-indexed)
+    return lastDayOfWeek >= lastDayOfSeptember;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with Package Info */}
@@ -334,6 +342,7 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
           variant="outline"
           size="sm"
           onClick={goToNextWeek}
+          disabled={isAtEndOfSeptember()}
           className="flex items-center gap-2"
         >
           Next Week
