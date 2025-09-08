@@ -78,23 +78,18 @@ export class StripePaymentService {
       // In production, you'd use Stripe Elements to collect card info
       console.log('Simulating successful payment for testing...');
       
-      // Create a mock successful payment intent
-      const mockPaymentIntent = {
-        id: 'pi_test_' + Date.now(),
-        status: 'succeeded',
-        amount: 100, // $1.00 in cents
-        currency: 'usd',
-        metadata: {
-          studentName: 'Test User',
-          studentEmail: 'test@example.com',
-          studentPhone: '',
-          classDetails: '{"className":"Test Class","teacher":"Test Teacher","day":"Monday","time":"10:00 AM"}',
-          packageDetails: '{}'
-        }
-      };
+      // Get the actual payment intent from Stripe to get the real metadata
+      const paymentIntentId = clientSecret.split('_secret_')[0];
+      const paymentIntent = await (stripe as any).paymentIntents.retrieve(paymentIntentId);
+      
+      console.log('Retrieved payment intent:', paymentIntent);
+      console.log('Payment intent metadata:', paymentIntent.metadata);
 
-      console.log('Mock payment succeeded:', mockPaymentIntent);
-      onSuccess(mockPaymentIntent);
+      // Note: Database operations are handled in App.tsx onSuccess callback
+      // This keeps the separation of concerns clean
+      console.log('Payment processing complete, calling onSuccess...');
+      
+      onSuccess(paymentIntent);
       
     } catch (error: any) {
       console.error('Payment processing error:', error);

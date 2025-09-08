@@ -235,6 +235,11 @@ export default function App() {
               selectedPackage={selectedPackage}
               onSuccess={async () => {
                 // Handle successful payment
+                console.log('🎉 Payment success callback triggered!');
+                console.log('Selected class:', selectedClass);
+                console.log('Selected package:', selectedPackage);
+                console.log('Current user:', user);
+                
                 try {
                   if (selectedClass) {
                     // Handle class booking
