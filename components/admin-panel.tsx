@@ -11,6 +11,8 @@ import { ZoomTest } from "./zoom-test";
 import { TestPayment } from "./test-payment";
 import { DatabaseSetup } from "./database-setup";
 import { ZoomDebugTest } from "./zoom-debug-test";
+import { BookingTest } from "./booking-test";
+import { DatabaseTest } from "./database-test";
 import { DatabaseService } from "../utils/database";
 
 interface ClassBooking {
@@ -311,6 +313,8 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
             <TabsTrigger value="email-test">Email Testing</TabsTrigger>
             <TabsTrigger value="zoom-test">Zoom Testing</TabsTrigger>
             <TabsTrigger value="zoom-debug">Zoom Debug</TabsTrigger>
+            <TabsTrigger value="booking-test">Booking Test</TabsTrigger>
+            <TabsTrigger value="database-test">Database Test</TabsTrigger>
             <TabsTrigger value="payment-test">Payment Testing</TabsTrigger>
             <TabsTrigger value="database-setup">Database Setup</TabsTrigger>
           </TabsList>
@@ -600,6 +604,14 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
 
           <TabsContent value="zoom-debug" className="space-y-6">
             <ZoomDebugTest />
+          </TabsContent>
+
+          <TabsContent value="booking-test" className="space-y-6">
+            <BookingTest />
+          </TabsContent>
+
+          <TabsContent value="database-test" className="space-y-6">
+            <DatabaseTest />
           </TabsContent>
 
           <TabsContent value="payment-test" className="space-y-6">

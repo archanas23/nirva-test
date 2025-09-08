@@ -314,13 +314,32 @@ export default function App() {
       // Generate Zoom meeting for the class
       console.log('🎥 Creating Zoom meeting for class...');
       console.log('📅 Meeting details:', { className: classItem.className, teacher: classItem.teacher, day, time: classItem.time });
+      
+      // Convert day format from "Sep 9" to "2025-09-09" for Zoom API and database
+      const convertDayToDate = (dayStr: string) => {
+        // Parse "Sep 9" to "2025-09-09"
+        const monthMap: { [key: string]: string } = {
+          'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+          'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+          'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+        };
+        
+        const parts = dayStr.split(' ');
+        const month = monthMap[parts[0]];
+        const day = parts[1].padStart(2, '0');
+        return `2025-${month}-${day}`;
+      };
+      
+      const formattedDate = convertDayToDate(day);
+      console.log('📅 Converted date:', day, '→', formattedDate);
+      
       let zoomMeeting = null;
       try {
         console.log('🎥 Calling ZoomService.createClassMeeting...');
         zoomMeeting = await ZoomService.createClassMeeting(
           classItem.className,
           classItem.teacher,
-          day,
+          formattedDate,
           classItem.time,
           60
         );
@@ -331,6 +350,7 @@ export default function App() {
           console.log('⚠️ No Zoom link in meeting response');
         }
       } catch (zoomError) {
+
         console.log('⚠️ Zoom meeting creation failed, creating mock meeting for testing:', zoomError);
         console.log('⚠️ Error details:', zoomError instanceof Error ? zoomError.message : String(zoomError));
         // Create a mock Zoom meeting for testing
@@ -359,7 +379,7 @@ export default function App() {
         console.log('💾 Class data:', {
           class_name: classItem.className,
           teacher: classItem.teacher,
-          class_date: day,
+          class_date: formattedDate,
           class_time: classItem.time,
           zoom_meeting_id: zoomMeeting?.zoomMeeting?.meeting_id || '',
           zoom_password: zoomMeeting?.zoomMeeting?.password || '',
@@ -368,7 +388,7 @@ export default function App() {
         await DatabaseService.bookClass(userRecord.id, {
           class_name: classItem.className,
           teacher: classItem.teacher,
-          class_date: day,
+          class_date: formattedDate,
           class_time: classItem.time,
           zoom_meeting_id: zoomMeeting?.zoomMeeting?.meeting_id || '',
           zoom_password: zoomMeeting?.zoomMeeting?.password || '',
