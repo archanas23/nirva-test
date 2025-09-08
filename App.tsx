@@ -1,4 +1,4 @@
-import { useState, Suspense, lazy } from "react";
+import { useState, Suspense, lazy, useEffect } from "react";
 import { Navigation } from "./components/navigation";
 import { HeroSection } from "./components/hero-section";
 import { ClassSchedule } from "./components/class-schedule";
@@ -20,6 +20,7 @@ import { AdminNotificationDisplay } from "./components/admin-notification-displa
 import { AdminPanel } from "./components/admin-panel";
 import { Button } from "./components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./components/ui/dialog";
+import { DatabaseService } from "./utils/database";
 
 // Lazy load StripePaymentPage to avoid loading Stripe until needed
 const StripePaymentPage = lazy(() =>
@@ -68,7 +69,7 @@ export default function App() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
-  const handleLogin = (email: string, password?: string) => {
+  const handleLogin = async (email: string, password?: string) => {
     // Check for admin authentication
     if (email === 'nirvayogastudio@gmail.com') {
       // Admin password validation
@@ -78,15 +79,36 @@ export default function App() {
       }
     }
     
-    // Mock user data - in real app this would come from backend
-    setUser({
-      email,
-      name: email.split('@')[0],
-      classPacks: {
-        fivePack: 0, // Fresh start - users begin with no class packs
-        tenPack: 0
-      }
-    });
+    try {
+      // Load user's class packages from Supabase
+      const packages = await DatabaseService.getStudentPackages(email);
+      
+      // Calculate total classes for each package type
+      const fivePack = packages.filter(p => p.package_type === 'five').reduce((sum, p) => sum + p.remaining_classes, 0);
+      const tenPack = packages.filter(p => p.package_type === 'ten').reduce((sum, p) => sum + p.remaining_classes, 0);
+      
+      setUser({
+        email,
+        name: email.split('@')[0],
+        classPacks: {
+          fivePack,
+          tenPack
+        }
+      });
+      
+      console.log('✅ User logged in:', email, 'Packages:', { fivePack, tenPack });
+    } catch (error) {
+      console.error('❌ Error loading user data:', error);
+      // Fallback to basic user data if database fails
+      setUser({
+        email,
+        name: email.split('@')[0],
+        classPacks: {
+          fivePack: 0,
+          tenPack: 0
+        }
+      });
+    }
   };
 
   const handleLogout = () => {
@@ -211,8 +233,51 @@ export default function App() {
               onBack={handleBack}
               selectedClass={selectedClass}
               selectedPackage={selectedPackage}
-              onSuccess={() => {
+              onSuccess={async () => {
                 // Handle successful payment
+                try {
+                  if (selectedClass) {
+                    // Handle class booking
+                    await DatabaseService.createBooking({
+                      student_name: user?.name || user?.email || 'Unknown',
+                      student_email: user?.email || '',
+                      class_name: selectedClass.className,
+                      teacher: selectedClass.teacher,
+                      class_date: selectedClass.day,
+                      class_time: selectedClass.time,
+                      payment_method: 'Credit Card',
+                      amount: selectedPackage?.price || 11,
+                      zoom_meeting_id: '', // Will be filled by Zoom integration
+                      zoom_password: '',
+                      zoom_link: ''
+                    });
+                    console.log('✅ Class booking saved to database');
+                  } else if (selectedPackage && selectedPackage.type !== 'single') {
+                    // Handle package purchase
+                    await DatabaseService.createPackage({
+                      student_email: user?.email || '',
+                      package_type: selectedPackage.type as 'five' | 'ten',
+                      total_classes: selectedPackage.type === 'five' ? 5 : 10,
+                      remaining_classes: selectedPackage.type === 'five' ? 5 : 10
+                    });
+                    console.log('✅ Package purchase saved to database');
+                    
+                    // Update user's class packs in state
+                    setUser(prev => {
+                      if (!prev) return prev;
+                      const newClassPacks = { ...prev.classPacks };
+                      if (selectedPackage.type === 'five') {
+                        newClassPacks.fivePack += 5;
+                      } else if (selectedPackage.type === 'ten') {
+                        newClassPacks.tenPack += 10;
+                      }
+                      return { ...prev, classPacks: newClassPacks };
+                    });
+                  }
+                } catch (error) {
+                  console.error('❌ Error saving to database:', error);
+                }
+                
                 setCurrentView('home');
                 setSelectedClass(null);
                 setSelectedPackage(null);

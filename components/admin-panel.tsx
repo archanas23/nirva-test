@@ -8,6 +8,8 @@ import { Users, Calendar, DollarSign, Clock, Mail, User, Video, Copy, ExternalLi
 import { ScheduleEditor } from "./schedule-editor";
 import { ResendTest } from "./resend-test";
 import { ZoomTest } from "./zoom-test";
+import { TestPayment } from "./test-payment";
+import { DatabaseService } from "../utils/database";
 
 interface ClassBooking {
   id: string;
@@ -92,12 +94,53 @@ const mockBookings: ClassBooking[] = [
 ];
 
 export function AdminPanel({ user, onBack }: AdminPanelProps) {
-  const [bookings, setBookings] = useState<ClassBooking[]>(mockBookings);
+  const [bookings, setBookings] = useState<ClassBooking[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("all");
   const [showZoomSetup, setShowZoomSetup] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Check if user is authorized to access admin panel
   const isAuthorized = user?.email === 'nirvayogastudio@gmail.com';
+
+  // Load real data from Supabase
+  useEffect(() => {
+    const loadBookings = async () => {
+      if (!isAuthorized) return;
+      
+      try {
+        setLoading(true);
+        const dbBookings = await DatabaseService.getBookings();
+        
+        // Convert database format to component format
+        const formattedBookings: ClassBooking[] = dbBookings.map(booking => ({
+          id: booking.id,
+          studentName: booking.student_name,
+          studentEmail: booking.student_email,
+          className: booking.class_name,
+          teacher: booking.teacher,
+          date: booking.class_date,
+          time: booking.class_time,
+          timestamp: new Date(booking.created_at),
+          paymentMethod: booking.payment_method,
+          amount: booking.amount,
+          zoomMeetingId: booking.zoom_meeting_id,
+          zoomPassword: booking.zoom_password,
+          zoomLink: booking.zoom_link
+        }));
+        
+        setBookings(formattedBookings);
+        console.log('✅ Loaded bookings from database:', formattedBookings.length);
+      } catch (error) {
+        console.error('❌ Error loading bookings:', error);
+        // Fallback to mock data if database fails
+        setBookings(mockBookings);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBookings();
+  }, [isAuthorized]);
 
   // Listen for new bookings
   useEffect(() => {
@@ -208,6 +251,11 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
           <p className="text-muted-foreground">
             Manage class bookings, view student enrollment, and access Zoom links
           </p>
+          {loading && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-800">🔄 Loading data from database...</p>
+            </div>
+          )}
         </div>
 
         {/* Statistics Cards */}
@@ -260,6 +308,7 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
             <TabsTrigger value="by-class">By Class</TabsTrigger>
             <TabsTrigger value="email-test">Email Testing</TabsTrigger>
             <TabsTrigger value="zoom-test">Zoom Testing</TabsTrigger>
+            <TabsTrigger value="payment-test">Payment Testing</TabsTrigger>
           </TabsList>
 
           <TabsContent value="zoom-classes" className="space-y-6">
@@ -543,6 +592,10 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
 
           <TabsContent value="zoom-test" className="space-y-6">
             <ZoomTest />
+          </TabsContent>
+
+          <TabsContent value="payment-test" className="space-y-6">
+            <TestPayment />
           </TabsContent>
         </Tabs>
 

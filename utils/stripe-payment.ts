@@ -33,7 +33,7 @@ export class StripePaymentService {
 
   static async createPaymentIntent(data: StripePaymentData): Promise<string | null> {
     try {
-      const response = await fetch('/api/create-payment-intent', {
+      const response = await fetch('/.netlify/functions/create-payment-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
