@@ -62,10 +62,17 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
         const startDate = weekDates[0].toISOString().split('T')[0];
         const endDate = weekDates[6].toISOString().split('T')[0];
         
-        const instances = await ClassManagementService.getClassInstances(startDate, endDate);
-        setClassInstances(instances);
+        try {
+          const instances = await ClassManagementService.getClassInstances(startDate, endDate);
+          setClassInstances(instances);
+        } catch (dbError) {
+          console.log('Database not ready, using fallback classes');
+          // Use fallback class generation when database is not ready
+          setClassInstances([]);
+        }
       } catch (error) {
         console.error('Error loading class instances:', error);
+        setClassInstances([]);
       } finally {
         setLoading(false);
       }
@@ -260,6 +267,11 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
     const weekDates = getCurrentWeekDates();
     const lastDayOfWeek = weekDates[6];
     const lastDayOfSeptember = new Date(2025, 8, 30); // September 30, 2025 (month is 0-indexed)
+    console.log('Checking end of September:', {
+      lastDayOfWeek: lastDayOfWeek.toDateString(),
+      lastDayOfSeptember: lastDayOfSeptember.toDateString(),
+      isAtEnd: lastDayOfWeek >= lastDayOfSeptember
+    });
     return lastDayOfWeek >= lastDayOfSeptember;
   };
 
