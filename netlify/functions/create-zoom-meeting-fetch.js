@@ -123,12 +123,16 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
       [month, day, year] = date.split('/');
     }
     
-    const [hours, minutes] = time.split(':');
-    const ampm = time.includes('AM') ? 'AM' : 'PM';
+    // Parse time - handle formats like "6:00 pm" or "6:00 PM"
+    const timeMatch = time.match(/(\d+):(\d+)\s*(am|pm)/i);
+    if (!timeMatch) {
+      throw new Error(`Invalid time format: ${time}`);
+    }
     
+    const [, hours, minutes, ampm] = timeMatch;
     let hour24 = parseInt(hours);
-    if (ampm === 'PM' && hour24 !== 12) hour24 += 12;
-    if (ampm === 'AM' && hour24 === 12) hour24 = 0;
+    if (ampm.toLowerCase() === 'pm' && hour24 !== 12) hour24 += 12;
+    if (ampm.toLowerCase() === 'am' && hour24 === 12) hour24 = 0;
     
     const startTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), hour24, parseInt(minutes));
     console.log('🎥 Parsed start time:', startTime.toISOString());
