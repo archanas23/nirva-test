@@ -10,6 +10,7 @@ interface UserAccountProps {
     email: string;
     name?: string;
     classPacks: {
+      singleClasses: number;
       fivePack: number;
       tenPack: number;
     };
@@ -22,7 +23,7 @@ interface UserAccountProps {
 export function UserAccount({ user, onLogout, onNavigateToClasses, onNavigateToPackages }: UserAccountProps) {
   if (!user) return null;
 
-  const totalClasses = user.classPacks.fivePack + user.classPacks.tenPack;
+  const totalClasses = user.classPacks.singleClasses + user.classPacks.fivePack + user.classPacks.tenPack;
 
   return (
     <div className="space-y-6 p-1">
@@ -62,6 +63,18 @@ export function UserAccount({ user, onLogout, onNavigateToClasses, onNavigateToP
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3">
+            {user.classPacks.singleClasses > 0 && (
+              <div className="flex justify-between items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div>
+                  <p className="font-medium text-blue-900">Single Classes</p>
+                  <p className="text-sm text-blue-700">Individual purchases</p>
+                </div>
+                <Badge variant="default" className="bg-blue-600 hover:bg-blue-700">
+                  {user.classPacks.singleClasses} classes
+                </Badge>
+              </div>
+            )}
+            
             <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
               <div>
                 <p className="font-medium">5-Class Package</p>

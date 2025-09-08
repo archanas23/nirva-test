@@ -20,14 +20,29 @@ interface ClassScheduleProps {
     email: string;
     name?: string;
     classPacks: {
+      singleClasses: number;
       fivePack: number;
       tenPack: number;
     };
   } | null;
+  bookedClasses?: {
+    [classId: string]: {
+      className: string;
+      teacher: string;
+      time: string;
+      day: string;
+      zoomLink?: string;
+      zoomPassword?: string;
+      meetingId?: string;
+      bookedAt: string;
+    };
+  };
+  isClassInPast?: (classItem: ClassItem, day: string) => boolean;
+  isClassBooked?: (classId: string) => boolean;
 }
 
-export function ClassSchedule({ onBookClass, user }: ClassScheduleProps) {
-  const totalClasses = user ? user.classPacks.fivePack + user.classPacks.tenPack : 0;
+export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassInPast, isClassBooked }: ClassScheduleProps) {
+  const totalClasses = user ? user.classPacks.singleClasses + user.classPacks.fivePack + user.classPacks.tenPack : 0;
   const canBook = totalClasses > 0;
 
   // Monthly schedule starting fresh from Monday, September 9th, 2025
@@ -321,6 +336,24 @@ export function ClassSchedule({ onBookClass, user }: ClassScheduleProps) {
                   <div className="flex items-center gap-2">
                     {classItem.registrationClosed ? (
                       <Badge variant="secondary">Registration Closed</Badge>
+                    ) : isClassBooked?.(classItem.id) ? (
+                      <div className="flex flex-col items-end gap-1">
+                        <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                          ✅ Booked
+                        </Badge>
+                        {bookedClasses[classItem.id]?.zoomLink && (
+                          <Button 
+                            size="sm"
+                            variant="outline"
+                            className="text-xs"
+                            onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
+                          >
+                            Join Zoom
+                          </Button>
+                        )}
+                      </div>
+                    ) : isClassInPast?.(classItem, formatDate(date)) ? (
+                      <Badge variant="secondary">Past Class</Badge>
                     ) : !user ? (
                       <Button 
                         onClick={() => onBookClass?.(classItem, formatDate(date))}

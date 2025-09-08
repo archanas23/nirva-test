@@ -21,6 +21,7 @@ import { AdminPanel } from "./components/admin-panel";
 import { Button } from "./components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./components/ui/dialog";
 import { DatabaseService } from "./utils/database";
+import { ZoomService } from "./utils/zoom-service";
 
 // Lazy load StripePaymentPage to avoid loading Stripe until needed
 const StripePaymentPage = lazy(() =>
@@ -43,6 +44,7 @@ interface User {
   email: string;
   name?: string;
   classPacks: {
+    singleClasses: number;
     fivePack: number;
     tenPack: number;
   };
@@ -56,7 +58,7 @@ export default function App() {
     teacher: string;
     time: string;
     day: string;
-    classId?: string;
+    id?: string;
   } | null>(null);
   const [selectedPackage, setSelectedPackage] = useState<{
     type: 'five' | 'ten' | 'single';
@@ -64,6 +66,21 @@ export default function App() {
     name: string;
   } | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  
+  // Track booked classes with Zoom links
+  const [bookedClasses, setBookedClasses] = useState<{
+    [classId: string]: {
+      className: string;
+      teacher: string;
+      time: string;
+      day: string;
+      zoomLink?: string;
+      zoomPassword?: string;
+      meetingId?: string;
+      bookedAt: string;
+    };
+  }>({});
+  
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -96,6 +113,7 @@ export default function App() {
         email,
         name: email.split('@')[0],
         classPacks: {
+          singleClasses: 0,
           fivePack,
           tenPack
         }
@@ -109,6 +127,7 @@ export default function App() {
         email,
         name: email.split('@')[0],
         classPacks: {
+          singleClasses: 0,
           fivePack: 0,
           tenPack: 0
         }
@@ -197,9 +216,46 @@ export default function App() {
     });
   };
 
+  // Check if a class is in the past
+  const isClassInPast = (classItem: ClassItem, day: string) => {
+    const now = new Date();
+    const classDate = new Date(day + ' ' + classItem.time);
+    
+    // If the date is invalid, assume it's in the past
+    if (isNaN(classDate.getTime())) {
+      return true;
+    }
+    
+    return classDate < now;
+  };
+
+  // Check if a class is already booked
+  const isClassBooked = (classId: string) => {
+    return bookedClasses[classId] !== undefined;
+  };
+
   const handleBookClass = (classItem: ClassItem, day: string) => {
     if (!user) {
       setShowAuthModal(true);
+      return;
+    }
+    
+    // Check if class is in the past
+    if (isClassInPast(classItem, day)) {
+      alert('❌ Cannot book classes in the past. Please select a future class.');
+      return;
+    }
+    
+    // Check if class is already booked
+    if (isClassBooked(classItem.id)) {
+      alert('✅ This class is already booked! Check your account for Zoom details.');
+      return;
+    }
+    
+    // Check if user has classes available
+    const totalClasses = user.classPacks.singleClasses + user.classPacks.fivePack + user.classPacks.tenPack;
+    if (totalClasses === 0) {
+      alert('❌ No classes remaining. Please purchase a package first.');
       return;
     }
     
@@ -208,7 +264,7 @@ export default function App() {
       teacher: classItem.teacher,
       time: classItem.time,
       day: day,
-      classId: classItem.id
+      id: classItem.id
     });
     setSelectedPackage(null); // Clear any selected package
     navigateTo("payment");
@@ -248,6 +304,23 @@ export default function App() {
                 try {
                   if (selectedClass) {
                     console.log('📅 Processing class booking...');
+                    
+                    // Generate Zoom meeting for the class
+                    console.log('🎥 Creating Zoom meeting for class...');
+                    let zoomMeeting = null;
+                    try {
+                      zoomMeeting = await ZoomService.createClassMeeting(
+                        selectedClass.className,
+                        selectedClass.teacher,
+                        selectedClass.day,
+                        selectedClass.time,
+                        60
+                      );
+                      console.log('✅ Zoom meeting created:', zoomMeeting);
+                    } catch (zoomError) {
+                      console.log('⚠️ Zoom meeting creation failed, continuing without Zoom:', zoomError);
+                    }
+                    
                     // Handle class booking
                     await DatabaseService.createBooking({
                       student_name: user?.name || user?.email || 'Unknown',
@@ -258,11 +331,47 @@ export default function App() {
                       class_time: selectedClass.time,
                       payment_method: 'Credit Card',
                       amount: selectedPackage?.price || 11,
-                      zoom_meeting_id: '', // Will be filled by Zoom integration
-                      zoom_password: '',
-                      zoom_link: ''
+                      zoom_meeting_id: zoomMeeting?.zoomMeeting?.meeting_id || '',
+                      zoom_password: zoomMeeting?.zoomMeeting?.password || '',
+                      zoom_link: zoomMeeting?.zoomMeeting?.join_url || ''
                     });
                     console.log('✅ Class booking saved to database');
+                    
+                    // Update booked classes state
+                    setBookedClasses(prev => ({
+                      ...prev,
+                      [selectedClass.id || 'unknown']: {
+                        className: selectedClass.className,
+                        teacher: selectedClass.teacher,
+                        time: selectedClass.time,
+                        day: selectedClass.day,
+                        zoomLink: zoomMeeting?.zoomMeeting?.join_url,
+                        zoomPassword: zoomMeeting?.zoomMeeting?.password,
+                        meetingId: zoomMeeting?.zoomMeeting?.meeting_id,
+                        bookedAt: new Date().toISOString()
+                      }
+                    }));
+                    
+                    // Deduct one class from user's account
+                    setUser(prev => {
+                      if (!prev) return prev;
+                      const newClassPacks = { ...prev.classPacks };
+                      // Use single classes first, then packages
+                      if (newClassPacks.singleClasses > 0) {
+                        newClassPacks.singleClasses -= 1;
+                        console.log('➖ Deducted 1 single class');
+                      } else if (newClassPacks.fivePack > 0) {
+                        newClassPacks.fivePack -= 1;
+                        console.log('➖ Deducted 1 class from fivePack');
+                      } else if (newClassPacks.tenPack > 0) {
+                        newClassPacks.tenPack -= 1;
+                        console.log('➖ Deducted 1 class from tenPack');
+                      }
+                      console.log('📊 Updated class packs after booking:', newClassPacks);
+                      return { ...prev, classPacks: newClassPacks };
+                    });
+                    
+                    console.log('✅ Class booking completed with Zoom link');
                   } else if (selectedPackage) {
                     console.log('📦 Processing package purchase...');
                     console.log('Package details:', selectedPackage);
@@ -287,9 +396,9 @@ export default function App() {
                         }
                         console.log('🔄 Previous user state:', prev);
                         const newClassPacks = { ...prev.classPacks };
-                        // Add 1 to fivePack for single class (we'll use fivePack to track single classes)
-                        newClassPacks.fivePack += 1;
-                        console.log('➕ Added 1 single class to fivePack');
+                        // Add 1 to singleClasses for single class purchases
+                        newClassPacks.singleClasses += 1;
+                        console.log('➕ Added 1 single class');
                         console.log('📊 New class packs:', newClassPacks);
                         const newUser = { ...prev, classPacks: newClassPacks };
                         console.log('🔄 New user state:', newUser);
@@ -389,7 +498,13 @@ export default function App() {
             />
             
             <div className="container mx-auto px-4 py-8">
-              <ClassSchedule onBookClass={handleBookClass} user={user} />
+              <ClassSchedule 
+                onBookClass={handleBookClass} 
+                user={user} 
+                bookedClasses={bookedClasses}
+                isClassInPast={isClassInPast}
+                isClassBooked={isClassBooked}
+              />
             </div>
             
             <Footer 
