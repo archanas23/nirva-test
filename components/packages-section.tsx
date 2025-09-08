@@ -84,6 +84,22 @@ export function PackagesSection({ onPurchasePackage, user }: PackagesSectionProp
           recordings, and personal attention from our certified teachers.
         </p>
         
+        {/* Private Classes Information */}
+        <div className="bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20 rounded-lg p-6 max-w-2xl mx-auto mt-8 mb-6">
+          <h3 className="text-xl font-semibold text-primary mb-2">Private Classes Available</h3>
+          <p className="text-muted-foreground mb-3">
+            Looking for personalized attention? Book a private one-on-one session with our certified instructors.
+          </p>
+          <div className="flex items-center justify-center gap-4 text-lg font-semibold">
+            <span className="text-primary">$60/hour</span>
+            <span className="text-muted-foreground">•</span>
+            <span className="text-foreground">Customized to your needs</span>
+          </div>
+          <p className="text-sm text-muted-foreground mt-2">
+            Contact us to schedule your private session
+          </p>
+        </div>
+        
         {user && (user.classPacks.fivePack > 0 || user.classPacks.tenPack > 0) && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg max-w-md mx-auto">
             <h4 className="font-medium text-green-800 mb-2">Your Available Classes</h4>
