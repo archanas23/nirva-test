@@ -113,7 +113,16 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
     console.log('🎥 Creating Zoom meeting with data:', { className, teacher, date, time, duration });
     
     // Parse date and time to create start time
-    const [month, day, year] = date.split('/');
+    // Handle both YYYY-MM-DD and MM/DD/YYYY formats
+    let year, month, day;
+    if (date.includes('-')) {
+      // YYYY-MM-DD format
+      [year, month, day] = date.split('-');
+    } else {
+      // MM/DD/YYYY format
+      [month, day, year] = date.split('/');
+    }
+    
     const [hours, minutes] = time.split(':');
     const ampm = time.includes('AM') ? 'AM' : 'PM';
     
@@ -121,7 +130,7 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
     if (ampm === 'PM' && hour24 !== 12) hour24 += 12;
     if (ampm === 'AM' && hour24 === 12) hour24 = 0;
     
-    const startTime = new Date(year, month - 1, day, hour24, parseInt(minutes));
+    const startTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), hour24, parseInt(minutes));
     console.log('🎥 Parsed start time:', startTime.toISOString());
     
     const meetingData = {

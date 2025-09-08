@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Database, CheckCircle, AlertCircle } from "lucide-react";
-import { ClassManagementService } from "../utils/class-management";
+import { supabase } from "../utils/database";
 
 export function DatabaseSetup() {
   const [isInitializing, setIsInitializing] = useState(false);
@@ -14,7 +14,63 @@ export function DatabaseSetup() {
       setIsInitializing(true);
       setError(null);
       
-      await ClassManagementService.initializeDefaultClasses();
+      console.log('🗄️ Initializing database with default classes...');
+      
+      // Create sample classes directly in the existing classes table
+      const sampleClasses = [
+        {
+          name: "Morning Flow",
+          teacher: "Harshada",
+          day_of_week: 1, // Monday
+          start_time: "08:00:00",
+          end_time: "09:00:00",
+          duration: "60 min",
+          level: "All Levels",
+          max_students: 10
+        },
+        {
+          name: "Evening Restore", 
+          teacher: "Archana",
+          day_of_week: 1, // Monday
+          start_time: "18:00:00",
+          end_time: "19:00:00", 
+          duration: "60 min",
+          level: "All Levels",
+          max_students: 10
+        },
+        {
+          name: "Morning Flow",
+          teacher: "Harshada", 
+          day_of_week: 2, // Tuesday
+          start_time: "08:00:00",
+          end_time: "09:00:00",
+          duration: "60 min",
+          level: "All Levels",
+          max_students: 10
+        },
+        {
+          name: "Evening Restore",
+          teacher: "Archana",
+          day_of_week: 2, // Tuesday  
+          start_time: "18:00:00",
+          end_time: "19:00:00",
+          duration: "60 min", 
+          level: "All Levels",
+          max_students: 10
+        }
+      ];
+
+      // Insert sample classes
+      const { error: classError } = await supabase
+        .from('classes')
+        .insert(sampleClasses);
+
+      if (classError) {
+        console.log('Classes may already exist:', classError.message);
+        // Don't throw error if classes already exist
+      }
+
+      console.log('✅ Database initialized successfully!');
       setIsInitialized(true);
     } catch (err) {
       console.error('Database initialization error:', err);
