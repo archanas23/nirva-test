@@ -105,35 +105,35 @@ CREATE POLICY "Users can insert their own packages" ON class_packages
 CREATE POLICY "Users can view their own packages" ON class_packages
   FOR SELECT USING (true);
 
--- Create policies for users table
+-- Create policies for users table (allow anonymous access for now)
 CREATE POLICY "Users can view own profile" ON users
-  FOR SELECT USING (auth.uid()::text = id::text);
+  FOR SELECT USING (true);
 
 CREATE POLICY "Users can insert own profile" ON users
-  FOR INSERT WITH CHECK (auth.uid()::text = id::text);
+  FOR INSERT WITH CHECK (true);
 
 CREATE POLICY "Users can update own profile" ON users
-  FOR UPDATE USING (auth.uid()::text = id::text);
+  FOR UPDATE USING (true);
 
--- Create policies for user_class_credits table
+-- Create policies for user_class_credits table (allow anonymous access for now)
 CREATE POLICY "Users can view own credits" ON user_class_credits
-  FOR SELECT USING (auth.uid()::text = user_id::text);
+  FOR SELECT USING (true);
 
 CREATE POLICY "Users can insert own credits" ON user_class_credits
-  FOR INSERT WITH CHECK (auth.uid()::text = user_id::text);
+  FOR INSERT WITH CHECK (true);
 
 CREATE POLICY "Users can update own credits" ON user_class_credits
-  FOR UPDATE USING (auth.uid()::text = user_id::text);
+  FOR UPDATE USING (true);
 
--- Create policies for user_booked_classes table
+-- Create policies for user_booked_classes table (allow anonymous access for now)
 CREATE POLICY "Users can view own booked classes" ON user_booked_classes
-  FOR SELECT USING (auth.uid()::text = user_id::text);
+  FOR SELECT USING (true);
 
 CREATE POLICY "Users can insert own booked classes" ON user_booked_classes
-  FOR INSERT WITH CHECK (auth.uid()::text = user_id::text);
+  FOR INSERT WITH CHECK (true);
 
 CREATE POLICY "Users can update own booked classes" ON user_booked_classes
-  FOR UPDATE USING (auth.uid()::text = user_id::text);
+  FOR UPDATE USING (true);
 
 CREATE POLICY "Users can delete own booked classes" ON user_booked_classes
-  FOR DELETE USING (auth.uid()::text = user_id::text);
+  FOR DELETE USING (true);

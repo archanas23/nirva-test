@@ -19,6 +19,7 @@ interface ClassItem {
 interface ClassScheduleProps {
   onBookClass?: (classItem: ClassItem, day: string) => Promise<void>;
   onCancelClass?: (classId: string) => Promise<void>;
+  onPayForClass?: (classItem: ClassItem, day: string) => void;
   user?: {
     email: string;
     name?: string;
@@ -43,7 +44,7 @@ interface ClassScheduleProps {
   isClassBooked?: (classId: string) => boolean;
 }
 
-export function ClassSchedule({ onBookClass, onCancelClass, user, bookedClasses = {}, isClassBooked }: ClassScheduleProps) {
+export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user, bookedClasses = {}, isClassBooked }: ClassScheduleProps) {
   const totalClasses = user ? user.classPacks.singleClasses + user.classPacks.fivePack + user.classPacks.tenPack : 0;
   const canBook = totalClasses > 0;
   
@@ -428,7 +429,7 @@ export function ClassSchedule({ onBookClass, onCancelClass, user, bookedClasses 
                         </Button>
                       ) : !canBook ? (
                         <Button 
-                          onClick={() => onBookClass?.(classItem, formatDate(date))}
+                          onClick={() => onPayForClass?.(classItem, formatDate(date))}
                           size="sm"
                           variant="outline"
                         >

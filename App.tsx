@@ -522,6 +522,28 @@ export default function App() {
     }
   };
 
+  const handlePayForClass = (classItem: ClassItem, day: string) => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+    
+    // Set up for single class payment
+    setSelectedClass({
+      className: classItem.className,
+      teacher: classItem.teacher,
+      time: classItem.time,
+      day: day,
+      id: classItem.id
+    });
+    setSelectedPackage({
+      type: 'single',
+      price: 11,
+      name: 'Single Class'
+    });
+    navigateTo("payment");
+  };
+
   const handlePayNow = () => {
     if (!user) {
       setShowAuthModal(true);
@@ -772,6 +794,7 @@ export default function App() {
               <ClassSchedule 
                 onBookClass={handleBookClass} 
                 onCancelClass={handleCancelClass}
+                onPayForClass={handlePayForClass}
                 user={user} 
                 bookedClasses={bookedClasses}
                 isClassBooked={isClassBooked}
