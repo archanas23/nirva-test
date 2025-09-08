@@ -69,6 +69,11 @@ export default function App() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
+  // Debug user state changes
+  useEffect(() => {
+    console.log('👤 User state changed:', user);
+  }, [user]);
+
   const handleLogin = async (email: string, password?: string) => {
     // Check for admin authentication
     if (email === 'nirvayogastudio@gmail.com') {
@@ -258,42 +263,52 @@ export default function App() {
                       zoom_link: ''
                     });
                     console.log('✅ Class booking saved to database');
-                  } else if (selectedPackage && selectedPackage.type !== 'single') {
+                  } else if (selectedPackage) {
                     console.log('📦 Processing package purchase...');
                     console.log('Package details:', selectedPackage);
                     console.log('User email:', user?.email);
                     
                     // Handle package purchase
-                    const packageResult = await DatabaseService.createPackage({
-                      student_email: user?.email || '',
-                      package_type: selectedPackage.type as 'five' | 'ten',
-                      total_classes: selectedPackage.type === 'five' ? 5 : 10,
-                      remaining_classes: selectedPackage.type === 'five' ? 5 : 10
-                    });
-                    console.log('✅ Package purchase saved to database:', packageResult);
-                    
-                    // Update user's class packs in state
-                    console.log('🔄 Updating user state...');
-                    console.log('Current user class packs:', user?.classPacks);
-                    
-                    setUser(prev => {
-                      if (!prev) {
-                        console.log('❌ No previous user state found');
-                        return prev;
-                      }
-                      const newClassPacks = { ...prev.classPacks };
-                      if (selectedPackage.type === 'five') {
-                        newClassPacks.fivePack += 5;
-                        console.log('➕ Added 5 classes to fivePack');
-                      } else if (selectedPackage.type === 'ten') {
-                        newClassPacks.tenPack += 10;
-                        console.log('➕ Added 10 classes to tenPack');
-                      }
-                      console.log('📊 New class packs:', newClassPacks);
-                      return { ...prev, classPacks: newClassPacks };
-                    });
-                    
-                    console.log('✅ User state updated');
+                    if (selectedPackage.type === 'single') {
+                      console.log('📅 Processing single class purchase...');
+                      // For single class, we don't create a package, just a booking
+                      // This is handled by the class booking logic above
+                    } else {
+                      console.log('📦 Processing package purchase...');
+                      const packageResult = await DatabaseService.createPackage({
+                        student_email: user?.email || '',
+                        package_type: selectedPackage.type as 'five' | 'ten',
+                        total_classes: selectedPackage.type === 'five' ? 5 : 10,
+                        remaining_classes: selectedPackage.type === 'five' ? 5 : 10
+                      });
+                      console.log('✅ Package purchase saved to database:', packageResult);
+                      
+                      // Update user's class packs in state
+                      console.log('🔄 Updating user state...');
+                      console.log('Current user class packs:', user?.classPacks);
+                      
+                      setUser(prev => {
+                        if (!prev) {
+                          console.log('❌ No previous user state found');
+                          return prev;
+                        }
+                        console.log('🔄 Previous user state:', prev);
+                        const newClassPacks = { ...prev.classPacks };
+                        if (selectedPackage.type === 'five') {
+                          newClassPacks.fivePack += 5;
+                          console.log('➕ Added 5 classes to fivePack');
+                        } else if (selectedPackage.type === 'ten') {
+                          newClassPacks.tenPack += 10;
+                          console.log('➕ Added 10 classes to tenPack');
+                        }
+                        console.log('📊 New class packs:', newClassPacks);
+                        const newUser = { ...prev, classPacks: newClassPacks };
+                        console.log('🔄 New user state:', newUser);
+                        return newUser;
+                      });
+                      
+                      console.log('✅ User state updated');
+                    }
                   } else {
                     console.log('❌ No valid class or package selected');
                     console.log('Selected class:', selectedClass);
@@ -304,12 +319,18 @@ export default function App() {
                   console.error('❌ Error details:', error);
                 }
                 
-                // Show success message
-                if (selectedPackage && selectedPackage.type !== 'single') {
-                  alert(`✅ Payment successful! You now have ${selectedPackage.type === 'five' ? '5' : '10'} classes available.`);
-                } else if (selectedClass) {
-                  alert(`✅ Class booked successfully! Check your account for details.`);
-                }
+                // Show success message after a short delay to allow state update
+                setTimeout(() => {
+                  if (selectedPackage) {
+                    if (selectedPackage.type === 'single') {
+                      alert(`✅ Single class purchased successfully! You can now book a class.`);
+                    } else {
+                      alert(`✅ Payment successful! You now have ${selectedPackage.type === 'five' ? '5' : '10'} classes available.`);
+                    }
+                  } else if (selectedClass) {
+                    alert(`✅ Class booked successfully! Check your account for details.`);
+                  }
+                }, 100);
                 
                 setCurrentView('home');
                 setSelectedClass(null);
