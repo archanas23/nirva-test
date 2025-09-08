@@ -74,15 +74,15 @@ exports.handler = async (event, context) => {
 async function getZoomAccessToken() {
   try {
     console.log('🔑 Getting Zoom access token...');
-    console.log('🔑 Account ID:', process.env.VITE_ZOOM_ACCOUNT_ID ? 'Set' : 'Missing');
-    console.log('🔑 Client ID:', process.env.VITE_ZOOM_CLIENT_ID ? 'Set' : 'Missing');
-    console.log('🔑 Client Secret:', process.env.VITE_ZOOM_CLIENT_SECRET ? 'Set' : 'Missing');
+    console.log('🔑 Account ID:', process.env.ZOOM_ACCOUNT_ID ? 'Set' : 'Missing');
+    console.log('🔑 Client ID:', process.env.ZOOM_CLIENT_ID ? 'Set' : 'Missing');
+    console.log('🔑 Client Secret:', process.env.ZOOM_CLIENT_SECRET ? 'Set' : 'Missing');
 
-    if (!process.env.VITE_ZOOM_ACCOUNT_ID || !process.env.VITE_ZOOM_CLIENT_ID || !process.env.VITE_ZOOM_CLIENT_SECRET) {
+    if (!process.env.ZOOM_ACCOUNT_ID || !process.env.ZOOM_CLIENT_ID || !process.env.ZOOM_CLIENT_SECRET) {
       throw new Error('Missing Zoom API credentials. Please check environment variables.');
     }
 
-    const credentials = Buffer.from(`${process.env.VITE_ZOOM_CLIENT_ID}:${process.env.VITE_ZOOM_CLIENT_SECRET}`).toString('base64');
+    const credentials = Buffer.from(`${process.env.ZOOM_CLIENT_ID}:${process.env.ZOOM_CLIENT_SECRET}`).toString('base64');
     
     const response = await fetch('https://zoom.us/oauth/token', {
       method: 'POST',
@@ -90,7 +90,7 @@ async function getZoomAccessToken() {
         'Authorization': `Basic ${credentials}`,
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: `grant_type=account_credentials&account_id=${process.env.VITE_ZOOM_ACCOUNT_ID}`
+      body: `grant_type=account_credentials&account_id=${process.env.ZOOM_ACCOUNT_ID}`
     });
 
     if (!response.ok) {
