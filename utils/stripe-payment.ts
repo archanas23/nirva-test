@@ -75,11 +75,15 @@ export class StripePaymentService {
     onSuccess: (paymentIntent: any) => void,
     onError: (error: string) => void
   ): Promise<void> {
+    console.log('🚀 Starting processPayment with clientSecret:', clientSecret);
+    
     try {
+      console.log('🔧 Initializing Stripe...');
       const stripe = await this.initialize();
       if (!stripe) {
         throw new Error('Stripe failed to load');
       }
+      console.log('✅ Stripe initialized successfully');
 
       // For testing purposes, we'll simulate a successful payment
       // In production, you'd use Stripe Elements to collect card info
@@ -115,9 +119,11 @@ export class StripePaymentService {
       console.log('Payment processing complete, calling onSuccess...');
       
       onSuccess(mockPaymentIntent);
+      console.log('✅ onSuccess callback called');
       
     } catch (error: any) {
-      console.error('Payment processing error:', error);
+      console.error('❌ Payment processing error:', error);
+      console.error('❌ Error stack:', error.stack);
       onError(error.message || 'Payment processing failed');
     }
   }

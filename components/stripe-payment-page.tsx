@@ -48,18 +48,24 @@ export function StripePaymentPage({ onBack, selectedClass, selectedPackage, onSu
       console.log('Payment intent created, client secret:', clientSecret);
       console.log('Processing payment...');
 
-      await StripePaymentService.processPayment(
-        clientSecret,
-        (paymentIntent) => {
-          // Payment successful
-          console.log('Payment succeeded:', paymentIntent);
-          onSuccess();
-        },
-        (errorMessage) => {
-          console.error('Payment failed:', errorMessage);
-          setError(errorMessage);
-        }
-      );
+      try {
+        await StripePaymentService.processPayment(
+          clientSecret,
+          (paymentIntent) => {
+            // Payment successful
+            console.log('Payment succeeded:', paymentIntent);
+            onSuccess();
+          },
+          (errorMessage) => {
+            console.error('Payment failed:', errorMessage);
+            setError(errorMessage);
+          }
+        );
+        console.log('Payment processing completed');
+      } catch (error) {
+        console.error('Error in payment processing:', error);
+        setError('Payment processing failed: ' + error.message);
+      }
       
     } catch (error: any) {
       setError(error.message || 'Payment failed. Please try again.');
