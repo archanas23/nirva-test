@@ -36,15 +36,15 @@ export function FAQSection() {
     },
     {
       question: "How do I pay for classes?",
-      answer: "We use Stripe for all payments - it's secure, instant, and accepts all major credit cards, debit cards, and digital wallets! When you book a class, you'll be guided through a secure payment process. Your payment is processed instantly and you'll receive confirmation immediately."
+      answer: "We use secure payment processing that accepts all major credit cards, debit cards, and digital wallets! When you book a class, you'll be guided through a secure payment process. Your payment is processed instantly and you'll receive confirmation immediately."
     },
     {
-      question: "Why Stripe instead of other payment methods?",
-      answer: "Stripe provides bank-level security and is trusted by millions of businesses worldwide. It accepts all major payment methods, processes payments instantly, and provides automatic fraud protection. This ensures a smooth, secure experience for all our students."
+      question: "Why this payment method?",
+      answer: "Our payment processing provides bank-level security and is trusted by millions of businesses worldwide. It accepts all major payment methods, processes payments instantly, and provides automatic fraud protection. This ensures a smooth, secure experience for all our students."
     },
     {
       question: "Is my payment information secure?",
-      answer: "Absolutely! We never store your payment information. Stripe handles all payment processing with bank-level security and PCI compliance. Your card details are encrypted and processed securely through Stripe's industry-leading infrastructure."
+      answer: "Absolutely! We never store your payment information. All payment processing is handled with bank-level security and PCI compliance. Your card details are encrypted and processed securely through industry-leading infrastructure."
     }
   ];
 
