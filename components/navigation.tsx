@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NirvaLogo } from './nirva-logo';
 import { Button } from './ui/button';
-import { User, Settings, Menu } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import { User, Settings, Menu, X } from 'lucide-react';
 
 interface NavigationProps {
   user: { email: string; name?: string } | null;
@@ -162,125 +161,14 @@ export function Navigation({
             
             {/* Mobile Menu Button */}
             <div className="lg:hidden">
-              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="p-2">
-                    <Menu className="w-5 h-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-80">
-                  <div className="flex flex-col gap-2 mt-8">
-                    <button 
-                      onClick={() => handleMobileNavigate(onNavigateHome)}
-                      className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
-                        currentView === "home" 
-                          ? "bg-primary/10 text-primary font-medium" 
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                      }`}
-                    >
-                      Home
-                    </button>
-                    <button 
-                      onClick={() => handleMobileNavigate(onNavigateClasses)}
-                      className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
-                        currentView === "classes" 
-                          ? "bg-primary/10 text-primary font-medium" 
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                      }`}
-                    >
-                      Classes
-                    </button>
-                    <button 
-                      onClick={() => handleMobileNavigate(onNavigatePackages)}
-                      className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
-                        currentView === "packages" 
-                          ? "bg-primary/10 text-primary font-medium" 
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                      }`}
-                    >
-                      Packages
-                    </button>
-                    <button 
-                      onClick={() => handleMobileNavigate(onNavigateTeachers)}
-                      className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
-                        currentView === "teachers" 
-                          ? "bg-primary/10 text-primary font-medium" 
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                      }`}
-                    >
-                      Teachers
-                    </button>
-                    <button 
-                      onClick={() => handleMobileNavigate(onNavigateContact)}
-                      className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
-                        currentView === "contact" 
-                          ? "bg-primary/10 text-primary font-medium" 
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                      }`}
-                    >
-                      Contact
-                    </button>
-                    <button 
-                      onClick={() => handleMobileNavigate(onNavigateFAQ)}
-                      className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
-                        currentView === "faq" 
-                          ? "bg-primary/10 text-primary font-medium" 
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                      }`}
-                    >
-                      FAQ
-                    </button>
-                    
-                    {showAdmin && (
-                      <button 
-                        onClick={() => handleMobileNavigate(onNavigateAdmin)}
-                        className={`text-left py-3 px-4 rounded-lg transition-colors flex items-center gap-2 ${ 
-                          currentView === "admin" 
-                            ? "bg-primary/10 text-primary font-medium" 
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                        }`}
-                      >
-                        <Settings className="w-4 h-4" />
-                        Admin Panel
-                      </button>
-                    )}
-                    
-                    <div className="mt-6 pt-6 border-t border-border">
-                      <div className="text-sm text-muted-foreground text-center mb-4">
-                        Classes from <span className="font-medium text-primary">$11</span>
-                      </div>
-                      
-                      {/* Mobile Auth Button */}
-                      {user ? (
-                        <Button
-                          variant="outline"
-                          size="default"
-                          onClick={() => {
-                            onAccountClick();
-                            setIsMobileMenuOpen(false);
-                          }}
-                          className="w-full flex items-center justify-center gap-2 font-medium border-primary/20 hover:bg-accent"
-                        >
-                          <User className="w-4 h-4" />
-                          Account
-                        </Button>
-                      ) : (
-                        <Button
-                          size="default"
-                          onClick={() => {
-                            onLoginClick();
-                            setIsMobileMenuOpen(false);
-                          }}
-                          className="w-full flex items-center justify-center gap-2 font-medium bg-primary hover:bg-primary/90"
-                        >
-                          <User className="w-4 h-4" />
-                          Login
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-2"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </Button>
             </div>
             
             {/* Desktop Auth Button */}
@@ -309,6 +197,124 @@ export function Navigation({
           </div>
         </div>
       </div>
+      
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden bg-background border-b border-border shadow-lg">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex flex-col gap-2">
+              <button 
+                onClick={() => handleMobileNavigate(onNavigateHome)}
+                className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
+                  currentView === "home" 
+                    ? "bg-primary/10 text-primary font-medium" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                Home
+              </button>
+              <button 
+                onClick={() => handleMobileNavigate(onNavigateClasses)}
+                className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
+                  currentView === "classes" 
+                    ? "bg-primary/10 text-primary font-medium" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                Classes
+              </button>
+              <button 
+                onClick={() => handleMobileNavigate(onNavigatePackages)}
+                className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
+                  currentView === "packages" 
+                    ? "bg-primary/10 text-primary font-medium" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                Packages
+              </button>
+              <button 
+                onClick={() => handleMobileNavigate(onNavigateTeachers)}
+                className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
+                  currentView === "teachers" 
+                    ? "bg-primary/10 text-primary font-medium" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                Teachers
+              </button>
+              <button 
+                onClick={() => handleMobileNavigate(onNavigateContact)}
+                className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
+                  currentView === "contact" 
+                    ? "bg-primary/10 text-primary font-medium" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                Contact
+              </button>
+              <button 
+                onClick={() => handleMobileNavigate(onNavigateFAQ)}
+                className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
+                  currentView === "faq" 
+                    ? "bg-primary/10 text-primary font-medium" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                FAQ
+              </button>
+              
+              {showAdmin && (
+                <button 
+                  onClick={() => handleMobileNavigate(onNavigateAdmin)}
+                  className={`text-left py-3 px-4 rounded-lg transition-colors flex items-center gap-2 ${ 
+                    currentView === "admin" 
+                      ? "bg-primary/10 text-primary font-medium" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Settings className="w-4 h-4" />
+                  Admin Panel
+                </button>
+              )}
+              
+              <div className="mt-4 pt-4 border-t border-border">
+                <div className="text-sm text-muted-foreground text-center mb-4">
+                  Classes from <span className="font-medium text-primary">$11</span>
+                </div>
+                
+                {/* Mobile Auth Button */}
+                {user ? (
+                  <Button
+                    variant="outline"
+                    size="default"
+                    onClick={() => {
+                      onAccountClick();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 font-medium border-primary/20 hover:bg-accent"
+                  >
+                    <User className="w-4 h-4" />
+                    Account
+                  </Button>
+                ) : (
+                  <Button
+                    size="default"
+                    onClick={() => {
+                      onLoginClick();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 font-medium bg-primary hover:bg-primary/90"
+                  >
+                    <User className="w-4 h-4" />
+                    Login
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
