@@ -127,9 +127,25 @@ export default function App() {
       // Load user's booked classes from database
       let bookedClassesData = {};
       try {
+        console.log('📚 Loading booked classes for user ID:', userRecord.id);
         const bookedClasses = await DatabaseService.getUserBookedClasses(userRecord.id);
+        console.log('📚 Raw booked classes from database:', bookedClasses);
         bookedClassesData = bookedClasses.reduce((acc, booking) => {
-          const classId = `${booking.class_name}-${booking.class_date}-${booking.class_time}`;
+          // Generate consistent class ID that matches the schedule format
+          const date = new Date(booking.class_date);
+          const dayOfWeek = date.getDay();
+          const time = booking.class_time;
+          const className = booking.class_name;
+          
+          let classId;
+          if (dayOfWeek === 0) { // Sunday
+            classId = time.includes('9:00') ? `sun-morning-${booking.class_date}` : `sun-evening-${booking.class_date}`;
+          } else if (dayOfWeek === 6) { // Saturday
+            classId = time.includes('9:00') ? `sat-morning-${booking.class_date}` : `sat-evening-${booking.class_date}`;
+          } else { // Weekdays
+            classId = time.includes('8:00') ? `weekday-morning-${booking.class_date}` : `weekday-evening-${booking.class_date}`;
+          }
+          
           acc[classId] = {
             className: booking.class_name,
             teacher: booking.teacher,
@@ -142,8 +158,9 @@ export default function App() {
           };
           return acc;
         }, {});
+        console.log('📚 Processed booked classes data:', bookedClassesData);
       } catch (bookedError) {
-        console.log('No booked classes found for user');
+        console.log('No booked classes found for user:', bookedError);
       }
       
       setUser({
@@ -162,15 +179,15 @@ export default function App() {
     } catch (error) {
       console.error('❌ Error loading user data:', error);
       // Fallback to basic user data if database fails
-      setUser({
-        email,
-        name: email.split('@')[0],
-        classPacks: {
+    setUser({
+      email,
+      name: email.split('@')[0],
+      classPacks: {
           singleClasses: 0,
           fivePack: 0,
-          tenPack: 0
-        }
-      });
+        tenPack: 0
+      }
+    });
     }
   };
 
@@ -299,6 +316,7 @@ export default function App() {
       console.log('📅 Meeting details:', { className: classItem.className, teacher: classItem.teacher, day, time: classItem.time });
       let zoomMeeting = null;
       try {
+        console.log('🎥 Calling ZoomService.createClassMeeting...');
         zoomMeeting = await ZoomService.createClassMeeting(
           classItem.className,
           classItem.teacher,
@@ -306,7 +324,7 @@ export default function App() {
           classItem.time,
           60
         );
-        console.log('✅ Zoom meeting created:', zoomMeeting);
+        console.log('✅ Zoom meeting created successfully:', zoomMeeting);
         if (zoomMeeting?.zoomMeeting?.join_url) {
           console.log('🔗 Zoom link available:', zoomMeeting.zoomMeeting.join_url);
         } else {
@@ -314,6 +332,7 @@ export default function App() {
         }
       } catch (zoomError) {
         console.log('⚠️ Zoom meeting creation failed, creating mock meeting for testing:', zoomError);
+        console.log('⚠️ Error details:', zoomError instanceof Error ? zoomError.message : String(zoomError));
         // Create a mock Zoom meeting for testing
         zoomMeeting = {
           classId: `mock-${Date.now()}`,
@@ -335,6 +354,17 @@ export default function App() {
       
       // Save booked class to database with Zoom data
       try {
+        console.log('💾 Saving class booking to database...');
+        console.log('💾 User ID:', userRecord.id);
+        console.log('💾 Class data:', {
+          class_name: classItem.className,
+          teacher: classItem.teacher,
+          class_date: day,
+          class_time: classItem.time,
+          zoom_meeting_id: zoomMeeting?.zoomMeeting?.meeting_id || '',
+          zoom_password: zoomMeeting?.zoomMeeting?.password || '',
+          zoom_link: zoomMeeting?.zoomMeeting?.join_url || ''
+        });
         await DatabaseService.bookClass(userRecord.id, {
           class_name: classItem.className,
           teacher: classItem.teacher,
@@ -421,6 +451,8 @@ export default function App() {
         };
         console.log('📧 Email data being sent:', emailData);
         console.log('🔗 Zoom link in email:', emailData.zoomLink);
+        console.log('🔗 Zoom password in email:', emailData.zoomPassword);
+        console.log('📧 Full zoomMeeting object:', zoomMeeting);
         
         await EmailService.sendStudentConfirmation(emailData);
         console.log('✅ Confirmation email sent');
