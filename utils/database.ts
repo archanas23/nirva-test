@@ -201,6 +201,8 @@ export class DatabaseService {
   }
 
   static async getUserBookedClasses(userId: string) {
+    console.log('📚 DatabaseService.getUserBookedClasses called with userId:', userId);
+    
     const { data, error } = await supabase
       .from('user_booked_classes')
       .select('*')
@@ -208,7 +210,12 @@ export class DatabaseService {
       .eq('is_cancelled', false)
       .order('booked_at', { ascending: false })
     
-    if (error) throw error
+    if (error) {
+      console.error('📚 Database getUserBookedClasses error:', error);
+      throw error;
+    }
+    
+    console.log('📚 Database getUserBookedClasses success:', data);
     return data || []
   }
 
@@ -221,6 +228,8 @@ export class DatabaseService {
     zoom_password?: string;
     zoom_link?: string;
   }) {
+    console.log('💾 DatabaseService.bookClass called with:', { userId, classData });
+    
     const { data, error } = await supabase
       .from('user_booked_classes')
       .insert([{
@@ -231,7 +240,12 @@ export class DatabaseService {
       .select()
       .single()
     
-    if (error) throw error
+    if (error) {
+      console.error('💾 Database booking error:', error);
+      throw error;
+    }
+    
+    console.log('💾 Database booking success:', data);
     return data
   }
 
