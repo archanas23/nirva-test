@@ -25,13 +25,13 @@ export function UserAccount({ user, onLogout, onNavigateToClasses, onNavigateToP
   const totalClasses = user.classPacks.fivePack + user.classPacks.tenPack;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-1">
       {/* Account Header */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>My Account</span>
-            <Button variant="outline" size="sm" onClick={onLogout}>
+            <Button variant="destructive" size="sm" onClick={onLogout}>
               Logout
             </Button>
           </CardTitle>

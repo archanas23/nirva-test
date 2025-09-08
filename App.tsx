@@ -454,7 +454,7 @@ export default function App() {
 
       {/* Account Modal */}
       <Dialog open={showAccountModal} onOpenChange={setShowAccountModal}>
-        <DialogContent className="sm:max-w-5xl">
+        <DialogContent className="sm:max-w-5xl max-h-[90vh] overflow-y-auto">
           <UserAccount 
             user={user} 
             onLogout={handleLogout}
