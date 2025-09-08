@@ -75,25 +75,40 @@ exports.handler = async (event, context) => {
 
 async function getZoomAccessToken() {
   try {
-    const response = await axios.post('https://zoom.us/oauth/token', {
-      grant_type: 'account_credentials',
-      account_id: process.env.VITE_ZOOM_ACCOUNT_ID
-    }, {
-      headers: {
-        'Authorization': `Basic ${Buffer.from(`${process.env.VITE_ZOOM_CLIENT_ID}:${process.env.VITE_ZOOM_CLIENT_SECRET}`).toString('base64')}`,
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    });
+    console.log('🔑 Getting Zoom access token...');
+    console.log('🔑 Account ID:', process.env.VITE_ZOOM_ACCOUNT_ID ? 'Set' : 'Missing');
+    console.log('🔑 Client ID:', process.env.VITE_ZOOM_CLIENT_ID ? 'Set' : 'Missing');
+    console.log('🔑 Client Secret:', process.env.VITE_ZOOM_CLIENT_SECRET ? 'Set' : 'Missing');
 
+    if (!process.env.VITE_ZOOM_ACCOUNT_ID || !process.env.VITE_ZOOM_CLIENT_ID || !process.env.VITE_ZOOM_CLIENT_SECRET) {
+      throw new Error('Missing Zoom API credentials. Please check environment variables.');
+    }
+
+    const response = await axios.post('https://zoom.us/oauth/token', 
+      `grant_type=account_credentials&account_id=${process.env.VITE_ZOOM_ACCOUNT_ID}`,
+      {
+        headers: {
+          'Authorization': `Basic ${Buffer.from(`${process.env.VITE_ZOOM_CLIENT_ID}:${process.env.VITE_ZOOM_CLIENT_SECRET}`).toString('base64')}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    );
+
+    console.log('✅ Zoom access token obtained successfully');
     return response.data.access_token;
   } catch (error) {
-    console.error('Failed to get Zoom access token:', error.response?.data || error.message);
+    console.error('❌ Failed to get Zoom access token:');
+    console.error('Error details:', error.response?.data || error.message);
+    console.error('Status:', error.response?.status);
+    console.error('Headers:', error.response?.headers);
     throw error;
   }
 }
 
 async function createZoomMeeting(accessToken, { className, teacher, date, time, duration }) {
   try {
+    console.log('🎥 Creating Zoom meeting with data:', { className, teacher, date, time, duration });
+    
     // Parse date and time to create start time
     const [month, day, year] = date.split('/');
     const [hours, minutes] = time.split(':');
@@ -104,6 +119,7 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
     if (ampm === 'AM' && hour24 === 12) hour24 = 0;
     
     const startTime = new Date(year, month - 1, day, hour24, parseInt(minutes));
+    console.log('🎥 Parsed start time:', startTime.toISOString());
     
     const meetingData = {
       topic: `${className} with ${teacher}`,
@@ -136,6 +152,8 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
       }
     };
 
+    console.log('🎥 Meeting data to send:', JSON.stringify(meetingData, null, 2));
+
     const response = await axios.post('https://api.zoom.us/v2/users/me/meetings', meetingData, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -144,6 +162,7 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
     });
 
     const meeting = response.data;
+    console.log('✅ Zoom meeting created successfully:', meeting);
     
     return {
       meeting_id: meeting.id.toString(),
@@ -156,7 +175,10 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
     };
 
   } catch (error) {
-    console.error('Failed to create Zoom meeting:', error.response?.data || error.message);
+    console.error('❌ Failed to create Zoom meeting:');
+    console.error('Error details:', error.response?.data || error.message);
+    console.error('Status:', error.response?.status);
+    console.error('Request data:', error.config?.data);
     throw error;
   }
 }
