@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
@@ -43,6 +43,17 @@ export function PaymentPage({
     email: user?.email || '',
     phone: ''
   });
+
+  // Update student info when user changes
+  useEffect(() => {
+    if (user) {
+      setStudentInfo({
+        name: user.name || '',
+        email: user.email || '',
+        phone: ''
+      });
+    }
+  }, [user]);
   const [paymentMethod, setPaymentMethod] = useState<'zelle' | 'package'>('zelle');
   const [zelleEmail, setZelleEmail] = useState('');
 

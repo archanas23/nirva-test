@@ -17,7 +17,7 @@ interface ClassItem {
 }
 
 interface ClassScheduleProps {
-  onBookClass?: (classItem: ClassItem, day: string) => void;
+  onBookClass?: (classItem: ClassItem, day: string) => Promise<void>;
   user?: {
     email: string;
     name?: string;
@@ -425,7 +425,7 @@ export function ClassSchedule({ onBookClass, user, bookedClasses = {}, isClassBo
                         </Button>
                       ) : (
                         <Button 
-                          onClick={() => onBookClass?.(classItem, formatDate(date))}
+                          onClick={async () => await onBookClass?.(classItem, formatDate(date))}
                           size="sm"
                           className="bg-primary hover:bg-primary/90"
                         >

@@ -224,7 +224,7 @@ export default function App() {
     return bookedClasses[classId] !== undefined;
   };
 
-  const handleBookClass = (classItem: ClassItem, day: string) => {
+  const handleBookClass = async (classItem: ClassItem, day: string) => {
     if (!user) {
       setShowAuthModal(true);
       return;
@@ -246,15 +246,100 @@ export default function App() {
       return;
     }
     
-    setSelectedClass({
-      className: classItem.className,
-      teacher: classItem.teacher,
-      time: classItem.time,
-      day: day,
-      id: classItem.id
-    });
-    setSelectedPackage(null); // Clear any selected package
-    navigateTo("payment");
+    // User has classes available - process the booking immediately
+    try {
+      console.log('📅 Processing class booking with existing credits...');
+      
+      // Generate Zoom meeting for the class
+      console.log('🎥 Creating Zoom meeting for class...');
+      let zoomMeeting = null;
+      try {
+        zoomMeeting = await ZoomService.createClassMeeting(
+          classItem.className,
+          classItem.teacher,
+          day,
+          classItem.time,
+          60
+        );
+        console.log('✅ Zoom meeting created:', zoomMeeting);
+      } catch (zoomError) {
+        console.log('⚠️ Zoom meeting creation failed, continuing without Zoom:', zoomError);
+      }
+      
+      // Create booking in database
+      await DatabaseService.createBooking({
+        student_name: user.name || user.email || 'Unknown',
+        student_email: user.email || '',
+        class_name: classItem.className,
+        teacher: classItem.teacher,
+        class_date: day,
+        class_time: classItem.time,
+        payment_method: 'Class Package',
+        amount: 0, // Free with existing credits
+        zoom_meeting_id: zoomMeeting?.zoomMeeting?.meeting_id || '',
+        zoom_password: zoomMeeting?.zoomMeeting?.password || '',
+        zoom_link: zoomMeeting?.zoomMeeting?.join_url || ''
+      });
+      console.log('✅ Class booking saved to database');
+      
+      // Update booked classes state
+      setBookedClasses(prev => ({
+        ...prev,
+        [classItem.id || 'unknown']: {
+          className: classItem.className,
+          teacher: classItem.teacher,
+          time: classItem.time,
+          day: day,
+          zoomLink: zoomMeeting?.zoomMeeting?.join_url || '',
+          zoomPassword: zoomMeeting?.zoomMeeting?.password || '',
+          meetingId: zoomMeeting?.zoomMeeting?.meeting_id || '',
+          bookedAt: new Date().toISOString()
+        }
+      }));
+      
+      // Deduct one class from user's account (prioritize single classes, then packages)
+      setUser(prev => {
+        if (!prev) return prev;
+        const newClassPacks = { ...prev.classPacks };
+        if (newClassPacks.singleClasses > 0) {
+          newClassPacks.singleClasses -= 1;
+          console.log('➖ Deducted 1 single class');
+        } else if (newClassPacks.fivePack > 0) {
+          newClassPacks.fivePack -= 1;
+          console.log('➖ Deducted 1 class from fivePack');
+        } else if (newClassPacks.tenPack > 0) {
+          newClassPacks.tenPack -= 1;
+          console.log('➖ Deducted 1 class from tenPack');
+        }
+        console.log('📊 Updated class packs after booking:', newClassPacks);
+        return { ...prev, classPacks: newClassPacks };
+      });
+      
+      // Send confirmation email to student
+      try {
+        console.log('📧 Sending class booking confirmation email...');
+        await EmailService.sendStudentConfirmation({
+          studentName: user.name || user.email || 'Unknown',
+          studentEmail: user.email || '',
+          className: classItem.className,
+          teacher: classItem.teacher,
+          date: day,
+          time: classItem.time,
+          zoomLink: zoomMeeting?.zoomMeeting?.join_url || '',
+          zoomPassword: zoomMeeting?.zoomMeeting?.password || ''
+        });
+        console.log('✅ Confirmation email sent');
+      } catch (emailError) {
+        console.log('⚠️ Email sending failed, but booking was successful:', emailError);
+      }
+      
+      // Show success message
+      alert(`✅ Class booked successfully! Check your email for Zoom details.`);
+      
+    } catch (error) {
+      console.error('❌ Error booking class:', error);
+      alert('❌ Failed to book class. Please try again.');
+    }
   };
 
   const handlePayNow = () => {

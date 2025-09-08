@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
@@ -11,14 +11,29 @@ interface StripePaymentPageProps {
   selectedClass?: any;
   selectedPackage?: any;
   onSuccess: () => void;
+  user?: {
+    name: string;
+    email: string;
+  } | null;
 }
 
-export function StripePaymentPage({ onBack, selectedClass, selectedPackage, onSuccess }: StripePaymentPageProps) {
+export function StripePaymentPage({ onBack, selectedClass, selectedPackage, onSuccess, user }: StripePaymentPageProps) {
   const [studentInfo, setStudentInfo] = useState({
-    name: '',
-    email: '',
+    name: user?.name || '',
+    email: user?.email || '',
     phone: ''
   });
+
+  // Update student info when user changes
+  useEffect(() => {
+    if (user) {
+      setStudentInfo({
+        name: user.name || '',
+        email: user.email || '',
+        phone: ''
+      });
+    }
+  }, [user]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

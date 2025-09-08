@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
@@ -11,14 +11,29 @@ interface TrustZellePaymentProps {
   selectedClass?: any;
   selectedPackage?: any;
   onSuccess: () => void;
+  user?: {
+    name: string;
+    email: string;
+  } | null;
 }
 
-export function TrustZellePayment({ onBack, selectedClass, selectedPackage, onSuccess }: TrustZellePaymentProps) {
+export function TrustZellePayment({ onBack, selectedClass, selectedPackage, onSuccess, user }: TrustZellePaymentProps) {
   const [studentInfo, setStudentInfo] = useState({
-    name: '',
-    email: '',
+    name: user?.name || '',
+    email: user?.email || '',
     phone: ''
   });
+
+  // Update student info when user changes
+  useEffect(() => {
+    if (user) {
+      setStudentInfo({
+        name: user.name || '',
+        email: user.email || '',
+        phone: ''
+      });
+    }
+  }, [user]);
   const [confirmationNumber, setConfirmationNumber] = useState<string>('');
   const [step, setStep] = useState<'form' | 'instructions' | 'submitted'>('form');
 
