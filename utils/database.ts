@@ -151,4 +151,110 @@ export class DatabaseService {
     if (error && error.code !== 'PGRST116') throw error
     return data
   }
+
+  // User data persistence methods
+  static async createOrUpdateUser(userData: { email: string; name?: string }) {
+    const { data, error } = await supabase
+      .from('users')
+      .upsert([{
+        email: userData.email,
+        name: userData.name || null,
+        updated_at: new Date().toISOString()
+      }], {
+        onConflict: 'email'
+      })
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  }
+
+  static async getUserCredits(userId: string) {
+    const { data, error } = await supabase
+      .from('user_class_credits')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+    
+    if (error && error.code !== 'PGRST116') throw error
+    return data
+  }
+
+  static async updateUserCredits(userId: string, credits: { single_classes: number; five_pack_classes: number; ten_pack_classes: number }) {
+    const { data, error } = await supabase
+      .from('user_class_credits')
+      .upsert([{
+        user_id: userId,
+        single_classes: credits.single_classes,
+        five_pack_classes: credits.five_pack_classes,
+        ten_pack_classes: credits.ten_pack_classes,
+        updated_at: new Date().toISOString()
+      }], {
+        onConflict: 'user_id'
+      })
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  }
+
+  static async getUserBookedClasses(userId: string) {
+    const { data, error } = await supabase
+      .from('user_booked_classes')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_cancelled', false)
+      .order('booked_at', { ascending: false })
+    
+    if (error) throw error
+    return data || []
+  }
+
+  static async bookClass(userId: string, classData: {
+    class_name: string;
+    teacher: string;
+    class_date: string;
+    class_time: string;
+    zoom_meeting_id?: string;
+    zoom_password?: string;
+    zoom_link?: string;
+  }) {
+    const { data, error } = await supabase
+      .from('user_booked_classes')
+      .insert([{
+        user_id: userId,
+        ...classData,
+        booked_at: new Date().toISOString()
+      }])
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  }
+
+  static async cancelClass(userId: string, classData: {
+    class_name: string;
+    class_date: string;
+    class_time: string;
+  }) {
+    const { data, error } = await supabase
+      .from('user_booked_classes')
+      .update({
+        is_cancelled: true,
+        cancelled_at: new Date().toISOString()
+      })
+      .eq('user_id', userId)
+      .eq('class_name', classData.class_name)
+      .eq('class_date', classData.class_date)
+      .eq('class_time', classData.class_time)
+      .eq('is_cancelled', false)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  }
 }

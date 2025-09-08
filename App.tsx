@@ -103,24 +103,62 @@ export default function App() {
     }
     
     try {
-      // Load user's class packages from Supabase
-      const packages = await DatabaseService.getStudentPackages(email);
+      // Create or update user in database
+      const userRecord = await DatabaseService.createOrUpdateUser({
+        email,
+        name: email.split('@')[0]
+      });
       
-      // Calculate total classes for each package type
-      const fivePack = packages.filter(p => p.package_type === 'five').reduce((sum, p) => sum + p.remaining_classes, 0);
-      const tenPack = packages.filter(p => p.package_type === 'ten').reduce((sum, p) => sum + p.remaining_classes, 0);
+      // Load user's class credits from database
+      let credits = { single_classes: 0, five_pack_classes: 0, ten_pack_classes: 0 };
+      try {
+        const creditsData = await DatabaseService.getUserCredits(userRecord.id);
+        if (creditsData) {
+          credits = {
+            single_classes: creditsData.single_classes || 0,
+            five_pack_classes: creditsData.five_pack_classes || 0,
+            ten_pack_classes: creditsData.ten_pack_classes || 0
+          };
+        }
+      } catch (creditsError) {
+        console.log('No credits found for user, using defaults');
+      }
+      
+      // Load user's booked classes from database
+      let bookedClassesData = {};
+      try {
+        const bookedClasses = await DatabaseService.getUserBookedClasses(userRecord.id);
+        bookedClassesData = bookedClasses.reduce((acc, booking) => {
+          const classId = `${booking.class_name}-${booking.class_date}-${booking.class_time}`;
+          acc[classId] = {
+            className: booking.class_name,
+            teacher: booking.teacher,
+            time: booking.class_time,
+            day: booking.class_date,
+            zoomLink: booking.zoom_link || '',
+            zoomPassword: booking.zoom_password || '',
+            meetingId: booking.zoom_meeting_id || '',
+            bookedAt: booking.booked_at
+          };
+          return acc;
+        }, {});
+      } catch (bookedError) {
+        console.log('No booked classes found for user');
+      }
       
       setUser({
         email,
-        name: email.split('@')[0],
+        name: userRecord.name || email.split('@')[0],
         classPacks: {
-          singleClasses: 0,
-          fivePack,
-          tenPack
+          singleClasses: credits.single_classes,
+          fivePack: credits.five_pack_classes,
+          tenPack: credits.ten_pack_classes
         }
       });
       
-      console.log('✅ User logged in:', email, 'Packages:', { fivePack, tenPack });
+      setBookedClasses(bookedClassesData);
+      
+      console.log('✅ User logged in:', email, 'Credits:', credits, 'Booked classes:', Object.keys(bookedClassesData).length);
     } catch (error) {
       console.error('❌ Error loading user data:', error);
       // Fallback to basic user data if database fails
@@ -250,8 +288,15 @@ export default function App() {
     try {
       console.log('📅 Processing class booking with existing credits...');
       
+      // Get user ID from database
+      const userRecord = await DatabaseService.createOrUpdateUser({
+        email: user.email,
+        name: user.name
+      });
+      
       // Generate Zoom meeting for the class
       console.log('🎥 Creating Zoom meeting for class...');
+      console.log('📅 Meeting details:', { className: classItem.className, teacher: classItem.teacher, day, time: classItem.time });
       let zoomMeeting = null;
       try {
         zoomMeeting = await ZoomService.createClassMeeting(
@@ -262,57 +307,79 @@ export default function App() {
           60
         );
         console.log('✅ Zoom meeting created:', zoomMeeting);
+        if (zoomMeeting?.zoomMeeting?.join_url) {
+          console.log('🔗 Zoom link available:', zoomMeeting.zoomMeeting.join_url);
+        } else {
+          console.log('⚠️ No Zoom link in meeting response');
+        }
       } catch (zoomError) {
         console.log('⚠️ Zoom meeting creation failed, continuing without Zoom:', zoomError);
       }
       
-      // Create booking in database (using simplified structure)
+      // Save booked class to database with Zoom data
       try {
-        await DatabaseService.createBooking({
-          student_name: user.name || user.email || 'Unknown',
-          student_email: user.email || '',
+        await DatabaseService.bookClass(userRecord.id, {
           class_name: classItem.className,
           teacher: classItem.teacher,
           class_date: day,
           class_time: classItem.time,
-          payment_method: 'Class Package',
-          amount: 0 // Free with existing credits
+          zoom_meeting_id: zoomMeeting?.zoomMeeting?.meeting_id || '',
+          zoom_password: zoomMeeting?.zoomMeeting?.password || '',
+          zoom_link: zoomMeeting?.zoomMeeting?.join_url || ''
         });
+        console.log('✅ Class booking saved to database with Zoom data');
       } catch (dbError) {
         console.log('⚠️ Database booking failed, but continuing with local state update:', dbError);
         // Continue with local state update even if database fails
       }
-      console.log('✅ Class booking saved to database');
       
       // Update booked classes state
+      const bookedClassData = {
+        className: classItem.className,
+        teacher: classItem.teacher,
+        time: classItem.time,
+        day: day,
+        zoomLink: zoomMeeting?.zoomMeeting?.join_url || '',
+        zoomPassword: zoomMeeting?.zoomMeeting?.password || '',
+        meetingId: zoomMeeting?.zoomMeeting?.meeting_id || '',
+        bookedAt: new Date().toISOString()
+      };
+      console.log('📝 Storing booked class data:', bookedClassData);
+      console.log('🔗 Zoom link being stored:', bookedClassData.zoomLink);
+      
       setBookedClasses(prev => ({
         ...prev,
-        [classItem.id || 'unknown']: {
-          className: classItem.className,
-          teacher: classItem.teacher,
-          time: classItem.time,
-          day: day,
-          zoomLink: zoomMeeting?.zoomMeeting?.join_url || '',
-          zoomPassword: zoomMeeting?.zoomMeeting?.password || '',
-          meetingId: zoomMeeting?.zoomMeeting?.meeting_id || '',
-          bookedAt: new Date().toISOString()
-        }
+        [classItem.id || 'unknown']: bookedClassData
       }));
       
       // Deduct one class from user's account (prioritize single classes, then packages)
+      const newClassPacks = { ...user.classPacks };
+      if (newClassPacks.singleClasses > 0) {
+        newClassPacks.singleClasses -= 1;
+        console.log('➖ Deducted 1 single class');
+      } else if (newClassPacks.fivePack > 0) {
+        newClassPacks.fivePack -= 1;
+        console.log('➖ Deducted 1 class from fivePack');
+      } else if (newClassPacks.tenPack > 0) {
+        newClassPacks.tenPack -= 1;
+        console.log('➖ Deducted 1 class from tenPack');
+      }
+      
+      // Update credits in database
+      try {
+        await DatabaseService.updateUserCredits(userRecord.id, {
+          single_classes: newClassPacks.singleClasses,
+          five_pack_classes: newClassPacks.fivePack,
+          ten_pack_classes: newClassPacks.tenPack
+        });
+        console.log('✅ Credits updated in database');
+      } catch (creditsError) {
+        console.log('⚠️ Failed to update credits in database:', creditsError);
+      }
+      
+      // Update local state
       setUser(prev => {
         if (!prev) return prev;
-        const newClassPacks = { ...prev.classPacks };
-        if (newClassPacks.singleClasses > 0) {
-          newClassPacks.singleClasses -= 1;
-          console.log('➖ Deducted 1 single class');
-        } else if (newClassPacks.fivePack > 0) {
-          newClassPacks.fivePack -= 1;
-          console.log('➖ Deducted 1 class from fivePack');
-        } else if (newClassPacks.tenPack > 0) {
-          newClassPacks.tenPack -= 1;
-          console.log('➖ Deducted 1 class from tenPack');
-        }
         console.log('📊 Updated class packs after booking:', newClassPacks);
         return { ...prev, classPacks: newClassPacks };
       });
@@ -320,7 +387,7 @@ export default function App() {
       // Send confirmation email to student
       try {
         console.log('📧 Sending class booking confirmation email...');
-        await EmailService.sendStudentConfirmation({
+        const emailData = {
           studentName: user.name || user.email || 'Unknown',
           studentEmail: user.email || '',
           className: classItem.className,
@@ -329,7 +396,11 @@ export default function App() {
           time: classItem.time,
           zoomLink: zoomMeeting?.zoomMeeting?.join_url || '',
           zoomPassword: zoomMeeting?.zoomMeeting?.password || ''
-        });
+        };
+        console.log('📧 Email data being sent:', emailData);
+        console.log('🔗 Zoom link in email:', emailData.zoomLink);
+        
+        await EmailService.sendStudentConfirmation(emailData);
         console.log('✅ Confirmation email sent');
       } catch (emailError) {
         console.log('⚠️ Email sending failed, but booking was successful:', emailError);
@@ -358,11 +429,29 @@ export default function App() {
     try {
       console.log('🚫 Cancelling class:', classId);
       
+      // Get user ID from database
+      const userRecord = await DatabaseService.createOrUpdateUser({
+        email: user.email,
+        name: user.name
+      });
+      
       // Get the booked class details
       const bookedClass = bookedClasses[classId];
       if (!bookedClass) {
         console.error('❌ Class not found in booked classes');
         return;
+      }
+
+      // Cancel class in database
+      try {
+        await DatabaseService.cancelClass(userRecord.id, {
+          class_name: bookedClass.className,
+          class_date: bookedClass.day,
+          class_time: bookedClass.time
+        });
+        console.log('✅ Class cancelled in database');
+      } catch (dbError) {
+        console.log('⚠️ Failed to cancel class in database:', dbError);
       }
 
       // Remove from booked classes state
@@ -373,22 +462,35 @@ export default function App() {
       });
 
       // Restore one class to user's account
+      const newClassPacks = { ...user.classPacks };
+      
+      // Restore to single classes first, then packages
+      if (bookedClass.className.includes('Single') || newClassPacks.singleClasses > 0) {
+        newClassPacks.singleClasses += 1;
+        console.log('➕ Restored 1 single class');
+      } else if (newClassPacks.fivePack < 5) {
+        newClassPacks.fivePack += 1;
+        console.log('➕ Restored 1 class to fivePack');
+      } else if (newClassPacks.tenPack < 10) {
+        newClassPacks.tenPack += 1;
+        console.log('➕ Restored 1 class to tenPack');
+      }
+      
+      // Update credits in database
+      try {
+        await DatabaseService.updateUserCredits(userRecord.id, {
+          single_classes: newClassPacks.singleClasses,
+          five_pack_classes: newClassPacks.fivePack,
+          ten_pack_classes: newClassPacks.tenPack
+        });
+        console.log('✅ Credits restored in database');
+      } catch (creditsError) {
+        console.log('⚠️ Failed to restore credits in database:', creditsError);
+      }
+      
+      // Update local state
       setUser(prev => {
         if (!prev) return prev;
-        const newClassPacks = { ...prev.classPacks };
-        
-        // Restore to single classes first, then packages
-        if (bookedClass.className.includes('Single') || newClassPacks.singleClasses > 0) {
-          newClassPacks.singleClasses += 1;
-          console.log('➕ Restored 1 single class');
-        } else if (newClassPacks.fivePack < 5) {
-          newClassPacks.fivePack += 1;
-          console.log('➕ Restored 1 class to fivePack');
-        } else if (newClassPacks.tenPack < 10) {
-          newClassPacks.tenPack += 1;
-          console.log('➕ Restored 1 class to tenPack');
-        }
-        
         console.log('📊 Updated class packs after cancellation:', newClassPacks);
         return { ...prev, classPacks: newClassPacks };
       });
