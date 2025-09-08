@@ -15,6 +15,7 @@ export interface StripePaymentData {
 
 export class StripePaymentService {
   private static stripe: Stripe | null = null;
+  private static paymentDataCache: Map<string, StripePaymentData> = new Map();
 
   static async initialize(): Promise<Stripe | null> {
     if (!this.stripe) {
@@ -55,7 +56,13 @@ export class StripePaymentService {
         throw new Error('Failed to create payment intent');
       }
 
-      const { clientSecret } = await response.json();
+      const { clientSecret, paymentIntentId } = await response.json();
+      
+      // Cache the payment data for later use
+      if (paymentIntentId) {
+        this.paymentDataCache.set(paymentIntentId, data);
+      }
+      
       return clientSecret;
     } catch (error) {
       console.error('Error creating payment intent:', error);
@@ -78,18 +85,36 @@ export class StripePaymentService {
       // In production, you'd use Stripe Elements to collect card info
       console.log('Simulating successful payment for testing...');
       
-      // Get the actual payment intent from Stripe to get the real metadata
+      // Get the payment intent ID from the client secret
       const paymentIntentId = clientSecret.split('_secret_')[0];
-      const paymentIntent = await (stripe as any).paymentIntents.retrieve(paymentIntentId);
+      console.log('Payment intent ID:', paymentIntentId);
       
-      console.log('Retrieved payment intent:', paymentIntent);
-      console.log('Payment intent metadata:', paymentIntent.metadata);
+      // Get the cached payment data
+      const paymentData = this.paymentDataCache.get(paymentIntentId);
+      console.log('Cached payment data:', paymentData);
+      
+      // Create a mock successful payment intent with the actual data
+      const mockPaymentIntent = {
+        id: paymentIntentId,
+        status: 'succeeded',
+        amount: paymentData ? Math.round(paymentData.amount * 100) : 100,
+        currency: 'usd',
+        metadata: {
+          studentName: paymentData?.studentName || 'Test User',
+          studentEmail: paymentData?.studentEmail || 'test@example.com',
+          studentPhone: paymentData?.studentPhone || '',
+          classDetails: JSON.stringify(paymentData?.classDetails || {}),
+          packageDetails: JSON.stringify(paymentData?.packageDetails || {})
+        }
+      };
+
+      console.log('Mock payment intent created:', mockPaymentIntent);
 
       // Note: Database operations are handled in App.tsx onSuccess callback
       // This keeps the separation of concerns clean
       console.log('Payment processing complete, calling onSuccess...');
       
-      onSuccess(paymentIntent);
+      onSuccess(mockPaymentIntent);
       
     } catch (error: any) {
       console.error('Payment processing error:', error);
