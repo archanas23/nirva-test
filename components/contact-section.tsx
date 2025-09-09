@@ -17,6 +17,7 @@ export function ContactSection() {
     yogaGoals: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -57,17 +58,9 @@ export function ContactSection() {
         }
       });
       
-      // Show success message and reset form without page refresh
+      // Show success message and mark as submitted
       toast.success('Registration submitted successfully! We\'ll send you class information soon.');
-      
-      // Reset form
-      setFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        interestLevel: '',
-        yogaGoals: ''
-      });
+      setIsSubmitted(true);
     } catch (error) {
       console.error('Registration submission error:', error);
       toast.error('Something went wrong. Please try again.');
@@ -92,83 +85,121 @@ export function ContactSection() {
             <CardTitle>Register for Classes</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {isSubmitted ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-green-600 mb-2">Registration Submitted!</h3>
+                <p className="text-muted-foreground mb-4">
+                  Thank you, {formData.firstName}! We'll send you class information soon.
+                </p>
+                <div className="bg-accent/30 p-4 rounded-lg text-sm">
+                  <p className="font-medium mb-2">What happens next:</p>
+                  <ul className="text-left space-y-1 text-muted-foreground">
+                    <li>• You'll receive an email with class schedules</li>
+                    <li>• We'll send you booking instructions</li>
+                    <li>• You can start booking classes right away!</li>
+                  </ul>
+                </div>
+                <Button 
+                  onClick={() => {
+                    setIsSubmitted(false);
+                    setFormData({
+                      firstName: '',
+                      lastName: '',
+                      email: '',
+                      interestLevel: '',
+                      yogaGoals: ''
+                    });
+                  }}
+                  variant="outline" 
+                  className="mt-4"
+                >
+                  Register Another Person
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">
+                      First Name <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="firstName"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      placeholder="Enter your first name"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">
+                      Last Name <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="lastName"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      placeholder="Enter your last name"
+                      required
+                    />
+                  </div>
+                </div>
+                
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">
-                    First Name <span className="text-destructive">*</span>
+                  <Label htmlFor="email">
+                    Email <span className="text-destructive">*</span>
                   </Label>
                   <Input
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="Enter your first name"
+                    placeholder="Enter your email address"
                     required
                   />
                 </div>
+                
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">
-                    Last Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
+                    <Label htmlFor="interestLevel">Interest Level</Label>
+                    <Input
+                      id="interestLevel"
+                      name="interestLevel"
+                      value={formData.interestLevel}
+                      onChange={handleInputChange}
+                      placeholder="Beginner, Intermediate, or Advanced?"
+                    />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="yogaGoals">Tell us about your yoga goals</Label>
+                  <Textarea
+                    id="yogaGoals"
+                    name="yogaGoals"
+                    value={formData.yogaGoals}
                     onChange={handleInputChange}
-                    placeholder="Enter your last name"
-                    required
+                    placeholder="What brings you to yoga? Any specific goals or areas you'd like to focus on?"
+                    rows={5}
                   />
                 </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">
-                  Email <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="Enter your email address"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                  <Label htmlFor="interestLevel">Interest Level</Label>
-                  <Input
-                    id="interestLevel"
-                    name="interestLevel"
-                    value={formData.interestLevel}
-                    onChange={handleInputChange}
-                    placeholder="Beginner, Intermediate, or Advanced?"
-                  />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="yogaGoals">Tell us about your yoga goals</Label>
-                <Textarea
-                  id="yogaGoals"
-                  name="yogaGoals"
-                  value={formData.yogaGoals}
-                  onChange={handleInputChange}
-                  placeholder="What brings you to yoga? Any specific goals or areas you'd like to focus on?"
-                  rows={5}
-                />
-              </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full" 
-                size="lg"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Registering...' : 'Register Now'}
-              </Button>
-            </form>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  size="lg"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Registering...' : 'Register Now'}
+                </Button>
+              </form>
+            )}
           </CardContent>
         </Card>
 
