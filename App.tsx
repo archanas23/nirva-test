@@ -27,7 +27,7 @@ import { EmailService } from "./utils/email-service";
 
 // Lazy load StripePaymentPage to avoid loading Stripe until needed
 const StripePaymentPage = lazy(() =>
-  import('./components/stripe-payment-page').then(m => ({ default: m.StripePaymentPage }))
+  import('./components/stripe-elements-payment').then(m => ({ default: m.StripeElementsPayment }))
 );
 
 interface ClassItem {

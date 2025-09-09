@@ -37,6 +37,7 @@
     "@radix-ui/react-toggle": "^1.0.3",
     "@radix-ui/react-toggle-group": "^1.0.4",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@stripe/react-stripe-js": "^4.0.1",
     "@stripe/stripe-js": "^7.9.0",
     "@supabase/supabase-js": "^2.39.0",
     "axios": "^1.11.0",
