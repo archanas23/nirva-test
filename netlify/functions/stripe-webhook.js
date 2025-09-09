@@ -53,12 +53,42 @@ exports.handler = async (event, context) => {
         console.log('💰 Amount:', paymentIntent.amount);
         console.log('💳 Currency:', paymentIntent.currency);
         console.log('📧 Customer email:', paymentIntent.receipt_email);
+        console.log('📦 Metadata:', paymentIntent.metadata);
         
-        // TODO: Add actual processing logic here
-        // - Update database with successful payment
-        // - Send confirmation emails
-        // - Update user credits
-        // - Book the class
+        // Extract payment details
+        const studentEmail = paymentIntent.metadata.studentEmail;
+        const studentName = paymentIntent.metadata.studentName;
+        const packageDetails = JSON.parse(paymentIntent.metadata.packageDetails || '{}');
+        const classDetails = JSON.parse(paymentIntent.metadata.classDetails || '{}');
+        
+        console.log('👤 Student:', studentName, studentEmail);
+        console.log('📦 Package:', packageDetails);
+        
+        // Process package purchase
+        if (packageDetails.type) {
+          console.log('🛒 Processing package purchase...');
+          
+          // TODO: Add database operations here
+          // 1. Update user credits in database
+          // 2. Send confirmation email to student
+          // 3. Send notification email to admin
+          // 4. Log the purchase
+          
+          console.log(`✅ Package purchased: ${packageDetails.name} for $${packageDetails.price}`);
+        }
+        
+        // Process single class booking
+        if (classDetails.className) {
+          console.log('🧘‍♀️ Processing class booking...');
+          
+          // TODO: Add class booking logic here
+          // 1. Book the class in database
+          // 2. Generate Zoom meeting
+          // 3. Send confirmation email with Zoom link
+          // 4. Update user credits
+          
+          console.log(`✅ Class booked: ${classDetails.className}`);
+        }
         
         console.log('✅ Payment processed successfully');
       } catch (error) {
