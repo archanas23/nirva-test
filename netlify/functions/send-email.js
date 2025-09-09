@@ -201,6 +201,35 @@ exports.handler = async (event, context) => {
         };
         break;
 
+      case 'contact-inquiry':
+        emailData = {
+          from: 'noreply@nirva-yoga.com',
+          to: 'nirvayogastudio@gmail.com',
+          subject: `Contact Inquiry - ${data.subject || 'General Question'}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #2D3748;">New Contact Inquiry 📧</h2>
+              <div style="background: #F7FAFC; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Name:</strong> ${data.firstName} ${data.lastName}</p>
+                <p><strong>Email:</strong> ${data.email}</p>
+                <p><strong>Subject:</strong> ${data.subject || 'No subject provided'}</p>
+                <p><strong>Message:</strong></p>
+                <div style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid #3182CE;">
+                  <p style="margin: 0; white-space: pre-wrap;">${data.message || 'No message provided'}</p>
+                </div>
+              </div>
+              
+              <div style="background: #FFF5F5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <h3 style="color: #2D3748; margin-top: 0;">Response Required</h3>
+                <p style="margin: 0;">Please respond to this inquiry within 24 hours to maintain good customer service.</p>
+              </div>
+              
+              <p style="color: #718096;">This inquiry was submitted through your Nirva Yoga Studio contact form.</p>
+            </div>
+          `
+        };
+        break;
+
       default:
         return {
           statusCode: 400,

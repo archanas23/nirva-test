@@ -6,6 +6,7 @@ import { StudioInfo } from "./components/studio-info";
 import { TeachersSection } from "./components/teachers-section";
 import { VirtualInfo } from "./components/virtual-info";
 import { ContactSection } from "./components/contact-section";
+import { ContactPage } from "./components/contact-page";
 import { FlowingYogaGallery } from "./components/flowing-yoga-gallery";
 import { PackagesSection } from "./components/packages-section";
 import { FAQSection } from "./components/faq-section";
@@ -932,7 +933,7 @@ export default function App() {
             />
             
             <div className="container mx-auto px-4 py-8">
-              <ContactSection />
+              <ContactPage />
             </div>
             
             <Footer 
