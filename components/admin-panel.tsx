@@ -6,13 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Users, Calendar, DollarSign, Clock, Mail, User, Video, Copy, ExternalLink, Shield, AlertTriangle } from "lucide-react";
 import { ScheduleEditor } from "./schedule-editor";
-import { ResendTest } from "./resend-test";
-import { ZoomTest } from "./zoom-test";
-import { TestPayment } from "./test-payment";
 import { DatabaseSetup } from "./database-setup";
-import { ZoomDebugTest } from "./zoom-debug-test";
-import { BookingTest } from "./booking-test";
-import { DatabaseTest } from "./database-test";
 import { DatabaseService } from "../utils/database";
 
 interface ClassBooking {
@@ -310,12 +304,6 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
             <TabsTrigger value="zoom-classes">Zoom Classes</TabsTrigger>
             <TabsTrigger value="all-bookings">All Bookings</TabsTrigger>
             <TabsTrigger value="by-class">By Class</TabsTrigger>
-            <TabsTrigger value="email-test">Email Testing</TabsTrigger>
-            <TabsTrigger value="zoom-test">Zoom Testing</TabsTrigger>
-            <TabsTrigger value="zoom-debug">Zoom Debug</TabsTrigger>
-            <TabsTrigger value="booking-test">Booking Test</TabsTrigger>
-            <TabsTrigger value="database-test">Database Test</TabsTrigger>
-            <TabsTrigger value="payment-test">Payment Testing</TabsTrigger>
             <TabsTrigger value="database-setup">Database Setup</TabsTrigger>
           </TabsList>
 
@@ -594,29 +582,7 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="email-test" className="space-y-6">
-            <ResendTest />
-          </TabsContent>
-
-          <TabsContent value="zoom-test" className="space-y-6">
-            <ZoomTest />
-          </TabsContent>
-
-          <TabsContent value="zoom-debug" className="space-y-6">
-            <ZoomDebugTest />
-          </TabsContent>
-
-          <TabsContent value="booking-test" className="space-y-6">
-            <BookingTest />
-          </TabsContent>
-
-          <TabsContent value="database-test" className="space-y-6">
-            <DatabaseTest />
-          </TabsContent>
-
-          <TabsContent value="payment-test" className="space-y-6">
-            <TestPayment />
-          </TabsContent>
+          {/* Test components removed for production */}
 
           <TabsContent value="database-setup" className="space-y-6">
             <DatabaseSetup />

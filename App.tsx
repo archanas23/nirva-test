@@ -87,14 +87,9 @@ export default function App() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
-  // Debug user state changes
-  useEffect(() => {
-    console.log('👤 User state changed:', user);
-  }, [user]);
+  // User state changes (debugging removed for production)
 
   const handleLogin = async (email: string, password?: string) => {
-    console.log('🔐 handleLogin called with:', email);
-    
     // Check for admin authentication
     if (email === 'nirvayogastudio@gmail.com') {
       // Admin password validation
@@ -105,13 +100,11 @@ export default function App() {
     }
     
     try {
-      console.log('🔐 Creating/updating user in database...');
       // Create or update user in database
       const userRecord = await DatabaseService.createOrUpdateUser({
         email,
         name: email.split('@')[0]
       });
-      console.log('🔐 User record created/updated:', userRecord);
       
       // Load user's class credits from database
       let credits = { single_classes: 0, five_pack_classes: 0, ten_pack_classes: 0 };
@@ -131,11 +124,7 @@ export default function App() {
       // Load user's booked classes from database
       let bookedClassesData = {};
       try {
-        console.log('🔐 About to load booked classes for user ID:', userRecord.id);
-        console.log('📚 Loading booked classes for user ID:', userRecord.id);
         const bookedClasses = await DatabaseService.getUserBookedClasses(userRecord.id);
-        console.log('📚 Raw booked classes from database:', bookedClasses);
-        console.log('📚 Number of booked classes found:', bookedClasses.length);
         bookedClassesData = bookedClasses.reduce((acc, booking) => {
           // Generate consistent class ID that matches the schedule format
           const date = new Date(booking.class_date);
@@ -143,26 +132,14 @@ export default function App() {
           const time = booking.class_time;
           const className = booking.class_name;
           
-          console.log('📚 Processing booking:', { 
-            className, 
-            class_date: booking.class_date, 
-            class_time: time, 
-            dayOfWeek 
-          });
-          
           let classId;
           if (dayOfWeek === 0) { // Sunday
-            console.log('📚 Sunday class - checking time:', time, 'includes 9:00?', time.includes('9:00'));
             classId = time.includes('9:00') ? `sun-morning-${booking.class_date}` : `sun-evening-${booking.class_date}`;
           } else if (dayOfWeek === 6) { // Saturday
-            console.log('📚 Saturday class - checking time:', time, 'includes 9:00?', time.includes('9:00'));
             classId = time.includes('9:00') ? `sat-morning-${booking.class_date}` : `sat-evening-${booking.class_date}`;
           } else { // Weekdays
-            console.log('📚 Weekday class - checking time:', time, 'includes 8:00?', time.includes('8:00'));
             classId = time.includes('8:00') ? `weekday-morning-${booking.class_date}` : `weekday-evening-${booking.class_date}`;
           }
-          
-          console.log('📚 Generated classId:', classId);
           
           acc[classId] = {
             className: booking.class_name,
@@ -176,9 +153,8 @@ export default function App() {
           };
           return acc;
         }, {});
-        console.log('📚 Processed booked classes data:', bookedClassesData);
       } catch (bookedError) {
-        console.log('No booked classes found for user:', bookedError);
+        // No booked classes found for user
       }
       
       setUser({
@@ -193,11 +169,6 @@ export default function App() {
       
       // Set the booked classes state with loaded data
       setBookedClasses(bookedClassesData);
-      console.log('📚 Set booked classes state:', bookedClassesData);
-      console.log('📚 Number of booked classes in state:', Object.keys(bookedClassesData).length);
-      console.log('📚 Booked class IDs:', Object.keys(bookedClassesData));
-      
-      console.log('✅ User logged in:', email, 'Credits:', credits, 'Booked classes:', Object.keys(bookedClassesData).length);
     } catch (error) {
       console.error('❌ Error loading user data:', error);
       // Fallback to basic user data if database fails

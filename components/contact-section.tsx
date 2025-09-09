@@ -6,14 +6,15 @@ import { Textarea } from './ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Mail, Phone, MapPin, Clock, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
+import { EmailService } from '../utils/email-service';
 
 export function ContactSection() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
-    subject: '',
-    message: ''
+    interestLevel: '',
+    yogaGoals: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,28 +45,30 @@ export function ContactSection() {
     setIsSubmitting(true);
 
     try {
-      // Mock email sending - in production, this would integrate with EmailJS or backend API
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
+      // Send registration inquiry email
+      await EmailService.sendEmail({
+        type: 'registration-inquiry',
+        data: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          interestLevel: formData.interestLevel,
+          yogaGoals: formData.yogaGoals
+        }
+      });
       
-      // Create mailto link for fallback
-      const mailtoLink = `mailto:nirvayogastudio@gmail.com?subject=${encodeURIComponent(formData.subject || 'Contact Form Submission')}&body=${encodeURIComponent(
-        `Name: ${formData.firstName} ${formData.lastName}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
-      )}`;
-      
-      // Open mail client
-      window.location.href = mailtoLink;
-      
-      toast.success('Thank you for your message! We\'ll get back to you soon.');
+      toast.success('Thank you for registering! We\'ll send you class information soon.');
       
       // Reset form
       setFormData({
         firstName: '',
         lastName: '',
         email: '',
-        subject: '',
-        message: ''
+        interestLevel: '',
+        yogaGoals: ''
       });
     } catch (error) {
+      console.error('Registration submission error:', error);
       toast.error('Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -75,10 +78,9 @@ export function ContactSection() {
   return (
     <div className="w-full max-w-6xl mx-auto">
       <div className="text-center mb-12">
-        <h2 className="mb-4">Get In Touch</h2>
+        <h2 className="mb-4">Register Here</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Have a question about our classes? Want to learn more about yoga? 
-          We'd love to hear from you and help guide you on your yoga journey.
+          Ready to start your yoga journey? Register for our virtual classes and begin your practice with us today.
         </p>
       </div>
 
@@ -86,7 +88,7 @@ export function ContactSection() {
         {/* Contact Form */}
         <Card>
           <CardHeader>
-            <CardTitle>Send us a message</CardTitle>
+            <CardTitle>Register for Classes</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -135,24 +137,24 @@ export function ContactSection() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="subject">Subject</Label>
-                <Input
-                  id="subject"
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleInputChange}
-                  placeholder="What's this about?"
-                />
+                  <Label htmlFor="interestLevel">Interest Level</Label>
+                  <Input
+                    id="interestLevel"
+                    name="interestLevel"
+                    value={formData.interestLevel}
+                    onChange={handleInputChange}
+                    placeholder="Beginner, Intermediate, or Advanced?"
+                  />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="message">Message</Label>
+                <Label htmlFor="yogaGoals">Tell us about your yoga goals</Label>
                 <Textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
+                  id="yogaGoals"
+                  name="yogaGoals"
+                  value={formData.yogaGoals}
                   onChange={handleInputChange}
-                  placeholder="Tell us how we can help you..."
+                  placeholder="What brings you to yoga? Any specific goals or areas you'd like to focus on?"
                   rows={5}
                 />
               </div>
@@ -163,7 +165,7 @@ export function ContactSection() {
                 size="lg"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Sending...' : 'Submit'}
+                {isSubmitting ? 'Registering...' : 'Register Now'}
               </Button>
             </form>
           </CardContent>
@@ -173,7 +175,7 @@ export function ContactSection() {
         <div className="space-y-8">
           <Card>
             <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
+              <CardTitle>Class Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-start gap-3">
@@ -205,10 +207,12 @@ export function ContactSection() {
               <div className="flex items-start gap-3">
                 <CreditCard className="w-5 h-5 text-primary mt-1" />
                 <div>
-                  <p className="font-medium">Payment Method</p>
-                  <p className="text-muted-foreground">Secure payments via Stripe</p>
+                  <p className="font-medium">Class Pricing</p>
+                  <p className="text-muted-foreground">Single Class: $11</p>
+                  <p className="text-muted-foreground">5-Class Package: $53</p>
+                  <p className="text-muted-foreground">10-Class Package: $105</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    All major credit cards, debit cards, and digital wallets accepted
+                    Private Sessions: $60 (60 minutes)
                   </p>
                 </div>
               </div>
@@ -257,11 +261,11 @@ export function ContactSection() {
 
           <Card className="bg-accent/30">
             <CardContent className="pt-6">
-              <h4 className="mb-3">Response Time</h4>
+              <h4 className="mb-3">Next Steps</h4>
               <p className="text-muted-foreground text-sm">
-                We typically respond to all inquiries within 24 hours. 
-                For urgent questions about upcoming classes, feel free to 
-                reach out directly via Instagram DM.
+                After registering, you'll receive an email with class schedules, 
+                booking instructions, and payment options. We'll also send you 
+                a welcome package with everything you need to get started!
               </p>
             </CardContent>
           </Card>

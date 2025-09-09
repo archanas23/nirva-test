@@ -171,8 +171,6 @@ export class DatabaseService {
   }
 
   static async getUserCredits(userId: string) {
-    console.log('💰 DatabaseService.getUserCredits called with userId:', userId);
-    
     const { data, error } = await supabase
       .from('user_class_credits')
       .select('*')
@@ -180,11 +178,9 @@ export class DatabaseService {
       .single()
     
     if (error && error.code !== 'PGRST116') {
-      console.error('💰 Database getUserCredits error:', JSON.stringify(error, null, 2));
       throw new Error(`Database error: ${JSON.stringify(error)}`);
     }
     
-    console.log('💰 Database getUserCredits success:', data);
     return data
   }
 
@@ -208,8 +204,6 @@ export class DatabaseService {
   }
 
   static async getUserBookedClasses(userId: string) {
-    console.log('📚 DatabaseService.getUserBookedClasses called with userId:', userId);
-    
     const { data, error } = await supabase
       .from('user_booked_classes')
       .select('*')
@@ -218,11 +212,9 @@ export class DatabaseService {
       .order('booked_at', { ascending: false })
     
     if (error) {
-      console.error('📚 Database getUserBookedClasses error:', JSON.stringify(error, null, 2));
       throw new Error(`Database error: ${JSON.stringify(error)}`);
     }
     
-    console.log('📚 Database getUserBookedClasses success:', data);
     return data || []
   }
 
@@ -235,8 +227,6 @@ export class DatabaseService {
     zoom_password?: string;
     zoom_link?: string;
   }) {
-    console.log('💾 DatabaseService.bookClass called with:', { userId, classData });
-    
     const { data, error } = await supabase
       .from('user_booked_classes')
       .upsert([{
@@ -252,11 +242,9 @@ export class DatabaseService {
       .single()
     
     if (error) {
-      console.error('💾 Database booking error:', error);
       throw error;
     }
     
-    console.log('💾 Database booking success:', data);
     return data
   }
 

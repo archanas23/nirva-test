@@ -167,6 +167,40 @@ exports.handler = async (event, context) => {
         };
         break;
 
+      case 'registration-inquiry':
+        emailData = {
+          from: 'noreply@nirva-yoga.com',
+          to: 'nirvayogastudio@gmail.com',
+          subject: `New Registration Inquiry - ${data.firstName} ${data.lastName}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #2D3748;">New Registration Inquiry 🧘‍♀️</h2>
+              <div style="background: #F7FAFC; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Name:</strong> ${data.firstName} ${data.lastName}</p>
+                <p><strong>Email:</strong> ${data.email}</p>
+                <p><strong>Interest Level:</strong> ${data.interestLevel || 'Not specified'}</p>
+                <p><strong>Yoga Goals:</strong></p>
+                <div style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid #3182CE;">
+                  <p style="margin: 0; white-space: pre-wrap;">${data.yogaGoals || 'No specific goals mentioned'}</p>
+                </div>
+              </div>
+              
+              <div style="background: #E6FFFA; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <h3 style="color: #2D3748; margin-top: 0;">Next Steps</h3>
+                <p style="margin: 0;">Please follow up with this potential student to:</p>
+                <ul style="margin: 10px 0 0 20px;">
+                  <li>Send class schedule and pricing information</li>
+                  <li>Answer any questions they may have</li>
+                  <li>Guide them through the registration process</li>
+                </ul>
+              </div>
+              
+              <p style="color: #718096;">This inquiry was submitted through your Nirva Yoga Studio registration form.</p>
+            </div>
+          `
+        };
+        break;
+
       default:
         return {
           statusCode: 400,
