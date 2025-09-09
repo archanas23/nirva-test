@@ -8,6 +8,11 @@ import { Users, Calendar, DollarSign, Clock, Mail, User, Video, Copy, ExternalLi
 import { ScheduleEditor } from "./schedule-editor";
 import { DatabaseSetup } from "./database-setup";
 import { DatabaseService } from "../utils/database";
+import { ZoomDebugTest } from "./zoom-debug-test";
+import { BookingTest } from "./booking-test";
+import { DatabaseTest } from "./database-test";
+import { PaymentTest } from "./payment-test";
+import { EmailTest } from "./email-test";
 
 interface ClassBooking {
   id: string;
@@ -305,6 +310,11 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
             <TabsTrigger value="all-bookings">All Bookings</TabsTrigger>
             <TabsTrigger value="by-class">By Class</TabsTrigger>
             <TabsTrigger value="database-setup">Database Setup</TabsTrigger>
+            <TabsTrigger value="zoom-debug">Zoom Debug</TabsTrigger>
+            <TabsTrigger value="booking-test">Booking Test</TabsTrigger>
+            <TabsTrigger value="database-test">Database Test</TabsTrigger>
+            <TabsTrigger value="payment-test">Payment Test</TabsTrigger>
+            <TabsTrigger value="email-test">Email Test</TabsTrigger>
           </TabsList>
 
           <TabsContent value="zoom-classes" className="space-y-6">
@@ -586,6 +596,61 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
 
           <TabsContent value="database-setup" className="space-y-6">
             <DatabaseSetup />
+          </TabsContent>
+
+          <TabsContent value="zoom-debug" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Zoom API Debug Test</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ZoomDebugTest />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="booking-test" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Booking System Test</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <BookingTest />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="database-test" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Database Operations Test</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DatabaseTest />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="payment-test" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Payment System Test</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PaymentTest />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="email-test" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Email System Test</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <EmailTest />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 
