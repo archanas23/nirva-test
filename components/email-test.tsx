@@ -82,8 +82,9 @@ export function EmailTest() {
 
   const testEmailType = async (emailType: string) => {
     setIsLoading(true);
+    const emailTypeInfo = emailTypes.find(type => type.id === emailType);
+    
     try {
-      const emailTypeInfo = emailTypes.find(type => type.id === emailType);
       addTestResult(emailTypeInfo?.name || emailType, 'success', `Testing ${emailTypeInfo?.name}...`);
 
       let testData: any = {
