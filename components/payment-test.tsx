@@ -129,8 +129,21 @@ export function PaymentTest() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          type: 'test',
-          data: { test: true }
+          id: 'evt_test_webhook',
+          object: 'event',
+          type: 'payment_intent.succeeded',
+          data: {
+            object: {
+              id: 'pi_test_123',
+              amount: 1100,
+              currency: 'usd',
+              status: 'succeeded',
+              metadata: {
+                test: 'true'
+              }
+            }
+          },
+          created: Math.floor(Date.now() / 1000)
         })
       });
 
