@@ -168,6 +168,7 @@ exports.handler = async (event, context) => {
         break;
 
       case 'registration-inquiry':
+        // Send admin notification
         emailData = {
           from: 'noreply@nirva-yoga.com',
           to: 'nirvayogastudio@gmail.com',
@@ -196,6 +197,70 @@ exports.handler = async (event, context) => {
               </div>
               
               <p style="color: #718096;">This inquiry was submitted through your Nirva Yoga Studio registration form.</p>
+            </div>
+          `
+        };
+        break;
+
+      case 'registration-confirmation':
+        // Send student confirmation
+        emailData = {
+          from: 'noreply@nirva-yoga.com',
+          to: data.email,
+          subject: `Welcome to Nirva Yoga Studio! 🧘‍♀️`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #2D3748;">Welcome to Nirva Yoga Studio! 🧘‍♀️</h2>
+              <p>Hi ${data.firstName},</p>
+              <p>Thank you for registering with us! We're excited to have you join our yoga community.</p>
+              
+              <div style="background: #F7FAFC; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h3 style="color: #2D3748; margin-top: 0;">Class Information</h3>
+                <p><strong>Class Schedule:</strong> Monday - Sunday, 6:30 AM - 8:00 PM</p>
+                <p><strong>Class Size:</strong> Maximum 10 students per class</p>
+                <p><strong>Platform:</strong> Zoom (link sent 24 hours before class)</p>
+                <p><strong>Levels:</strong> All levels welcome with modifications</p>
+              </div>
+              
+              <div style="background: #E6FFFA; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h3 style="color: #2D3748; margin-top: 0;">Pricing</h3>
+                <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+                  <span>Single Class:</span>
+                  <span style="font-weight: bold;">$11</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+                  <span>5-Class Package:</span>
+                  <span style="font-weight: bold;">$53</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+                  <span>10-Class Package:</span>
+                  <span style="font-weight: bold;">$105</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+                  <span>Private Sessions (60 min):</span>
+                  <span style="font-weight: bold;">$60</span>
+                </div>
+              </div>
+              
+              <div style="background: #FFF5F5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h3 style="color: #2D3748; margin-top: 0;">Next Steps</h3>
+                <ol style="margin: 10px 0; padding-left: 20px;">
+                  <li><strong>Visit our website</strong> to view the current class schedule</li>
+                  <li><strong>Choose your classes</strong> and book them online</li>
+                  <li><strong>Make payment</strong> securely through our payment system</li>
+                  <li><strong>Receive Zoom links</strong> 24 hours before each class</li>
+                </ol>
+              </div>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="https://nirva-yoga.com/classes" style="background: #3182CE; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+                  View Class Schedule
+                </a>
+              </div>
+              
+              <p>If you have any questions, feel free to reach out to us at nirvayogastudio@gmail.com or call (805) 807-4894.</p>
+              <p>We look forward to practicing with you!</p>
+              <p style="color: #718096;">Best regards,<br>The Nirva Yoga Team</p>
             </div>
           `
         };

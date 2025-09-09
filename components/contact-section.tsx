@@ -46,7 +46,7 @@ export function ContactSection() {
     setIsSubmitting(true);
 
     try {
-      // Send registration inquiry email
+      // Send admin notification email
       await EmailService.sendEmail({
         type: 'registration-inquiry',
         data: {
@@ -57,9 +57,21 @@ export function ContactSection() {
           yogaGoals: formData.yogaGoals
         }
       });
+
+      // Send student confirmation email
+      await EmailService.sendEmail({
+        type: 'registration-confirmation',
+        data: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          interestLevel: formData.interestLevel,
+          yogaGoals: formData.yogaGoals
+        }
+      });
       
       // Show success message and mark as submitted
-      toast.success('Registration submitted successfully! We\'ll send you class information soon.');
+      toast.success('Registration submitted successfully! Check your email for class information.');
       setIsSubmitted(true);
     } catch (error) {
       console.error('Registration submission error:', error);
