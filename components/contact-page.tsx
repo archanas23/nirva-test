@@ -208,7 +208,7 @@ export function ContactPage() {
               <div className="flex items-start gap-3">
                 <CreditCard className="w-5 h-5 text-primary mt-1" />
                 <div>
-                  <p className="font-medium">Payment Method</p>
+                  <p className="font-medium">Payment Methods</p>
                   <p className="text-muted-foreground">Secure payments via Stripe</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     All major credit cards, debit cards, and digital wallets accepted

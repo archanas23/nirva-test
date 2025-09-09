@@ -172,67 +172,32 @@ export function ContactSection() {
           </CardContent>
         </Card>
 
-        {/* Contact Information */}
+        {/* Class Information */}
         <div className="space-y-8">
           <Card>
             <CardHeader>
-              <CardTitle>Class Information</CardTitle>
+              <CardTitle>Class Pricing</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-start gap-3">
-                <Mail className="w-5 h-5 text-primary mt-1" />
-                <div>
-                  <p className="font-medium">Email</p>
-                  <a 
-                    href="mailto:nirvayogastudio@gmail.com"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    nirvayogastudio@gmail.com
-                  </a>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-3 bg-accent/30 rounded-lg">
+                  <span className="font-medium">Single Class</span>
+                  <span className="text-2xl font-bold text-primary">$11</span>
                 </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <Phone className="w-5 h-5 text-primary mt-1" />
-                <div>
-                  <p className="font-medium">Phone</p>
-                  <a 
-                    href="tel:+18058074894"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    (805) 807-4894
-                  </a>
+                <div className="flex justify-between items-center p-3 bg-accent/30 rounded-lg">
+                  <span className="font-medium">5-Class Package</span>
+                  <span className="text-2xl font-bold text-primary">$53</span>
                 </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <CreditCard className="w-5 h-5 text-primary mt-1" />
-                <div>
-                  <p className="font-medium">Class Pricing</p>
-                  <p className="text-muted-foreground">Single Class: $11</p>
-                  <p className="text-muted-foreground">5-Class Package: $53</p>
-                  <p className="text-muted-foreground">10-Class Package: $105</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Private Sessions: $60 (60 minutes)
-                  </p>
+                <div className="flex justify-between items-center p-3 bg-accent/30 rounded-lg">
+                  <span className="font-medium">10-Class Package</span>
+                  <span className="text-2xl font-bold text-primary">$105</span>
                 </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-primary mt-1" />
-                <div>
-                  <p className="font-medium">Virtual Class Hours</p>
-                  <p className="text-muted-foreground">Monday - Sunday</p>
-                  <p className="text-muted-foreground">6:30 AM - 8:00 PM</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-primary mt-1" />
-                <div>
-                  <p className="font-medium">Practice Location</p>
-                  <p className="text-muted-foreground">From the comfort of your home</p>
-                  <p className="text-muted-foreground">via Zoom</p>
+                <div className="flex justify-between items-center p-3 bg-accent/30 rounded-lg border-2 border-primary/20">
+                  <div>
+                    <span className="font-medium">Private Sessions</span>
+                    <p className="text-sm text-muted-foreground">60 minutes</p>
+                  </div>
+                  <span className="text-2xl font-bold text-primary">$60</span>
                 </div>
               </div>
             </CardContent>
@@ -240,34 +205,47 @@ export function ContactSection() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Follow Us</CardTitle>
+              <CardTitle>What's Included</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <p className="text-muted-foreground">
-                  Stay connected with us on social media for daily inspiration, 
-                  pose tips, and community updates.
-                </p>
-                <a 
-                  href="https://instagram.com/nirvayogastudio" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
-                >
-                  @NirvaYogaStudio
-                </a>
-              </div>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  Live virtual classes via Zoom
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  Interactive instruction from certified teachers
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  All levels welcome with modifications
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  Classes never expire
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  Maximum 10 students per class
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  Recording available upon request
+                </li>
+              </ul>
             </CardContent>
           </Card>
 
-          <Card className="bg-accent/30">
+          <Card className="bg-primary/5 border-primary/20">
             <CardContent className="pt-6">
-              <h4 className="mb-3">Next Steps</h4>
-              <p className="text-muted-foreground text-sm">
-                After registering, you'll receive an email with class schedules, 
-                booking instructions, and payment options. We'll also send you 
-                a welcome package with everything you need to get started!
-              </p>
+              <h4 className="mb-3 text-primary">Next Steps After Registration</h4>
+              <div className="space-y-2 text-sm">
+                <p>1. <strong>Email Confirmation</strong> - You'll receive class schedules and booking instructions</p>
+                <p>2. <strong>Welcome Package</strong> - Everything you need to get started</p>
+                <p>3. <strong>Book Your First Class</strong> - Choose from our weekly schedule</p>
+                <p>4. <strong>Join via Zoom</strong> - Receive meeting links 24 hours before class</p>
+              </div>
             </CardContent>
           </Card>
         </div>
