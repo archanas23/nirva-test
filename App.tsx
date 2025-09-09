@@ -52,7 +52,7 @@ interface User {
 }
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<"home" | "classes" | "teachers" | "packages" | "contact" | "faq" | "payment" | "admin">("home");
+  const [currentView, setCurrentView] = useState<"home" | "classes" | "teachers" | "packages" | "contact" | "register" | "faq" | "payment" | "admin">("home");
   const [navigationHistory, setNavigationHistory] = useState<string[]>(["home"]);
   const [selectedClass, setSelectedClass] = useState<{
     className: string;
@@ -192,7 +192,47 @@ export default function App() {
   const navigateTo = (view: string) => {
     setNavigationHistory(prev => [...prev, view]);
     setCurrentView(view as any);
+    
+    // Update URL without page refresh
+    const url = view === "home" ? "/" : `/${view}`;
+    window.history.pushState({}, "", url);
   };
+
+  // Handle URL changes and browser back/forward
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path === "/" || path === "") {
+        setCurrentView("home");
+      } else if (path === "/register") {
+        setCurrentView("register");
+      } else if (path === "/classes") {
+        setCurrentView("classes");
+      } else if (path === "/teachers") {
+        setCurrentView("teachers");
+      } else if (path === "/packages") {
+        setCurrentView("packages");
+      } else if (path === "/contact") {
+        setCurrentView("contact");
+      } else if (path === "/faq") {
+        setCurrentView("faq");
+      } else if (path === "/admin") {
+        setCurrentView("admin");
+      } else {
+        setCurrentView("home");
+      }
+    };
+
+    // Set initial view based on URL
+    handlePopState();
+
+    // Listen for browser back/forward
+    window.addEventListener("popstate", handlePopState);
+    
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
 
   const handleBack = () => {
     if (navigationHistory.length > 1) {
@@ -789,6 +829,7 @@ export default function App() {
               onNavigateTeachers={() => navigateTo("teachers")}
               onNavigatePackages={() => navigateTo("packages")}
               onNavigateContact={() => navigateTo("contact")}
+              onNavigateRegister={() => navigateTo("register")}
               onNavigateFAQ={() => navigateTo("faq")}
               onNavigateAdmin={() => navigateTo("admin")}
             />
@@ -824,6 +865,7 @@ export default function App() {
               onNavigateTeachers={() => navigateTo("teachers")}
               onNavigatePackages={() => navigateTo("packages")}
               onNavigateContact={() => navigateTo("contact")}
+              onNavigateRegister={() => navigateTo("register")}
               onNavigateFAQ={() => navigateTo("faq")}
               onNavigateAdmin={() => navigateTo("admin")}
             />
@@ -852,6 +894,7 @@ export default function App() {
               onNavigateTeachers={() => navigateTo("teachers")}
               onNavigatePackages={() => navigateTo("packages")}
               onNavigateContact={() => navigateTo("contact")}
+              onNavigateRegister={() => navigateTo("register")}
               onNavigateFAQ={() => navigateTo("faq")}
               onNavigateAdmin={() => navigateTo("admin")}
             />
@@ -883,6 +926,36 @@ export default function App() {
               onNavigateTeachers={() => navigateTo("teachers")}
               onNavigatePackages={() => navigateTo("packages")}
               onNavigateContact={() => navigateTo("contact")}
+              onNavigateRegister={() => navigateTo("register")}
+              onNavigateFAQ={() => navigateTo("faq")}
+              onNavigateAdmin={() => navigateTo("admin")}
+            />
+            
+            <div className="container mx-auto px-4 py-8">
+              <ContactSection />
+            </div>
+            
+            <Footer 
+              onShowTerms={() => setShowTermsModal(true)}
+              onShowPrivacy={() => setShowPrivacyModal(true)}
+            />
+          </div>
+        );
+
+      case "register":
+        return (
+          <div className="min-h-screen bg-background">
+            <Navigation 
+              user={user}
+              onLoginClick={() => setShowAuthModal(true)}
+              onAccountClick={() => setShowAccountModal(true)}
+              currentView={currentView}
+              onNavigateHome={() => navigateTo("home")}
+              onNavigateClasses={() => navigateTo("classes")}
+              onNavigateTeachers={() => navigateTo("teachers")}
+              onNavigatePackages={() => navigateTo("packages")}
+              onNavigateContact={() => navigateTo("contact")}
+              onNavigateRegister={() => navigateTo("register")}
               onNavigateFAQ={() => navigateTo("faq")}
               onNavigateAdmin={() => navigateTo("admin")}
             />
@@ -911,6 +984,7 @@ export default function App() {
               onNavigateTeachers={() => navigateTo("teachers")}
               onNavigatePackages={() => navigateTo("packages")}
               onNavigateContact={() => navigateTo("contact")}
+              onNavigateRegister={() => navigateTo("register")}
               onNavigateFAQ={() => navigateTo("faq")}
               onNavigateAdmin={() => navigateTo("admin")}
             />
@@ -939,6 +1013,7 @@ export default function App() {
               onNavigateTeachers={() => navigateTo("teachers")}
               onNavigatePackages={() => navigateTo("packages")}
               onNavigateContact={() => navigateTo("contact")}
+              onNavigateRegister={() => navigateTo("register")}
               onNavigateFAQ={() => navigateTo("faq")}
               onNavigateAdmin={() => navigateTo("admin")}
             />
@@ -959,6 +1034,7 @@ export default function App() {
               onNavigateTeachers={() => navigateTo("teachers")}
               onNavigatePackages={() => navigateTo("packages")}
               onNavigateContact={() => navigateTo("contact")}
+              onNavigateRegister={() => navigateTo("register")}
               onNavigateFAQ={() => navigateTo("faq")}
               onNavigateAdmin={() => navigateTo("admin")}
             />

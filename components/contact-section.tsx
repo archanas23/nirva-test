@@ -57,7 +57,8 @@ export function ContactSection() {
         }
       });
       
-      toast.success('Thank you for registering! We\'ll send you class information soon.');
+      // Show success message and reset form without page refresh
+      toast.success('Registration submitted successfully! We\'ll send you class information soon.');
       
       // Reset form
       setFormData({

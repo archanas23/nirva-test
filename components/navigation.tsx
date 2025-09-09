@@ -13,6 +13,7 @@ interface NavigationProps {
   onNavigateTeachers?: () => void;
   onNavigatePackages?: () => void;
   onNavigateContact?: () => void;
+  onNavigateRegister?: () => void;
   onNavigateFAQ?: () => void;
   onNavigateAdmin?: () => void;
 }
@@ -27,6 +28,7 @@ export function Navigation({
   onNavigateTeachers,
   onNavigatePackages,
   onNavigateContact,
+  onNavigateRegister,
   onNavigateFAQ,
   onNavigateAdmin
 }: NavigationProps) {
@@ -123,6 +125,16 @@ export function Navigation({
               }`}
             >
               Contact  
+            </button>
+            <button 
+              onClick={onNavigateRegister}
+              className={`transition-all duration-200 py-2 px-3 rounded-md ${
+                currentView === "register" 
+                  ? "text-primary font-semibold bg-accent" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+              }`}
+            >
+              Register  
             </button>
             <button 
               onClick={onNavigateFAQ}
@@ -252,6 +264,16 @@ export function Navigation({
                 }`}
               >
                 Contact
+              </button>
+              <button 
+                onClick={() => handleMobileNavigate(onNavigateRegister)}
+                className={`text-left py-3 px-4 rounded-lg transition-colors ${ 
+                  currentView === "register" 
+                    ? "bg-primary/10 text-primary font-medium" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                Register
               </button>
               <button 
                 onClick={() => handleMobileNavigate(onNavigateFAQ)}
