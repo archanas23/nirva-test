@@ -32,7 +32,7 @@ export function PackagesSection({ onPurchasePackage, user }: PackagesSectionProp
       ],
       popular: false,
       buttonText: 'Book Now - $11',
-      priceNote: 'Secure payment with Stripe'
+      priceNote: ''
     },
     {
       id: 'five',
