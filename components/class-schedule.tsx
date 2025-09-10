@@ -283,21 +283,40 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
     const timeStr = classTime.toLowerCase().replace(/\s/g, '');
     const isPM = timeStr.includes('pm');
     const timeOnly = timeStr.replace(/[ap]m/, '');
-    const [hours, minutes] = timeOnly.split(':').map(Number);
+    const [hoursStr, minutesStr] = timeOnly.split(':');
+    const hours = parseInt(hoursStr, 10);
+    const minutes = minutesStr ? parseInt(minutesStr, 10) : 0;
     
     // Convert to 24-hour format
     let hour24 = hours;
     if (isPM && hours !== 12) hour24 += 12;
     if (!isPM && hours === 12) hour24 = 0;
     
-    // Create date object for the class
-    const classDateTime = new Date(classDate);
-    classDateTime.setHours(hour24, minutes || 0, 0, 0);
+    // Create date object for the class using the same timezone
+    const classDateTime = new Date(classDate.getFullYear(), classDate.getMonth(), classDate.getDate(), hour24, minutes, 0, 0);
     
     // Add 30 minutes buffer to prevent booking classes that just started
     const bufferTime = new Date(classDateTime.getTime() + 30 * 60 * 1000);
     
-    return now > bufferTime;
+    const isPastResult = now > bufferTime;
+    
+    // Debug logging
+    console.log('🕐 Time Check:', {
+      currentTime: now.toLocaleString(),
+      currentTimeISO: now.toISOString(),
+      classDate: classDate.toDateString(),
+      classTime: classTime,
+      parsedHour24: hour24,
+      parsedMinutes: minutes,
+      classDateTime: classDateTime.toLocaleString(),
+      classDateTimeISO: classDateTime.toISOString(),
+      bufferTime: bufferTime.toLocaleString(),
+      bufferTimeISO: bufferTime.toISOString(),
+      isPast: isPastResult,
+      timeDiffMinutes: Math.round((now.getTime() - classDateTime.getTime()) / (1000 * 60))
+    });
+    
+    return isPastResult;
   };
 
   return (

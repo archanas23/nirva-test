@@ -47,6 +47,56 @@ export class ClassManagementService {
     return data || []
   }
 
+  // Get all classes (including inactive) - for admin
+  static async getAllClasses(): Promise<Class[]> {
+    const { data, error } = await supabase
+      .from('classes')
+      .select('*')
+      .order('day_of_week', { ascending: true })
+      .order('start_time', { ascending: true })
+    
+    if (error) throw error
+    return data || []
+  }
+
+  // Create a new class
+  static async createClass(classData: Omit<Class, 'id' | 'created_at' | 'updated_at'>): Promise<Class> {
+    const { data, error } = await supabase
+      .from('classes')
+      .insert([classData])
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  }
+
+  // Update a class
+  static async updateClass(classId: string, updates: Partial<Class>): Promise<Class> {
+    const { data, error } = await supabase
+      .from('classes')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', classId)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  }
+
+  // Delete a class
+  static async deleteClass(classId: string): Promise<void> {
+    const { error } = await supabase
+      .from('classes')
+      .delete()
+      .eq('id', classId)
+    
+    if (error) throw error
+  }
+
   // Get class instances for a date range
   static async getClassInstances(startDate: string, endDate: string): Promise<ClassInstance[]> {
     const { data, error } = await supabase

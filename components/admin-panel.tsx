@@ -5,7 +5,7 @@ import { Badge } from "./ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Users, Calendar, DollarSign, Clock, Mail, User, Video, Copy, ExternalLink, Shield, AlertTriangle } from "lucide-react";
-import { ScheduleEditor } from "./schedule-editor";
+import { AdminScheduleEditor } from "./admin-schedule-editor";
 import { DatabaseSetup } from "./database-setup";
 import { DatabaseService } from "../utils/database";
 import { ZoomDebugTest } from "./zoom-debug-test";
@@ -331,7 +331,7 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
                   <p className="text-muted-foreground mb-4">
                     Manage class schedules for the entire month. Add, edit, or remove classes without coding.
                   </p>
-                  <ScheduleEditor />
+                  <AdminScheduleEditor />
                 </CardContent>
               </Card>
             </div>

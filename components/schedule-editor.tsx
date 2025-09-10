@@ -7,20 +7,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Calendar, Clock, Users, Plus, Edit, Trash2, Copy, Download, Upload } from 'lucide-react';
-import { ScheduleManagementService, ClassTemplate, ScheduledClass, WeeklySchedule } from '../utils/schedule-management';
+import { ClassManagementService, Class, ClassInstance } from '../utils/class-management';
 
 interface ScheduleEditorProps {
   onClose?: () => void;
 }
 
 export function ScheduleEditor({ onClose }: ScheduleEditorProps) {
-  const [currentWeek, setCurrentWeek] = useState<string>('');
-  const [schedule, setSchedule] = useState<WeeklySchedule | null>(null);
-  const [templates, setTemplates] = useState<ClassTemplate[]>([]);
-  const [teachers, setTeachers] = useState<string[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [classInstances, setClassInstances] = useState<ClassInstance[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAddClass, setShowAddClass] = useState(false);
-  const [editingClass, setEditingClass] = useState<ScheduledClass | null>(null);
-  const [showTemplateManager, setShowTemplateManager] = useState(false);
+  const [editingClass, setEditingClass] = useState<Class | null>(null);
+  const [currentWeek, setCurrentWeek] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
 
   // Initialize current week (Monday)
   useEffect(() => {
