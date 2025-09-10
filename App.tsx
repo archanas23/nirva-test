@@ -138,7 +138,16 @@ export default function App() {
       }
       
       // Load user's booked classes from database
-      let bookedClassesData = {};
+      let bookedClassesData: { [key: string]: {
+        className: string;
+        teacher: string;
+        time: string;
+        day: string;
+        zoomLink?: string;
+        zoomPassword?: string;
+        meetingId?: string;
+        bookedAt: string;
+      } } = {};
       try {
         const bookedClasses = await DatabaseService.getUserBookedClasses(userRecord.id);
         if (bookedClasses) {
