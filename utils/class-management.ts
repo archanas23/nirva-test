@@ -162,6 +162,59 @@ export class ClassManagementService {
     return await this.createClassInstance(classId, classDate)
   }
 
+  // Update a class instance
+  static async updateClassInstance(instanceId: string, updates: Partial<ClassInstance>): Promise<ClassInstance> {
+    const { data, error } = await supabase
+      .from('class_instances')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', instanceId)
+      .select(`
+        *,
+        class:classes(*)
+      `)
+      .single()
+    
+    if (error) throw error
+    return data
+  }
+
+  // Delete a class instance
+  static async deleteClassInstance(instanceId: string): Promise<void> {
+    const { error } = await supabase
+      .from('class_instances')
+      .delete()
+      .eq('id', instanceId)
+    
+    if (error) throw error
+  }
+
+  // Get all class instances for admin management
+  static async getAllClassInstances(startDate?: string, endDate?: string): Promise<ClassInstance[]> {
+    let query = supabase
+      .from('class_instances')
+      .select(`
+        *,
+        class:classes(*)
+      `)
+      .order('class_date', { ascending: true })
+      .order('created_at', { ascending: true })
+
+    if (startDate) {
+      query = query.gte('class_date', startDate)
+    }
+    if (endDate) {
+      query = query.lte('class_date', endDate)
+    }
+
+    const { data, error } = await query
+    
+    if (error) throw error
+    return data || []
+  }
+
   // Initialize default classes (run once to set up the database)
   static async initializeDefaultClasses(): Promise<void> {
     const defaultClasses = [

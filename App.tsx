@@ -1,7 +1,7 @@
 import { useState, Suspense, lazy, useEffect } from "react";
 import { Navigation } from "./components/navigation";
 import { HeroSection } from "./components/hero-section";
-import { ClassSchedule } from "./components/class-schedule";
+import { ClassSchedule } from "./components/class-schedule-clean";
 import { StudioInfo } from "./components/studio-info";
 import { TeachersSection } from "./components/teachers-section";
 import { VirtualInfo } from "./components/virtual-info";
@@ -1216,6 +1216,12 @@ export default function App() {
       {/* Account Modal */}
       <Dialog open={showAccountModal} onOpenChange={setShowAccountModal}>
         <DialogContent className="sm:max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Your Account</DialogTitle>
+            <DialogDescription>
+              Manage your class credits, bookings, and account information.
+            </DialogDescription>
+          </DialogHeader>
           <UserAccount 
             user={user} 
             onLogout={handleLogout}

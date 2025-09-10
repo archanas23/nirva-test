@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Users, Calendar, DollarSign, Clock, Mail, User, Video, Copy, ExternalLink, Shield, AlertTriangle } from "lucide-react";
 import { AdminScheduleEditor } from "./admin-schedule-editor";
+import { AdminSessionManager } from "./admin-session-manager";
 import { DatabaseSetup } from "./database-setup";
 import { DatabaseService } from "../utils/database";
 import { ZoomDebugTest } from "./zoom-debug-test";
@@ -307,6 +308,7 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
         <Tabs defaultValue="schedule-editor" className="space-y-6">
         <TabsList>
           <TabsTrigger value="schedule-editor">Schedule Editor</TabsTrigger>
+          <TabsTrigger value="session-manager">Session Manager</TabsTrigger>
           <TabsTrigger value="zoom-classes">Zoom Classes</TabsTrigger>
           <TabsTrigger value="all-bookings">All Bookings</TabsTrigger>
           <TabsTrigger value="by-class">By Class</TabsTrigger>
@@ -332,6 +334,25 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
                     Manage class schedules for the entire month. Add, edit, or remove classes without coding.
                   </p>
                   <AdminScheduleEditor />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="session-manager" className="space-y-6">
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="w-5 h-5" />
+                    Session Management
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">
+                    Manage individual class sessions. Create, edit, delete, or cancel specific class instances.
+                  </p>
+                  <AdminSessionManager />
                 </CardContent>
               </Card>
             </div>

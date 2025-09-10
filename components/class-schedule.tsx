@@ -62,14 +62,9 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
         const startDate = weekDates[0].toISOString().split('T')[0];
         const endDate = weekDates[6].toISOString().split('T')[0];
         
-        try {
-          const instances = await ClassManagementService.getClassInstances(startDate, endDate);
-          setClassInstances(instances);
-        } catch (dbError) {
-          console.log('Database not ready, using fallback classes');
-          // Use fallback class generation when database is not ready
-          setClassInstances([]);
-        }
+        // Only load classes that have been explicitly created by admin
+        const instances = await ClassManagementService.getClassInstances(startDate, endDate);
+        setClassInstances(instances);
       } catch (error) {
         console.error('Error loading class instances:', error);
         setClassInstances([]);
@@ -231,22 +226,16 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
     return classes;
   };
 
-  // Get classes for a given date (with fallback to generated classes)
+  // Get classes for a given date (only admin-created classes)
   const getFutureClassesForDate = (date: Date): ClassItem[] => {
     const dateStr = date.toISOString().split('T')[0];
     
-    // Get class instances for this specific date
+    // Only show classes that have been explicitly created by admin
     const instancesForDate = classInstances.filter(instance => 
-      instance.class_date === dateStr
+      instance.class_date === dateStr && !instance.is_cancelled
     );
     
-    // If we have Supabase data, use it
-    if (instancesForDate.length > 0) {
-      return instancesForDate.map(convertToClassItem);
-    }
-    
-    // Otherwise, use fallback generated classes
-    return generateFallbackClassesForDate(date);
+    return instancesForDate.map(convertToClassItem);
   };
 
   // Navigation functions
