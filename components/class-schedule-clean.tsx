@@ -227,9 +227,6 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                 {futureClasses.length === 0 ? (
                   <div className="text-center py-4">
                     <p className="text-sm text-muted-foreground">No classes scheduled</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Admin needs to add classes for this day
-                    </p>
                   </div>
                 ) : (
                   futureClasses.map((classItem) => {
@@ -319,14 +316,6 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
         })}
       </div>
 
-      {/* Admin Notice */}
-      {!user || user.email !== 'nirvayogastudio@gmail.com' ? (
-        <div className="mt-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            Don't see any classes? The admin needs to add classes for the upcoming weeks.
-          </p>
-        </div>
-      ) : null}
     </div>
   );
 }
