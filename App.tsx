@@ -68,6 +68,7 @@ export default function App() {
     name: string;
   } | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Track booked classes with Zoom links
   const [bookedClasses, setBookedClasses] = useState<{
@@ -87,6 +88,97 @@ export default function App() {
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+
+  // Check for existing authentication on app load
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        // Check if user is already logged in
+        const storedUser = localStorage.getItem('nirva_user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+          
+          // Load user's data from database
+          await loadUserData(userData.email);
+        }
+      } catch (error) {
+        console.error('Error checking auth:', error);
+        localStorage.removeItem('nirva_user');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  // Load user data from database
+  const loadUserData = async (email: string) => {
+    try {
+      // Create or update user in database
+      const userRecord = await DatabaseService.createOrUpdateUser({
+        email,
+        name: email.split('@')[0]
+      });
+      
+      // Load user's class credits from database
+      let credits = { single_classes: 0, five_pack_classes: 0, ten_pack_classes: 0 };
+      try {
+        const creditsData = await DatabaseService.getUserCredits(userRecord.id);
+        if (creditsData) {
+          credits = {
+            single_classes: creditsData.single_classes || 0,
+            five_pack_classes: creditsData.five_pack_classes || 0,
+            ten_pack_classes: creditsData.ten_pack_classes || 0
+          };
+        }
+      } catch (creditsError) {
+        console.log('No credits found for user, using defaults');
+      }
+      
+      // Load user's booked classes from database
+      let bookedClassesData = {};
+      try {
+        const bookedClasses = await DatabaseService.getUserBookedClasses(userRecord.id);
+        if (bookedClasses) {
+          bookedClasses.forEach(booking => {
+            bookedClassesData[booking.class_name + '-' + booking.class_date] = {
+              className: booking.class_name,
+              teacher: booking.teacher,
+              time: booking.class_time,
+              day: booking.class_date,
+              zoomLink: booking.zoom_link,
+              zoomPassword: booking.zoom_password,
+              meetingId: booking.zoom_meeting_id,
+              bookedAt: booking.booked_at
+            };
+          });
+        }
+      } catch (bookedError) {
+        console.log('No booked classes found for user');
+      }
+
+      // Update user state with loaded data
+      const updatedUser = {
+        email: userRecord.email,
+        name: userRecord.name || email.split('@')[0],
+        classPacks: {
+          singleClasses: credits.single_classes,
+          fivePack: credits.five_pack_classes,
+          tenPack: credits.ten_pack_classes
+        }
+      };
+
+      setUser(updatedUser);
+      setBookedClasses(bookedClassesData);
+      
+      // Store in localStorage for persistence
+      localStorage.setItem('nirva_user', JSON.stringify(updatedUser));
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  };
 
   // User state changes (debugging removed for production)
 
@@ -158,7 +250,7 @@ export default function App() {
         // No booked classes found for user
       }
       
-      setUser({
+      const updatedUser = {
         email,
         name: userRecord.name || email.split('@')[0],
         classPacks: {
@@ -166,10 +258,15 @@ export default function App() {
           fivePack: credits.five_pack_classes,
           tenPack: credits.ten_pack_classes
         }
-      });
+      };
+      
+      setUser(updatedUser);
       
       // Set the booked classes state with loaded data
       setBookedClasses(bookedClassesData);
+      
+      // Store in localStorage for persistence
+      localStorage.setItem('nirva_user', JSON.stringify(updatedUser));
     } catch (error) {
       console.error('❌ Error loading user data:', error);
       // Fallback to basic user data if database fails
@@ -187,7 +284,11 @@ export default function App() {
 
   const handleLogout = () => {
     setUser(null);
+    setBookedClasses({});
     setShowAccountModal(false);
+    
+    // Clear localStorage on logout
+    localStorage.removeItem('nirva_user');
   };
 
   const navigateTo = (view: string) => {
@@ -1075,6 +1176,18 @@ export default function App() {
         );
     }
   };
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
