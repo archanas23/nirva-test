@@ -275,6 +275,31 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
     return lastDayOfWeek >= lastDayOfSeptember;
   };
 
+  // Check if a class is in the past (with 30-minute buffer)
+  const isClassInPast = (classDate: Date, classTime: string): boolean => {
+    const now = new Date();
+    
+    // Parse the time (e.g., "8:00 am" or "6:00 pm")
+    const timeStr = classTime.toLowerCase().replace(/\s/g, '');
+    const isPM = timeStr.includes('pm');
+    const timeOnly = timeStr.replace(/[ap]m/, '');
+    const [hours, minutes] = timeOnly.split(':').map(Number);
+    
+    // Convert to 24-hour format
+    let hour24 = hours;
+    if (isPM && hours !== 12) hour24 += 12;
+    if (!isPM && hours === 12) hour24 = 0;
+    
+    // Create date object for the class
+    const classDateTime = new Date(classDate);
+    classDateTime.setHours(hour24, minutes || 0, 0, 0);
+    
+    // Add 30 minutes buffer to prevent booking classes that just started
+    const bufferTime = new Date(classDateTime.getTime() + 30 * 60 * 1000);
+    
+    return now > bufferTime;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with Package Info */}
@@ -386,88 +411,99 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                 </div>
                 
                 <div className="grid gap-3">
-                  {futureClasses.map((classItem) => (
-                    <div key={classItem.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-medium">{classItem.className}</h4>
-                          <Badge variant="outline" className="text-xs">
-                            {classItem.level}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {classItem.time}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Users className="w-3 h-3" />
-                            {classItem.teacher}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {classItem.duration}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        {classItem.registrationClosed ? (
-                          <Badge variant="secondary">Registration Closed</Badge>
-                        ) : isClassBooked?.(classItem.id) ? (
-                          <div className="flex flex-col items-end gap-1">
-                            <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                              ✅ Booked
+                  {futureClasses.map((classItem) => {
+                    const isPast = isClassInPast(date, classItem.time);
+                    const isBooked = isClassBooked?.(classItem.id);
+                    
+                    return (
+                      <div key={classItem.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-medium">{classItem.className}</h4>
+                            <Badge variant="outline" className="text-xs">
+                              {classItem.level}
                             </Badge>
-                            <div className="flex gap-1">
-                              {bookedClasses[classItem.id]?.zoomLink && (
-                                <Button 
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-xs"
-                                  onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
-                                >
-                                  Join Zoom
-                                </Button>
-                              )}
-                              <Button 
-                                size="sm"
-                                variant="destructive"
-                                className="text-xs"
-                                onClick={() => onCancelClass?.(classItem.id || '')}
-                              >
-                                Cancel
-                              </Button>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {classItem.time}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Users className="w-3 h-3" />
+                              {classItem.teacher}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {classItem.duration}
                             </div>
                           </div>
-                      ) : !user ? (
-                        <Button 
-                          onClick={() => onBookClass?.(classItem, formatDate(date))}
-                          size="sm"
-                          variant="outline"
-                        >
-                          Login to Book
-                        </Button>
-                      ) : !canBook ? (
-                        <Button 
-                          onClick={() => onPayForClass?.(classItem, formatDate(date))}
-                          size="sm"
-                          variant="outline"
-                        >
-                          Book Class
-                        </Button>
-                      ) : (
-                        <Button 
-                          onClick={async () => await onBookClass?.(classItem, formatDate(date))}
-                          size="sm"
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          Book Class
-                        </Button>
-                      )}
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          {isPast ? (
+                            <Badge variant="secondary">Past Class</Badge>
+                          ) : classItem.registrationClosed ? (
+                            <Badge variant="secondary">Registration Closed</Badge>
+                          ) : isBooked ? (
+                            <div className="flex flex-col items-end gap-1">
+                              <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                                ✅ Booked
+                              </Badge>
+                              <div className="flex gap-1">
+                                {bookedClasses[classItem.id]?.zoomLink && (
+                                  <Button 
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-xs"
+                                    onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
+                                  >
+                                    Join Zoom
+                                  </Button>
+                                )}
+                                <Button 
+                                  size="sm"
+                                  variant="destructive"
+                                  className="text-xs"
+                                  onClick={() => onCancelClass?.(classItem.id || '')}
+                                  disabled={isPast}
+                                >
+                                  {isPast ? 'Past' : 'Cancel'}
+                                </Button>
+                              </div>
+                            </div>
+                        ) : !user ? (
+                          <Button 
+                            onClick={() => onBookClass?.(classItem, formatDate(date))}
+                            size="sm"
+                            variant="outline"
+                            disabled={isPast}
+                          >
+                            {isPast ? 'Past Class' : 'Login to Book'}
+                          </Button>
+                        ) : !canBook ? (
+                          <Button 
+                            onClick={() => onPayForClass?.(classItem, formatDate(date))}
+                            size="sm"
+                            variant="outline"
+                            disabled={isPast}
+                          >
+                            {isPast ? 'Past Class' : 'Book Class'}
+                          </Button>
+                        ) : (
+                          <Button 
+                            onClick={async () => await onBookClass?.(classItem, formatDate(date))}
+                            size="sm"
+                            className="bg-primary hover:bg-primary/90"
+                            disabled={isPast}
+                          >
+                            {isPast ? 'Past Class' : 'Book Class'}
+                          </Button>
+                        )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );

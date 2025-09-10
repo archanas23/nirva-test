@@ -202,68 +202,206 @@ exports.handler = async (event, context) => {
         };
         break;
 
-      case 'registration-confirmation':
-        // Send student confirmation
+        case 'registration-confirmation':
+        // Send student confirmation with beautiful welcome package
         emailData = {
           from: 'noreply@nirva-yoga.com',
           to: data.email,
-          subject: `Welcome to Nirva Yoga Studio! 🧘‍♀️`,
+          subject: `Welcome to Nirva Yoga - Your Journey Begins Here 🧘‍♀️`,
           html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #2D3748;">Welcome to Nirva Yoga Studio! 🧘‍♀️</h2>
-              <p>Hi ${data.firstName},</p>
-              <p>Thank you for registering with us! We're excited to have you join our yoga community.</p>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: linear-gradient(135deg, #f8f4f0 0%, #e8d5c4 100%);">
               
-              <div style="background: #F7FAFC; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="color: #2D3748; margin-top: 0;">Class Information</h3>
-                <p><strong>Class Schedule:</strong> Monday - Sunday, 6:30 AM - 8:00 PM</p>
-                <p><strong>Class Size:</strong> Maximum 10 students per class</p>
-                <p><strong>Platform:</strong> Zoom (link sent 24 hours before class)</p>
-                <p><strong>Levels:</strong> All levels welcome with modifications</p>
+              <!-- Header -->
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #8B4513; font-size: 28px; margin-bottom: 10px; font-family: 'Georgia', serif;">Welcome to Nirva Yoga</h1>
+                <p style="color: #666; font-size: 16px; margin: 0;">Where Your Inner Peace Meets Your Outer Strength</p>
               </div>
               
-              <div style="background: #E6FFFA; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="color: #2D3748; margin-top: 0;">Pricing</h3>
-                <div style="display: flex; justify-content: space-between; margin: 10px 0;">
-                  <span>Single Class:</span>
-                  <span style="font-weight: bold;">$11</span>
+              <!-- Yoga Quote -->
+              <div style="background: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <blockquote style="font-style: italic; font-size: 18px; color: #8B4513; text-align: center; margin: 0; line-height: 1.6;">
+                  "Yoga is not about touching your toes. It's about what you learn on the way down."
+                </blockquote>
+                <p style="text-align: center; color: #666; margin: 10px 0 0 0; font-size: 14px;">— Jigar Gor</p>
+              </div>
+              
+              <!-- Personal Message -->
+              <div style="background: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <h2 style="color: #8B4513; font-size: 22px; margin-bottom: 15px;">Dear ${data.firstName},</h2>
+                <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 15px;">
+                  Welcome to the Nirva Yoga family! We're thrilled to have you join our community of mindful practitioners. 
+                  Your journey to inner peace, strength, and wellness begins now.
+                </p>
+                <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 15px;">
+                  At Nirva Yoga, we believe that yoga is more than just physical exercise—it's a path to self-discovery, 
+                  healing, and transformation. Whether you're a beginner or an experienced practitioner, our classes are 
+                  designed to meet you where you are and guide you toward your goals.
+                </p>
+                <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0;">
+                  We promise to provide you with a safe, supportive, and inspiring environment where you can grow, 
+                  learn, and connect with your inner self. Your wellness journey is our commitment.
+                </p>
+              </div>
+              
+              <!-- What's Next -->
+              <div style="background: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <h3 style="color: #8B4513; font-size: 20px; margin-bottom: 20px; text-align: center;">What's Next?</h3>
+                
+                <div style="margin-bottom: 20px;">
+                  <h4 style="color: #8B4513; font-size: 16px; margin-bottom: 8px;">📧 Email Confirmation</h4>
+                  <p style="color: #333; font-size: 14px; margin: 0; line-height: 1.5;">
+                    You'll receive class schedules and booking instructions.
+                  </p>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin: 10px 0;">
-                  <span>5-Class Package:</span>
-                  <span style="font-weight: bold;">$53</span>
+                
+                <div style="margin-bottom: 20px;">
+                  <h4 style="color: #8B4513; font-size: 16px; margin-bottom: 8px;">📞 Introductory Call</h4>
+                  <p style="color: #333; font-size: 14px; margin: 0; line-height: 1.5;">
+                    Talk to instructor for 10 mins about your yoga needs.
+                  </p>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin: 10px 0;">
-                  <span>10-Class Package:</span>
-                  <span style="font-weight: bold;">$105</span>
+                
+                <div style="margin-bottom: 20px;">
+                  <h4 style="color: #8B4513; font-size: 16px; margin-bottom: 8px;">🧘‍♀️ Book Your First Class</h4>
+                  <p style="color: #333; font-size: 14px; margin: 0; line-height: 1.5;">
+                    Choose from our weekly schedule.
+                  </p>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin: 10px 0;">
-                  <span>Private Sessions (60 min):</span>
-                  <span style="font-weight: bold;">$60</span>
+                
+                <div>
+                  <h4 style="color: #8B4513; font-size: 16px; margin-bottom: 8px;">💻 Join via Zoom</h4>
+                  <p style="color: #333; font-size: 14px; margin: 0; line-height: 1.5;">
+                    Receive meeting links 24 hours before class.
+                  </p>
                 </div>
               </div>
               
-              <div style="background: #FFF5F5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="color: #2D3748; margin-top: 0;">Next Steps</h3>
-                <ol style="margin: 10px 0; padding-left: 20px;">
-                  <li><strong>Visit our website</strong> to view the current class schedule</li>
-                  <li><strong>Choose your classes</strong> and book them online</li>
-                  <li><strong>Make payment</strong> securely through our payment system</li>
-                  <li><strong>Receive Zoom links</strong> 24 hours before each class</li>
-                </ol>
+              <!-- Class Schedule Preview -->
+              <div style="background: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <h3 style="color: #8B4513; font-size: 20px; margin-bottom: 20px; text-align: center;">This Week's Classes</h3>
+                <div style="text-align: center; margin-bottom: 15px;">
+                  <p style="color: #666; font-size: 14px; margin: 0;">Morning Flow • Evening Restore • Weekend Flow</p>
+                  <p style="color: #666; font-size: 14px; margin: 0;">All Levels • 60 minutes • Experienced Teachers</p>
+                </div>
+                <div style="text-align: center;">
+                  <a href="https://nirva-yoga.com" style="background: #8B4513; color: white; padding: 12px 25px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
+                    View Full Schedule
+                  </a>
+                </div>
               </div>
               
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="https://nirva-yoga.com/classes" style="background: #3182CE; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
-                  View Class Schedule
-                </a>
+              <!-- Contact Info -->
+              <div style="background: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <h3 style="color: #8B4513; font-size: 20px; margin-bottom: 20px; text-align: center;">We're Here for You</h3>
+                <div style="text-align: center;">
+                  <p style="color: #333; font-size: 16px; margin-bottom: 10px;">
+                    <strong>Email:</strong> nirvayogastudio@gmail.com
+                  </p>
+                  <p style="color: #333; font-size: 16px; margin-bottom: 10px;">
+                    <strong>Website:</strong> nirva-yoga.com
+                  </p>
+                  <p style="color: #333; font-size: 16px; margin: 0;">
+                    <strong>Questions?</strong> We're always here to help guide your journey.
+                  </p>
+                </div>
               </div>
               
-              <p>If you have any questions, feel free to reach out to us at nirvayogastudio@gmail.com or call (805) 807-4894.</p>
-              <p>We look forward to practicing with you!</p>
-              <p style="color: #718096;">Best regards,<br>The Nirva Yoga Team</p>
+              <!-- Footer -->
+              <div style="text-align: center; margin-top: 30px;">
+                <p style="color: #8B4513; font-size: 18px; margin-bottom: 10px; font-family: 'Georgia', serif;">
+                  Welcome to Your New Beginning
+                </p>
+                <p style="color: #666; font-size: 14px; margin: 0;">
+                  The Nirva Yoga Team
+                </p>
+              </div>
+              
             </div>
           `
         };
+        break;
+
+      case 'payment-confirmation':
+        const { studentName, paymentAmount, paymentCurrency, packageDetails, classDetails } = data;
+        
+        const paymentSubject = `Payment Received - Nirva Yoga Studio`;
+        const paymentBody = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: linear-gradient(135deg, #f8f4f0 0%, #e8d5c4 100%);">
+            
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #8B4513; font-size: 28px; margin-bottom: 10px; font-family: 'Georgia', serif;">Payment Confirmation</h1>
+              <p style="color: #666; font-size: 16px; margin: 0;">Thank you for your payment!</p>
+            </div>
+            
+            <!-- Payment Details -->
+            <div style="background: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+              <h2 style="color: #8B4513; font-size: 22px; margin-bottom: 15px;">Dear ${studentName},</h2>
+              <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 15px;">
+                We have successfully received your payment of <strong>${paymentCurrency} ${paymentAmount}</strong>.
+              </p>
+              
+              ${packageDetails && packageDetails.type ? `
+              <h3 style="color: #8B4513; font-size: 18px; margin-bottom: 10px;">Package Details:</h3>
+              <ul style="color: #333; margin-bottom: 15px;">
+                <li><strong>Package:</strong> ${packageDetails.name}</li>
+                <li><strong>Price:</strong> ${paymentCurrency} ${paymentAmount}</li>
+                <li><strong>Credits Added:</strong> ${packageDetails.credits || 'N/A'}</li>
+              </ul>
+              ` : ''}
+              
+              ${classDetails && classDetails.className ? `
+              <h3 style="color: #8B4513; font-size: 18px; margin-bottom: 10px;">Class Details:</h3>
+              <ul style="color: #333; margin-bottom: 15px;">
+                <li><strong>Class:</strong> ${classDetails.className}</li>
+                <li><strong>Teacher:</strong> ${classDetails.teacher}</li>
+                <li><strong>Date:</strong> ${classDetails.date}</li>
+                <li><strong>Time:</strong> ${classDetails.time}</li>
+              </ul>
+              ` : ''}
+              
+              <p style="color: #333; font-size: 16px; line-height: 1.6;">
+                Your class credits have been added to your account. You can now book classes or use your credits as needed.
+              </p>
+            </div>
+            
+            <!-- Next Steps -->
+            <div style="background: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+              <h3 style="color: #8B4513; font-size: 20px; margin-bottom: 15px; text-align: center;">What's Next?</h3>
+              <div style="text-align: center;">
+                <a href="https://nirva-yoga.com" style="background: #8B4513; color: white; padding: 12px 25px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block; margin-bottom: 15px;">
+                  Book Your Classes
+                </a>
+              </div>
+              <p style="color: #333; font-size: 14px; text-align: center; margin: 0;">
+                Visit our website to view the schedule and book your classes.
+              </p>
+            </div>
+            
+            <!-- Footer -->
+            <div style="text-align: center; margin-top: 30px;">
+              <p style="color: #333; font-size: 16px; margin-bottom: 10px;">
+                If you have any questions, feel free to reach out to us at nirvayogastudio@gmail.com
+              </p>
+              <p style="color: #8B4513; font-size: 18px; margin-bottom: 10px; font-family: 'Georgia', serif;">
+                Thank You for Choosing Nirva Yoga
+              </p>
+              <p style="color: #666; font-size: 14px; margin: 0;">
+                The Nirva Yoga Team
+              </p>
+            </div>
+            
+          </div>
+        `;
+        
+        await resend.emails.send({
+          from: 'Nirva Yoga Studio <noreply@nirva-yoga.com>',
+          to: data.studentEmail,
+          subject: paymentSubject,
+          html: paymentBody
+        });
+        
+        console.log('✅ Payment confirmation email sent to:', data.studentEmail);
         break;
 
       case 'contact-inquiry':

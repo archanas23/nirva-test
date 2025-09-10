@@ -47,53 +47,78 @@ exports.handler = async (event, context) => {
       const paymentIntent = stripeEvent.data.object;
       console.log('Payment succeeded:', paymentIntent.id);
       
-      // Process successful payment
-      try {
-        console.log('✅ Payment succeeded:', paymentIntent.id);
-        console.log('💰 Amount:', paymentIntent.amount);
-        console.log('💳 Currency:', paymentIntent.currency);
-        console.log('📧 Customer email:', paymentIntent.receipt_email);
-        console.log('📦 Metadata:', paymentIntent.metadata);
-        
-        // Extract payment details
-        const studentEmail = paymentIntent.metadata.studentEmail;
-        const studentName = paymentIntent.metadata.studentName;
-        const packageDetails = JSON.parse(paymentIntent.metadata.packageDetails || '{}');
-        const classDetails = JSON.parse(paymentIntent.metadata.classDetails || '{}');
-        
-        console.log('👤 Student:', studentName, studentEmail);
-        console.log('📦 Package:', packageDetails);
-        
-        // Process package purchase
-        if (packageDetails.type) {
-          console.log('🛒 Processing package purchase...');
-          
-          // TODO: Add database operations here
-          // 1. Update user credits in database
-          // 2. Send confirmation email to student
-          // 3. Send notification email to admin
-          // 4. Log the purchase
-          
-          console.log(`✅ Package purchased: ${packageDetails.name} for $${packageDetails.price}`);
+        // Process successful payment
+        try {
+          console.log('✅ Payment succeeded:', paymentIntent.id);
+          console.log('💰 Amount:', paymentIntent.amount);
+          console.log('💳 Currency:', paymentIntent.currency);
+          console.log('📧 Customer email:', paymentIntent.receipt_email);
+          console.log('📦 Metadata:', paymentIntent.metadata);
+
+          // Extract payment details
+          const studentEmail = paymentIntent.metadata.studentEmail;
+          const studentName = paymentIntent.metadata.studentName;
+          const packageDetails = JSON.parse(paymentIntent.metadata.packageDetails || '{}');
+          const classDetails = JSON.parse(paymentIntent.metadata.classDetails || '{}');
+
+          console.log('👤 Student:', studentName, studentEmail);
+          console.log('📦 Package:', packageDetails);
+
+          // Send payment confirmation email
+          if (studentEmail) {
+            console.log('📧 Sending payment confirmation email...');
+            
+            const paymentAmount = (paymentIntent.amount / 100).toFixed(2);
+            const paymentCurrency = paymentIntent.currency.toUpperCase();
+            
+            // Send payment confirmation to student
+            await fetch(`${process.env.URL}/.netlify/functions/send-email`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'payment-confirmation',
+                studentEmail: studentEmail,
+                studentName: studentName,
+                paymentAmount: paymentAmount,
+                paymentCurrency: paymentCurrency,
+                packageDetails: packageDetails,
+                classDetails: classDetails
+              })
+            });
+            
+            console.log('✅ Payment confirmation email sent');
+          }
+
+          // Process package purchase
+          if (packageDetails.type) {
+            console.log('🛒 Processing package purchase...');
+
+            // TODO: Add database operations here
+            // 1. Update user credits in database
+            // 2. Send confirmation email to student
+            // 3. Send notification email to admin
+            // 4. Log the purchase
+
+            console.log(`✅ Package purchased: ${packageDetails.name} for $${packageDetails.price}`);
+          }
+
+          // Process single class booking
+          if (classDetails.className) {
+            console.log('🧘‍♀️ Processing class booking...');
+
+            // TODO: Add class booking logic here
+            // 1. Book the class in database
+            // 2. Generate Zoom meeting
+            // 3. Send confirmation email with Zoom link
+            // 4. Update user credits
+
+            console.log(`✅ Class booked: ${classDetails.className}`);
+          }
+
+          console.log('✅ Payment processed successfully');
+        } catch (error) {
+          console.error('❌ Error processing payment:', error);
         }
-        
-        // Process single class booking
-        if (classDetails.className) {
-          console.log('🧘‍♀️ Processing class booking...');
-          
-          // TODO: Add class booking logic here
-          // 1. Book the class in database
-          // 2. Generate Zoom meeting
-          // 3. Send confirmation email with Zoom link
-          // 4. Update user credits
-          
-          console.log(`✅ Class booked: ${classDetails.className}`);
-        }
-        
-        console.log('✅ Payment processed successfully');
-      } catch (error) {
-        console.error('❌ Error processing payment:', error);
-      }
       
       break;
     

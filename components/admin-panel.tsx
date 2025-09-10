@@ -304,18 +304,38 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
           </Card>
         </div>
 
-        <Tabs defaultValue="zoom-classes" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="zoom-classes">Zoom Classes</TabsTrigger>
-            <TabsTrigger value="all-bookings">All Bookings</TabsTrigger>
-            <TabsTrigger value="by-class">By Class</TabsTrigger>
-            <TabsTrigger value="database-setup">Database Setup</TabsTrigger>
-            <TabsTrigger value="zoom-debug">Zoom Debug</TabsTrigger>
-            <TabsTrigger value="booking-test">Booking Test</TabsTrigger>
-            <TabsTrigger value="database-test">Database Test</TabsTrigger>
-            <TabsTrigger value="payment-test">Payment Test</TabsTrigger>
-            <TabsTrigger value="email-test">Email Test</TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue="schedule-editor" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="schedule-editor">Schedule Editor</TabsTrigger>
+          <TabsTrigger value="zoom-classes">Zoom Classes</TabsTrigger>
+          <TabsTrigger value="all-bookings">All Bookings</TabsTrigger>
+          <TabsTrigger value="by-class">By Class</TabsTrigger>
+          <TabsTrigger value="database-setup">Database Setup</TabsTrigger>
+          <TabsTrigger value="zoom-debug">Zoom Debug</TabsTrigger>
+          <TabsTrigger value="booking-test">Booking Test</TabsTrigger>
+          <TabsTrigger value="database-test">Database Test</TabsTrigger>
+          <TabsTrigger value="payment-test">Payment Test</TabsTrigger>
+          <TabsTrigger value="email-test">Email Test</TabsTrigger>
+        </TabsList>
+
+          <TabsContent value="schedule-editor" className="space-y-6">
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    Schedule Management
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">
+                    Manage class schedules for the entire month. Add, edit, or remove classes without coding.
+                  </p>
+                  <ScheduleEditor />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
           <TabsContent value="zoom-classes" className="space-y-6">
             <div className="grid gap-6">
