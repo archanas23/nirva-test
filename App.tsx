@@ -222,23 +222,29 @@ export default function App() {
         throw new Error('Incorrect password for admin account. Please try again.');
       }
     } else {
-      // For regular users, check if account exists in our database
-      // This is a simplified approach - in production you'd want proper password hashing
+      // For regular users, verify password against stored hash
       try {
-        const userRecord = await DatabaseService.createOrUpdateUser({
-          email,
-          name: email.split('@')[0]
-        });
+        const userRecord = await DatabaseService.getUserByEmail(email);
         
-        // For now, we'll accept any password for existing users
-        // In production, you'd verify the password against a hashed version
         if (!userRecord) {
           throw new Error('Account not found. Please sign up first.');
         }
+
+        // Verify password
+        if (!userRecord.password_hash) {
+          throw new Error('Account not properly set up. Please sign up again.');
+        }
+
+        const isPasswordValid = await DatabaseService.verifyPassword(password, userRecord.password_hash);
+        if (!isPasswordValid) {
+          throw new Error('Invalid password. Please try again.');
+        }
       } catch (error: any) {
         console.error('Login failed:', error);
-        if (error.message.includes('Account not found')) {
+        if (error.message.includes('Account not found') || error.message.includes('not properly set up')) {
           throw new Error('Account not found. Please sign up first.');
+        } else if (error.message.includes('Invalid password')) {
+          throw new Error('Invalid password. Please try again.');
         } else {
           throw new Error('Login failed. Please try again or contact support.');
         }
@@ -246,11 +252,8 @@ export default function App() {
     }
     
     try {
-      // Create or update user in database
-      const userRecord = await DatabaseService.createOrUpdateUser({
-        email,
-        name: email.split('@')[0]
-      });
+      // Get user from database (already verified above)
+      const userRecord = await DatabaseService.getUserByEmail(email);
       
       // Load user's class credits from database
       let credits = { single_classes: 0, five_pack_classes: 0, ten_pack_classes: 0 };
@@ -362,10 +365,11 @@ export default function App() {
 
   const handleSignup = async (email: string, password: string, name: string) => {
     try {
-      // Create user in our database directly
+      // Create user in our database with password
       const userRecord = await DatabaseService.createOrUpdateUser({
         email,
-        name: name
+        name: name,
+        password: password
       });
       
       if (!userRecord) {

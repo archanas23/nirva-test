@@ -218,7 +218,17 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
       {user && (
         <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4 text-center">
           <p className="text-amber-800 font-medium">
-            Welcome back, {user.name || user.email}! You have {user.classPacks?.singleClasses + user.classPacks?.fivePack + user.classPacks?.tenPack || 0} classes remaining.
+            Welcome back, {user.name || user.email}! You have {(() => {
+              const singleClasses = user.classPacks?.singleClasses || 0;
+              const fivePack = user.classPacks?.fivePack || 0;
+              const tenPack = user.classPacks?.tenPack || 0;
+              const totalCredits = singleClasses + fivePack + tenPack;
+              console.log('🔍 User credits debug:', { singleClasses, fivePack, tenPack, totalCredits, classPacks: user.classPacks });
+              return totalCredits;
+            })()} credit{(() => {
+              const totalCredits = (user.classPacks?.singleClasses || 0) + (user.classPacks?.fivePack || 0) + (user.classPacks?.tenPack || 0);
+              return totalCredits !== 1 ? 's' : '';
+            })()} available.
           </p>
         </div>
       )}
@@ -239,9 +249,6 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                   <p className="text-sm text-gray-600">
                     {date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                   </p>
-                </div>
-                <div className="text-sm text-gray-500">
-                  {futureClasses.length} class{futureClasses.length !== 1 ? 'es' : ''}
                 </div>
               </div>
 

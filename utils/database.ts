@@ -153,20 +153,55 @@ export class DatabaseService {
   }
 
   // User data persistence methods
-  static async createOrUpdateUser(userData: { email: string; name?: string }) {
+  static async createOrUpdateUser(userData: { email: string; name?: string; password?: string }) {
+    const userDataToInsert: any = {
+      email: userData.email,
+      name: userData.name || null,
+      updated_at: new Date().toISOString()
+    }
+
+    // Add password hash if provided
+    if (userData.password) {
+      userDataToInsert.password_hash = await this.hashPassword(userData.password)
+    }
+
     const { data, error } = await supabase
       .from('users')
-      .upsert([{
-        email: userData.email,
-        name: userData.name || null,
-        updated_at: new Date().toISOString()
-      }], {
+      .upsert([userDataToInsert], {
         onConflict: 'email'
       })
       .select()
       .single()
     
     if (error) throw error
+    return data
+  }
+
+  // Password hashing utility
+  static async hashPassword(password: string): Promise<string> {
+    // Simple hash for now - in production use bcrypt or similar
+    const encoder = new TextEncoder()
+    const data = encoder.encode(password + 'nirva_salt_2024')
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+  }
+
+  // Password verification utility
+  static async verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+    const hash = await this.hashPassword(password)
+    return hash === hashedPassword
+  }
+
+  // Get user by email for authentication
+  static async getUserByEmail(email: string) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single()
+    
+    if (error && error.code !== 'PGRST116') throw error
     return data
   }
 
