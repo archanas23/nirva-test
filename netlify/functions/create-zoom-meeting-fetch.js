@@ -148,8 +148,8 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
       settings: {
         host_video: true,
         participant_video: true,
-        join_before_host: true,
-        mute_upon_entry: false,
+        join_before_host: false, // Host must join first
+        mute_upon_entry: true,
         watermark: false,
         use_pmi: false,
         audio: 'both',
@@ -158,7 +158,7 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
         alternative_hosts: '',
         show_share_button: true,
         allow_multiple_devices: true,
-        waiting_room: false,
+        waiting_room: true, // Enable waiting room so host can admit participants
         request_permission_to_unmute_participants: false,
         global_dial_in_countries: ['US'],
         meeting_authentication: false
