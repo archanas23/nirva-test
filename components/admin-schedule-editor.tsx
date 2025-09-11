@@ -394,7 +394,7 @@ function AddClassForm({
         <Input
           id="duration"
           type="number"
-          value={formData.duration}
+          value={formData.duration.replace(' min', '')}
           onChange={(e) => setFormData(prev => ({ ...prev, duration: `${e.target.value} min` }))}
           min="30"
           max="120"
@@ -525,7 +525,7 @@ function EditClassForm({
         <Input
           id="duration"
           type="number"
-          value={formData.duration}
+          value={formData.duration.replace(' min', '')}
           onChange={(e) => setFormData(prev => ({ ...prev, duration: `${e.target.value} min` }))}
           min="30"
           max="120"
