@@ -58,7 +58,7 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
 
   const handleAddSession = async (sessionData: {
     classId: string;
-    classDate: string;
+    class_date: string;
     zoomMeetingId?: string;
     zoomPassword?: string;
     zoomLink?: string;
@@ -81,7 +81,7 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
         return `${month} ${day}`;
       };
 
-      const formattedDate = convertDayToDate(sessionData.classDate);
+      const formattedDate = convertDayToDate(sessionData.class_date);
       const timeFormatted = classTemplate.start_time.substring(0, 5); // Convert "08:00:00" to "08:00"
       const duration = parseInt(classTemplate.duration.replace(' min', '')); // Convert "60 min" to 60
 
@@ -89,7 +89,7 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
       // Zoom meetings will be created when students book the class
       await ClassManagementService.createClassInstance(
         sessionData.classId,
-        sessionData.classDate
+        sessionData.class_date
       );
       
       toast.success('Session created successfully! Zoom meetings will be created when students book.');
@@ -173,7 +173,7 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
         for (const cls of classesForDay) {
           sessionsToCreate.push({
             classId: cls.id,
-            classDate: dateStr
+            class_date: dateStr
           });
         }
       }
@@ -194,7 +194,7 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
           return `${month} ${day}`;
         };
 
-        const formattedDate = convertDayToDate(sessionData.classDate);
+        const formattedDate = convertDayToDate(sessionData.class_date);
         const timeFormatted = classTemplate.start_time.substring(0, 5);
         const duration = parseInt(classTemplate.duration.replace(' min', ''));
 
@@ -202,7 +202,7 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
         // Zoom meetings will be created when students book the class
         await ClassManagementService.createClassInstance(
           sessionData.classId,
-          sessionData.classDate
+          sessionData.class_date
         );
       }
 
@@ -421,7 +421,7 @@ function AddSessionDialog({
 }) {
   const [formData, setFormData] = useState({
     classId: '',
-    classDate: ''
+    class_date: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -458,12 +458,12 @@ function AddSessionDialog({
           </div>
 
           <div>
-            <Label htmlFor="classDate">Date</Label>
+            <Label htmlFor="class_date">Date</Label>
             <Input
-              id="classDate"
+              id="class_date"
               type="date"
-              value={formData.classDate}
-              onChange={(e) => setFormData({ ...formData, classDate: e.target.value })}
+              value={formData.class_date}
+              onChange={(e) => setFormData({ ...formData, class_date: e.target.value })}
               required
             />
           </div>
@@ -503,7 +503,7 @@ function EditSessionDialog({
   onClose: () => void;
 }) {
   const [formData, setFormData] = useState({
-    classDate: session.class_date,
+    class_date: session.class_date,
     is_cancelled: session.is_cancelled
   });
 
@@ -530,12 +530,12 @@ function EditSessionDialog({
           </div>
 
           <div>
-            <Label htmlFor="classDate">Date</Label>
+            <Label htmlFor="class_date">Date</Label>
             <Input
-              id="classDate"
+              id="class_date"
               type="date"
-              value={formData.classDate}
-              onChange={(e) => setFormData({ ...formData, classDate: e.target.value })}
+              value={formData.class_date}
+              onChange={(e) => setFormData({ ...formData, class_date: e.target.value })}
               required
             />
           </div>

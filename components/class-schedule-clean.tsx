@@ -348,7 +348,17 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                             </div>
                           ) : (
                             <Button 
-                              onClick={async () => await onBookClass?.(classItem, date.toISOString().split('T')[0])}
+                              onClick={async () => {
+                                // Use local date format to avoid timezone issues
+                                const localDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                                console.log('📅 Booking class for date:', { 
+                                  originalDate: date.toDateString(), 
+                                  localDate, 
+                                  isoDate: date.toISOString().split('T')[0],
+                                  classItem: classItem.className 
+                                });
+                                await onBookClass?.(classItem, localDate);
+                              }}
                               size="sm"
                               className="bg-blue-600 hover:bg-blue-700 text-white"
                               disabled={isPast}
