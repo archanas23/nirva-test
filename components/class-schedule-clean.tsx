@@ -280,8 +280,9 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                       return `${displayHour}:${minutes} ${ampm}`;
                     };
                     
-                    // Use the same key format as in App.tsx
-                    const classKey = `${classItem.name}-${date.toISOString().split('T')[0]}-${formatTimeForKey(classItem.time)}`;
+                    // Use the same key format as in App.tsx - use local date to avoid timezone issues
+                    const localDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                    const classKey = `${classItem.name}-${localDate}-${formatTimeForKey(classItem.time)}`;
                     const isBooked = bookedClasses[classKey] !== undefined;
                     
                     // Debug logging
@@ -290,7 +291,7 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                     console.log('🔍 Class item details:', {
                       name: classItem.name,
                       time: classItem.time,
-                      date: date.toISOString().split('T')[0],
+                      date: localDate,
                       formattedTime: formatTimeForKey(classItem.time)
                     });
                     console.log('🔍 Is Booked:', isBooked);

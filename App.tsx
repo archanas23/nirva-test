@@ -683,7 +683,8 @@ export default function App() {
         // Try to parse as ISO date string
         const date = new Date(dayStr);
         if (!isNaN(date.getTime())) {
-          return date.toISOString().split('T')[0];
+          // Use local date format to avoid timezone issues
+          return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         }
         
         // Fallback for other formats

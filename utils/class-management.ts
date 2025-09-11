@@ -23,7 +23,13 @@ export interface Class {
 export interface ClassInstance {
   id: string
   class_id: string
+  class_name?: string
+  teacher?: string
   class_date: string // "2025-09-07" format
+  start_time?: string
+  duration?: number
+  level?: string
+  max_students?: number
   zoom_meeting_id?: string
   zoom_password?: string
   zoom_link?: string
@@ -121,6 +127,8 @@ export class ClassManagementService {
     password: string
     joinUrl: string
   }): Promise<ClassInstance> {
+    console.log('🔍 Creating class instance:', { classId, classDate, zoomData });
+    
     // First get the class template to copy its details
     const { data: classTemplate, error: classError } = await supabase
       .from('classes')
@@ -128,32 +136,49 @@ export class ClassManagementService {
       .eq('id', classId)
       .single()
     
-    if (classError) throw classError
-    if (!classTemplate) throw new Error('Class template not found')
+    if (classError) {
+      console.error('❌ Error fetching class template:', classError);
+      throw classError;
+    }
+    if (!classTemplate) {
+      console.error('❌ Class template not found for ID:', classId);
+      throw new Error('Class template not found');
+    }
+    
+    console.log('✅ Class template found:', classTemplate);
+    
+    const insertData = {
+      class_id: classId,
+      class_name: classTemplate.name,
+      teacher: classTemplate.teacher,
+      class_date: classDate,
+      start_time: classTemplate.start_time,
+      duration: classTemplate.duration,
+      level: classTemplate.level,
+      max_students: classTemplate.max_students,
+      zoom_meeting_id: zoomData?.meetingId,
+      zoom_password: zoomData?.password,
+      zoom_link: zoomData?.joinUrl,
+      is_cancelled: false
+    };
+    
+    console.log('🔍 Inserting class instance data:', insertData);
     
     const { data, error } = await supabase
       .from('class_instances')
-      .insert([{
-        class_id: classId,
-        class_name: classTemplate.name,
-        teacher: classTemplate.teacher,
-        class_date: classDate,
-        start_time: classTemplate.start_time,
-        duration: classTemplate.duration,
-        level: classTemplate.level,
-        max_students: classTemplate.max_students,
-        zoom_meeting_id: zoomData?.meetingId,
-        zoom_password: zoomData?.password,
-        zoom_link: zoomData?.joinUrl,
-        is_cancelled: false
-      }])
+      .insert([insertData])
       .select(`
         *,
         class:classes(*)
       `)
       .single()
     
-    if (error) throw error
+    if (error) {
+      console.error('❌ Error creating class instance:', error);
+      throw error;
+    }
+    
+    console.log('✅ Class instance created successfully:', data);
     return data
   }
 
