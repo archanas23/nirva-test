@@ -210,11 +210,38 @@ export default function App() {
   // User state changes (debugging removed for production)
 
   const handleLogin = async (email: string, password?: string) => {
+    // Password is required for all users
+    if (!password) {
+      alert('Password is required. Please enter your password.');
+      return;
+    }
+
     // Check for admin authentication
     if (email === 'nirvayogastudio@gmail.com') {
       // Admin password validation
       if (password !== 'nirva2024') {
         alert('Incorrect password for admin account. Please try again.');
+        return;
+      }
+    } else {
+      // For regular users, use Supabase authentication
+      try {
+        const { AuthService } = await import('./utils/auth');
+        const authResult = await AuthService.signIn(email, password);
+        
+        if (!authResult.user) {
+          alert('Invalid email or password. Please try again.');
+          return;
+        }
+      } catch (authError: any) {
+        console.error('Authentication failed:', authError);
+        if (authError.message.includes('Invalid login credentials')) {
+          alert('Invalid email or password. Please try again.');
+        } else if (authError.message.includes('Email not confirmed')) {
+          alert('Please check your email and click the confirmation link to activate your account.');
+        } else {
+          alert('Login failed. Please try again or contact support.');
+        }
         return;
       }
     }
@@ -334,12 +361,22 @@ export default function App() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     // Clear user-specific localStorage on logout
     if (user?.email) {
       localStorage.removeItem(`nirva_booked_classes_${user.email}`);
     }
     localStorage.removeItem('nirva_user');
+    
+    // Sign out from Supabase (except for admin)
+    if (user?.email !== 'nirvayogastudio@gmail.com') {
+      try {
+        const { AuthService } = await import('./utils/auth');
+        await AuthService.signOut();
+      } catch (error) {
+        console.error('Error signing out:', error);
+      }
+    }
     
     setUser(null);
     setBookedClasses({});
