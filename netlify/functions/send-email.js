@@ -155,8 +155,36 @@ exports.handler = async (event, context) => {
           to: data.studentEmail,
           subject: `Class Booking Confirmed - ${data.className}`,
           html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #2D3748;">Your Class is Booked! 🧘‍♀️</h2>
+            <div style="font-family: 'Lora', 'Times New Roman', serif; max-width: 600px; margin: 0 auto; background: #fefffe;">
+              <!-- Header -->
+              <div style="background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 50%, #fff0f5 100%); padding: 40px 20px; text-align: center; color: #2d3748; border-radius: 12px 12px 0 0;">
+                <!-- Nirva Logo -->
+                <div style="margin-bottom: 20px; display: flex; justify-content: center; align-items: center;">
+                  <svg viewBox="0 0 100 100" style="width: 60px; height: 60px;" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Top petal - Subtle blue-gray -->
+                    <ellipse cx="50" cy="35" rx="6" ry="15" fill="#A5B4B8" />
+                    <!-- Top right petal - Soft blue-gray -->
+                    <ellipse cx="62" cy="42" rx="6" ry="15" fill="#95ADB2" transform="rotate(45 62 42)" />
+                    <!-- Bottom right petal - Bright pink -->
+                    <ellipse cx="62" cy="58" rx="6" ry="15" fill="#FF6B9D" transform="rotate(90 62 58)" />
+                    <!-- Bottom petal - Vibrant pink -->
+                    <ellipse cx="50" cy="65" rx="6" ry="15" fill="#F472B6" transform="rotate(135 50 65)" />
+                    <!-- Bottom left petal - Bright pink -->
+                    <ellipse cx="38" cy="58" rx="6" ry="15" fill="#FF6B9D" transform="rotate(180 38 58)" />
+                    <!-- Top left petal - Subtle blue -->
+                    <ellipse cx="38" cy="42" rx="6" ry="15" fill="#95ADB2" transform="rotate(-45 38 42)" />
+                    <!-- Center sun/lotus center -->
+                    <circle cx="50" cy="50" r="8" fill="#E879A6" />
+                    <circle cx="50" cy="50" r="5" fill="#F298BC" />
+                    <circle cx="50" cy="50" r="2" fill="#F8B7D1" />
+                  </svg>
+                </div>
+                <h1 style="margin: 0; font-size: 32px; font-weight: 400; font-family: 'Amatic SC', cursive; color: #2d3748;">Your Class is Booked! 🧘‍♀️</h1>
+                <p style="margin: 10px 0 0 0; font-size: 18px; color: #718096; font-style: italic;">We're excited to see you in class!</p>
+              </div>
+              
+              <!-- Main Content -->
+              <div style="padding: 40px 20px; background: #fefffe;">
               <p>Hi ${data.studentName},</p>
               <p>Your class booking has been confirmed. We're excited to see you in class!</p>
               
@@ -308,11 +336,26 @@ exports.handler = async (event, context) => {
             <div style="font-family: 'Lora', 'Times New Roman', serif; max-width: 600px; margin: 0 auto; background: #fefffe;">
               <!-- Header -->
               <div style="background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 50%, #fff0f5 100%); padding: 40px 20px; text-align: center; color: #2d3748; border-radius: 12px 12px 0 0;">
-                <!-- Logo -->
-                <div style="margin-bottom: 20px;">
-                  <div style="width: 60px; height: 60px; margin: 0 auto; background: #ff6b9d; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <span style="color: white; font-size: 24px; font-weight: bold; font-family: 'Amatic SC', cursive;">N</span>
-                  </div>
+                <!-- Nirva Logo -->
+                <div style="margin-bottom: 20px; display: flex; justify-content: center; align-items: center;">
+                  <svg viewBox="0 0 100 100" style="width: 60px; height: 60px;" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Top petal - Subtle blue-gray -->
+                    <ellipse cx="50" cy="35" rx="6" ry="15" fill="#A5B4B8" />
+                    <!-- Top right petal - Soft blue-gray -->
+                    <ellipse cx="62" cy="42" rx="6" ry="15" fill="#95ADB2" transform="rotate(45 62 42)" />
+                    <!-- Bottom right petal - Bright pink -->
+                    <ellipse cx="62" cy="58" rx="6" ry="15" fill="#FF6B9D" transform="rotate(90 62 58)" />
+                    <!-- Bottom petal - Vibrant pink -->
+                    <ellipse cx="50" cy="65" rx="6" ry="15" fill="#F472B6" transform="rotate(135 50 65)" />
+                    <!-- Bottom left petal - Bright pink -->
+                    <ellipse cx="38" cy="58" rx="6" ry="15" fill="#FF6B9D" transform="rotate(180 38 58)" />
+                    <!-- Top left petal - Subtle blue -->
+                    <ellipse cx="38" cy="42" rx="6" ry="15" fill="#95ADB2" transform="rotate(-45 38 42)" />
+                    <!-- Center sun/lotus center -->
+                    <circle cx="50" cy="50" r="8" fill="#E879A6" />
+                    <circle cx="50" cy="50" r="5" fill="#F298BC" />
+                    <circle cx="50" cy="50" r="2" fill="#F8B7D1" />
+                  </svg>
                 </div>
                 <h1 style="margin: 0; font-size: 32px; font-weight: 400; font-family: 'Amatic SC', cursive; color: #2d3748;">Welcome to Nirva Yoga</h1>
                 <p style="margin: 10px 0 0 0; font-size: 18px; color: #718096; font-style: italic;">Where Your Inner Peace Meets Your Outer Strength</p>
@@ -567,11 +610,26 @@ exports.handler = async (event, context) => {
             <div style="font-family: 'Lora', 'Times New Roman', serif; max-width: 600px; margin: 0 auto; background: #fefffe;">
               <!-- Header -->
               <div style="background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 50%, #fff0f5 100%); padding: 40px 20px; text-align: center; color: #2d3748; border-radius: 12px 12px 0 0;">
-                <!-- Logo -->
-                <div style="margin-bottom: 20px;">
-                  <div style="width: 60px; height: 60px; margin: 0 auto; background: #ff6b9d; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <span style="color: white; font-size: 24px; font-weight: bold; font-family: 'Amatic SC', cursive;">N</span>
-                  </div>
+                <!-- Nirva Logo -->
+                <div style="margin-bottom: 20px; display: flex; justify-content: center; align-items: center;">
+                  <svg viewBox="0 0 100 100" style="width: 60px; height: 60px;" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Top petal - Subtle blue-gray -->
+                    <ellipse cx="50" cy="35" rx="6" ry="15" fill="#A5B4B8" />
+                    <!-- Top right petal - Soft blue-gray -->
+                    <ellipse cx="62" cy="42" rx="6" ry="15" fill="#95ADB2" transform="rotate(45 62 42)" />
+                    <!-- Bottom right petal - Bright pink -->
+                    <ellipse cx="62" cy="58" rx="6" ry="15" fill="#FF6B9D" transform="rotate(90 62 58)" />
+                    <!-- Bottom petal - Vibrant pink -->
+                    <ellipse cx="50" cy="65" rx="6" ry="15" fill="#F472B6" transform="rotate(135 50 65)" />
+                    <!-- Bottom left petal - Bright pink -->
+                    <ellipse cx="38" cy="58" rx="6" ry="15" fill="#FF6B9D" transform="rotate(180 38 58)" />
+                    <!-- Top left petal - Subtle blue -->
+                    <ellipse cx="38" cy="42" rx="6" ry="15" fill="#95ADB2" transform="rotate(-45 38 42)" />
+                    <!-- Center sun/lotus center -->
+                    <circle cx="50" cy="50" r="8" fill="#E879A6" />
+                    <circle cx="50" cy="50" r="5" fill="#F298BC" />
+                    <circle cx="50" cy="50" r="2" fill="#F8B7D1" />
+                  </svg>
                 </div>
                 <h1 style="margin: 0; font-size: 32px; font-weight: 400; font-family: 'Amatic SC', cursive; color: #2d3748;">Welcome to Nirva Yoga</h1>
                 <p style="margin: 10px 0 0 0; font-size: 18px; color: #718096; font-style: italic;">Where Your Inner Peace Meets Your Outer Strength</p>
@@ -680,6 +738,27 @@ exports.handler = async (event, context) => {
             <div style="font-family: 'Lora', 'Times New Roman', serif; max-width: 600px; margin: 0 auto; background: #fefffe;">
               <!-- Header -->
               <div style="background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 50%, #fff0f5 100%); padding: 40px 20px; text-align: center; color: #2d3748; border-radius: 12px 12px 0 0;">
+                <!-- Nirva Logo -->
+                <div style="margin-bottom: 20px; display: flex; justify-content: center; align-items: center;">
+                  <svg viewBox="0 0 100 100" style="width: 60px; height: 60px;" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Top petal - Subtle blue-gray -->
+                    <ellipse cx="50" cy="35" rx="6" ry="15" fill="#A5B4B8" />
+                    <!-- Top right petal - Soft blue-gray -->
+                    <ellipse cx="62" cy="42" rx="6" ry="15" fill="#95ADB2" transform="rotate(45 62 42)" />
+                    <!-- Bottom right petal - Bright pink -->
+                    <ellipse cx="62" cy="58" rx="6" ry="15" fill="#FF6B9D" transform="rotate(90 62 58)" />
+                    <!-- Bottom petal - Vibrant pink -->
+                    <ellipse cx="50" cy="65" rx="6" ry="15" fill="#F472B6" transform="rotate(135 50 65)" />
+                    <!-- Bottom left petal - Bright pink -->
+                    <ellipse cx="38" cy="58" rx="6" ry="15" fill="#FF6B9D" transform="rotate(180 38 58)" />
+                    <!-- Top left petal - Subtle blue -->
+                    <ellipse cx="38" cy="42" rx="6" ry="15" fill="#95ADB2" transform="rotate(-45 38 42)" />
+                    <!-- Center sun/lotus center -->
+                    <circle cx="50" cy="50" r="8" fill="#E879A6" />
+                    <circle cx="50" cy="50" r="5" fill="#F298BC" />
+                    <circle cx="50" cy="50" r="2" fill="#F8B7D1" />
+                  </svg>
+                </div>
                 <h1 style="margin: 0; font-size: 32px; font-weight: 400; font-family: 'Amatic SC', cursive; color: #2d3748;">Nirva Yoga Studio</h1>
                 <p style="margin: 10px 0 0 0; font-size: 18px; color: #718096; font-style: italic;">Password Reset</p>
               </div>
