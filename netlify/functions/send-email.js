@@ -680,12 +680,6 @@ exports.handler = async (event, context) => {
             <div style="font-family: 'Lora', 'Times New Roman', serif; max-width: 600px; margin: 0 auto; background: #fefffe;">
               <!-- Header -->
               <div style="background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 50%, #fff0f5 100%); padding: 40px 20px; text-align: center; color: #2d3748; border-radius: 12px 12px 0 0;">
-                <!-- Logo -->
-                <div style="margin-bottom: 20px;">
-                  <div style="width: 60px; height: 60px; margin: 0 auto; background: #ff6b9d; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <span style="color: white; font-size: 24px; font-weight: bold; font-family: 'Amatic SC', cursive;">N</span>
-                  </div>
-                </div>
                 <h1 style="margin: 0; font-size: 32px; font-weight: 400; font-family: 'Amatic SC', cursive; color: #2d3748;">Nirva Yoga Studio</h1>
                 <p style="margin: 10px 0 0 0; font-size: 18px; color: #718096; font-style: italic;">Password Reset</p>
               </div>

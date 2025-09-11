@@ -16,6 +16,8 @@ export function PasswordResetPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [isValidToken, setIsValidToken] = useState<boolean | null>(null);
+  
+  console.log('🔍 Current state:', { email, token, isValidToken, message });
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -50,6 +52,7 @@ export function PasswordResetPage() {
       console.log('🔍 Validating token:', { email, token });
       // For now, we'll assume the token is valid if it exists
       // In a real implementation, you'd validate against the database
+      console.log('🔍 Setting isValidToken to true');
       setIsValidToken(true);
       console.log('✅ Token validated successfully');
     } catch (error) {
