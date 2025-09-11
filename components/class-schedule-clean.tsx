@@ -256,6 +256,7 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                     const isPast = isClassInPast(date, classItem.time);
                     const isBooked = isClassBooked?.(classItem.id);
                     
+                    
                     return (
                       <div key={classItem.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="flex-1">

@@ -228,20 +228,8 @@ export default function App() {
       try {
         const bookedClasses = await DatabaseService.getUserBookedClasses(userRecord.id);
         bookedClassesData = bookedClasses.reduce((acc, booking) => {
-          // Generate consistent class ID that matches the schedule format
-          const date = new Date(booking.class_date);
-          const dayOfWeek = date.getDay();
-          const time = booking.class_time;
-          const className = booking.class_name;
-          
-          let classId;
-          if (dayOfWeek === 0) { // Sunday
-            classId = time.includes('9:00') ? `sun-morning-${booking.class_date}` : `sun-evening-${booking.class_date}`;
-          } else if (dayOfWeek === 6) { // Saturday
-            classId = time.includes('9:00') ? `sat-morning-${booking.class_date}` : `sat-evening-${booking.class_date}`;
-          } else { // Weekdays
-            classId = time.includes('8:00') ? `weekday-morning-${booking.class_date}` : `weekday-evening-${booking.class_date}`;
-          }
+          // Use the class_instance_id if available, otherwise fall back to booking ID
+          const classId = booking.class_instance_id || booking.id;
           
           acc[classId] = {
             className: booking.class_name,
@@ -256,7 +244,7 @@ export default function App() {
           return acc;
         }, {});
       } catch (bookedError) {
-        // No booked classes found for user
+        console.log('⚠️ No booked classes found for user:', bookedError);
       }
       
       const updatedUser = {
@@ -525,6 +513,7 @@ export default function App() {
           teacher: classItem.teacher,
           class_date: formattedDate,
           class_time: classItem.time,
+          class_instance_id: classItem.id,
           zoom_meeting_id: zoomMeeting?.zoomMeeting?.meeting_id || '',
           zoom_password: zoomMeeting?.zoomMeeting?.password || '',
           zoom_link: zoomMeeting?.zoomMeeting?.join_url || ''
@@ -534,6 +523,7 @@ export default function App() {
           teacher: classItem.teacher,
           class_date: formattedDate,
           class_time: classItem.time,
+          class_instance_id: classItem.id,
           zoom_meeting_id: zoomMeeting?.zoomMeeting?.meeting_id || '',
           zoom_password: zoomMeeting?.zoomMeeting?.password || '',
           zoom_link: zoomMeeting?.zoomMeeting?.join_url || ''

@@ -223,6 +223,7 @@ export class DatabaseService {
     teacher: string;
     class_date: string;
     class_time: string;
+    class_instance_id?: string;
     zoom_meeting_id?: string;
     zoom_password?: string;
     zoom_link?: string;
