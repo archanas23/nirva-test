@@ -405,7 +405,12 @@ export default function App() {
       
       // Store reset token in database with expiration (24 hours)
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
-      await DatabaseService.storePasswordResetToken(email, resetToken, expiresAt);
+      try {
+        await DatabaseService.storePasswordResetToken(email, resetToken, expiresAt);
+      } catch (dbError) {
+        console.warn('Password reset tokens table not available yet. Please run the database migration.');
+        // Continue with email sending even if database storage fails
+      }
       
       // Send custom password reset email using our email service
       const { EmailService } = await import('./utils/email-service');
@@ -817,9 +822,7 @@ export default function App() {
         console.log('📋 Updated booked classes state:', newBookedClasses);
         console.log('📋 Keys in booked classes:', Object.keys(newBookedClasses));
         
-        // Persist booked classes to localStorage per user
-        localStorage.setItem(`nirva_booked_classes_${user?.email}`, JSON.stringify(newBookedClasses));
-        console.log('💾 Booked classes saved to localStorage');
+        // Booked classes are now stored only in database for security
         
         return newBookedClasses;
       });
@@ -934,9 +937,7 @@ export default function App() {
         const newBookedClasses = { ...prev };
         delete newBookedClasses[classId];
         
-        // Update localStorage per user
-        localStorage.setItem(`nirva_booked_classes_${user?.email}`, JSON.stringify(newBookedClasses));
-        console.log('💾 Updated localStorage after cancellation:', newBookedClasses);
+        // Booked classes are now stored only in database for security
         
         return newBookedClasses;
       });
