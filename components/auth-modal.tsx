@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -19,6 +19,7 @@ export function AuthModal({ isOpen, onClose, onLogin, onSignup, onResetPassword 
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const tabsRef = useRef<HTMLDivElement>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,12 +176,21 @@ export function AuthModal({ isOpen, onClose, onLogin, onSignup, onResetPassword 
         </Tabs>
         
         {message && (
-          <div className={`text-center text-sm mt-4 p-3 rounded ${
+          <div className={`text-center text-sm mt-4 p-4 rounded-lg ${
             message.includes("success") || message.includes("sent") || message.includes("created")
               ? "bg-green-50 text-green-700 border border-green-200"
+              : message.includes("already exists")
+              ? "bg-amber-50 text-amber-800 border border-amber-200"
               : "bg-red-50 text-red-700 border border-red-200"
           }`}>
             {message}
+            {message.includes("already exists") && (
+              <div className="mt-2">
+                <p className="text-amber-700 text-sm">
+                  💡 <strong>Tip:</strong> Use the "Reset Password" tab above to reset your password
+                </p>
+              </div>
+            )}
           </div>
         )}
         

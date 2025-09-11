@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import bcrypt from 'bcryptjs'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -177,20 +178,15 @@ export class DatabaseService {
     return data
   }
 
-  // Password hashing utility
+  // Password hashing utility using bcrypt for security
   static async hashPassword(password: string): Promise<string> {
-    // Simple hash for now - in production use bcrypt or similar
-    const encoder = new TextEncoder()
-    const data = encoder.encode(password + 'nirva_salt_2024')
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+    const saltRounds = 12; // High security level
+    return await bcrypt.hash(password, saltRounds);
   }
 
-  // Password verification utility
+  // Password verification utility using bcrypt
   static async verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
-    const hash = await this.hashPassword(password)
-    return hash === hashedPassword
+    return await bcrypt.compare(password, hashedPassword);
   }
 
   // Get user by email for authentication
@@ -305,5 +301,67 @@ export class DatabaseService {
     
     if (error) throw error
     return data
+  }
+
+  static async storePasswordResetToken(email: string, token: string, expiresAt: Date) {
+    try {
+      const { error } = await supabase
+        .from('password_reset_tokens')
+        .insert({
+          email,
+          token,
+          expires_at: expiresAt.toISOString(),
+          created_at: new Date().toISOString()
+        });
+      
+      if (error) {
+        console.error('Error storing password reset token:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error in storePasswordResetToken:', error);
+      throw error;
+    }
+  }
+
+  static async validatePasswordResetToken(email: string, token: string) {
+    try {
+      const { data, error } = await supabase
+        .from('password_reset_tokens')
+        .select('*')
+        .eq('email', email)
+        .eq('token', token)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (error || !data) {
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error validating password reset token:', error);
+      return false;
+    }
+  }
+
+  static async deletePasswordResetToken(email: string, token: string) {
+    try {
+      const { error } = await supabase
+        .from('password_reset_tokens')
+        .delete()
+        .eq('email', email)
+        .eq('token', token);
+      
+      if (error) {
+        console.error('Error deleting password reset token:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error in deletePasswordResetToken:', error);
+      throw error;
+    }
   }
 }

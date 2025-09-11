@@ -217,8 +217,9 @@ export default function App() {
 
     // Check for admin authentication
     if (email === 'nirvayogastudio@gmail.com') {
-      // Admin password validation
-      if (password !== 'nirva2024') {
+      // Admin password validation - use environment variable
+      const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'nirva2024';
+      if (password !== adminPassword) {
         throw new Error('Incorrect password for admin account. Please try again.');
       }
     } else {
@@ -274,17 +275,9 @@ export default function App() {
       let bookedClassesData = {};
       try {
         const bookedClasses = await DatabaseService.getUserBookedClasses(userRecord.id);
-        console.log('📚 Loaded booked classes from database:', bookedClasses);
-        
         bookedClassesData = bookedClasses.reduce((acc, booking) => {
           // Create a unique key based on class details to match with schedule
           const classKey = `${booking.class_name}-${booking.class_date}-${booking.class_time}`;
-          console.log('🔗 Mapping booking to class key:', classKey, 'for booking:', booking.class_name);
-          console.log('🔗 Zoom data in booking:', {
-            zoom_link: booking.zoom_link,
-            zoom_password: booking.zoom_password,
-            zoom_meeting_id: booking.zoom_meeting_id
-          });
           
           acc[classKey] = {
             className: booking.class_name,
@@ -299,9 +292,8 @@ export default function App() {
           return acc;
         }, {});
         
-        console.log('📋 Final booked classes data:', bookedClassesData);
       } catch (bookedError) {
-        console.log('⚠️ No booked classes found for user:', bookedError);
+        // No booked classes found for user
       }
       
       const updatedUser = {
@@ -316,18 +308,8 @@ export default function App() {
       
       setUser(updatedUser);
       
-      // Merge database data with localStorage data (localStorage takes precedence for recent bookings)
-      const storedBookedClasses = localStorage.getItem(`nirva_booked_classes_${email}`);
-      let finalBookedClasses = bookedClassesData;
-      
-      if (storedBookedClasses) {
-        const localStorageData = JSON.parse(storedBookedClasses);
-        finalBookedClasses = { ...bookedClassesData, ...localStorageData };
-        console.log('🔄 Merged database and localStorage booked classes:', finalBookedClasses);
-        console.log('🔄 localStorage keys:', Object.keys(localStorageData));
-        console.log('🔄 database keys:', Object.keys(bookedClassesData));
-        console.log('🔄 final keys:', Object.keys(finalBookedClasses));
-      }
+      // Use only database data for security (no sensitive data in localStorage)
+      const finalBookedClasses = bookedClassesData;
       
       // Set the booked classes state with merged data
       setBookedClasses(finalBookedClasses);
@@ -365,6 +347,12 @@ export default function App() {
 
   const handleSignup = async (email: string, password: string, name: string) => {
     try {
+      // Check if user already exists first
+      const existingUser = await DatabaseService.getUserByEmail(email);
+      if (existingUser) {
+        throw new Error('An account with this email already exists. Please use the "Reset Password" tab if you forgot your password, or try logging in with your existing credentials.');
+      }
+
       // Create user in our database with password
       const userRecord = await DatabaseService.createOrUpdateUser({
         email,
@@ -383,7 +371,6 @@ export default function App() {
           studentName: name,
           studentEmail: email
         });
-        console.log('✅ Welcome email sent to new user');
       } catch (emailError) {
         console.error('⚠️ Failed to send welcome email:', emailError);
         // Don't fail signup if email fails
@@ -393,8 +380,10 @@ export default function App() {
       return { user: { email, name } };
     } catch (error: any) {
       console.error('Signup failed:', error);
-      if (error.message.includes('duplicate key') || error.message.includes('already exists')) {
-        throw new Error('An account with this email already exists. Please try logging in instead.');
+      if (error.message.includes('already exists') || error.message.includes('duplicate key')) {
+        throw new Error('An account with this email already exists. Please use the "Reset Password" tab if you forgot your password, or try logging in with your existing credentials.');
+      } else if (error.message.includes('Password must be at least 6 characters')) {
+        throw new Error('Password must be at least 6 characters long.');
       } else {
         throw new Error(error.message || 'Failed to create account. Please try again.');
       }
@@ -403,12 +392,36 @@ export default function App() {
 
   const handleResetPassword = async (email: string) => {
     try {
-      const { AuthService } = await import('./utils/auth');
-      await AuthService.resetPassword(email);
+      // Check if user exists in our database
+      const userRecord = await DatabaseService.getUserByEmail(email);
+      
+      if (!userRecord) {
+        throw new Error('No account found with this email address.');
+      }
+
+      // Generate a secure reset token using crypto.randomBytes
+      const resetToken = crypto.getRandomValues(new Uint8Array(32))
+        .reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
+      
+      // Store reset token in database with expiration (24 hours)
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+      await DatabaseService.storePasswordResetToken(email, resetToken, expiresAt);
+      
+      // Send custom password reset email using our email service
+      const { EmailService } = await import('./utils/email-service');
+      await EmailService.sendEmail({
+        type: 'password-reset',
+        data: {
+          studentName: userRecord.name || email.split('@')[0],
+          studentEmail: email,
+          resetToken: resetToken
+        }
+      });
+      
       // Password reset email sent successfully
     } catch (error: any) {
       console.error('Password reset failed:', error);
-      if (error.message.includes('User not found')) {
+      if (error.message.includes('No account found')) {
         throw new Error('No account found with this email address.');
       } else {
         throw new Error(error.message || 'Failed to send reset email. Please try again.');
@@ -417,10 +430,7 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    // Clear user-specific localStorage on logout
-    if (user?.email) {
-      localStorage.removeItem(`nirva_booked_classes_${user.email}`);
-    }
+    // Clear only non-sensitive localStorage on logout
     localStorage.removeItem('nirva_user');
     
     setUser(null);
