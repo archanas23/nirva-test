@@ -563,9 +563,9 @@ export default function App() {
       
       let zoomMeeting = null;
       try {
-        console.log('🎥 Creating Zoom instant meeting (no registration required)...');
+        console.log('🎥 Creating Zoom scheduled meeting (no registration required)...');
         
-        // Use instant meeting type which doesn't require registration
+        // Use scheduled meeting but with settings to prevent registration
         const response = await fetch('/.netlify/functions/create-zoom-meeting-fetch', {
           method: 'POST',
           headers: {
@@ -577,7 +577,7 @@ export default function App() {
             date: formattedDate,
             time: classItem.time,
             duration: 60,
-            meetingType: 'instant' // Use instant meeting
+            meetingType: 'scheduled' // Use scheduled meeting for specific time
           })
         });
         
@@ -604,7 +604,7 @@ export default function App() {
               duration: result.meeting.duration
             }
           };
-          console.log('✅ Zoom instant meeting created successfully:', zoomMeeting);
+          console.log('✅ Zoom scheduled meeting created successfully:', zoomMeeting);
           console.log('🔗 Join URL:', result.meeting.join_url);
         } else {
           throw new Error('Invalid response from Zoom API');

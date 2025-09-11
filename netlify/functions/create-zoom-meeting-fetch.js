@@ -156,19 +156,25 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
         mute_upon_entry: false,
         watermark: false,
         use_pmi: false,
-        approval_type: 0,
+        approval_type: 0, // Automatically approve
         audio: 'both',
         auto_recording: 'none',
         enforce_login: false,
         alternative_hosts: '',
-        close_registration: true,
+        close_registration: true, // Disable registration
         show_share_button: true,
         allow_multiple_devices: true,
         registrants_confirmation_email: false,
-        waiting_room: false,
+        waiting_room: false, // No waiting room
         request_permission_to_unmute_participants: false,
         global_dial_in_countries: ['US'],
-        registrants_email_notification: false
+        registrants_email_notification: false,
+        registration_type: 1, // No registration required
+        meeting_authentication: false, // Disable meeting authentication
+        breakout_room: {
+          enable: false
+        },
+        pre_schedule: false
       }
     };
 
