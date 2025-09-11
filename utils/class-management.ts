@@ -121,11 +121,27 @@ export class ClassManagementService {
     password: string
     joinUrl: string
   }): Promise<ClassInstance> {
+    // First get the class template to copy its details
+    const { data: classTemplate, error: classError } = await supabase
+      .from('classes')
+      .select('*')
+      .eq('id', classId)
+      .single()
+    
+    if (classError) throw classError
+    if (!classTemplate) throw new Error('Class template not found')
+    
     const { data, error } = await supabase
       .from('class_instances')
       .insert([{
         class_id: classId,
+        class_name: classTemplate.name,
+        teacher: classTemplate.teacher,
         class_date: classDate,
+        start_time: classTemplate.start_time,
+        duration: classTemplate.duration,
+        level: classTemplate.level,
+        max_students: classTemplate.max_students,
         zoom_meeting_id: zoomData?.meetingId,
         zoom_password: zoomData?.password,
         zoom_link: zoomData?.joinUrl,
