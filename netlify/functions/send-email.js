@@ -27,10 +27,8 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    console.log('📧 Netlify function called with:', event.body);
+    // Processing email request
     const { type, data } = JSON.parse(event.body);
-    console.log('📧 Email type:', type);
-    console.log('📧 Email data:', data);
 
     let emailData;
     let result;
@@ -407,7 +405,7 @@ exports.handler = async (event, context) => {
           html: paymentBody
         });
         
-        console.log('✅ Payment confirmation email sent to:', data.studentEmail);
+        // Payment confirmation email sent
         break;
 
       case 'contact-inquiry':
@@ -449,9 +447,8 @@ exports.handler = async (event, context) => {
         };
     }
 
-    console.log('📧 Sending email with data:', emailData);
+    // Sending email via Resend
     result = await resend.emails.send(emailData);
-    console.log('📧 Resend response:', result);
 
     return {
       statusCode: 200,
@@ -466,7 +463,7 @@ exports.handler = async (event, context) => {
     };
 
   } catch (error) {
-    console.error('Email sending error:', error);
+    // Email sending error
     
     return {
       statusCode: 500,

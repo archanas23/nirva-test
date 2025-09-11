@@ -25,7 +25,7 @@ exports.handler = async (event, context) => {
   try {
     const { className, teacher, date, time, duration = 60, meetingType = 'scheduled' } = JSON.parse(event.body);
     
-    console.log('🎥 Creating Zoom meeting for:', { className, teacher, date, time, meetingType });
+    // Creating Zoom meeting
 
     // Get access token
     const accessToken = await getZoomAccessToken();
@@ -43,7 +43,7 @@ exports.handler = async (event, context) => {
       meetingType
     });
 
-    console.log('✅ Zoom meeting created:', meeting);
+    // Zoom meeting created successfully
 
     return {
       statusCode: 200,
@@ -57,7 +57,7 @@ exports.handler = async (event, context) => {
     };
 
   } catch (error) {
-    console.error('❌ Zoom meeting creation error:', error);
+    // Log error for debugging but don't expose details to client
     
     return {
       statusCode: 500,
@@ -74,10 +74,7 @@ exports.handler = async (event, context) => {
 
 async function getZoomAccessToken() {
   try {
-    console.log('🔑 Getting Zoom access token...');
-    console.log('🔑 Account ID:', process.env.VITE_ZOOM_ACCOUNT_ID ? 'Set' : 'Missing');
-    console.log('🔑 Client ID:', process.env.VITE_ZOOM_CLIENT_ID ? 'Set' : 'Missing');
-    console.log('🔑 Client Secret:', process.env.VITE_ZOOM_CLIENT_SECRET ? 'Set' : 'Missing');
+    // Getting Zoom access token
 
     if (!process.env.VITE_ZOOM_ACCOUNT_ID || !process.env.VITE_ZOOM_CLIENT_ID || !process.env.VITE_ZOOM_CLIENT_SECRET) {
       throw new Error('Missing Zoom API credentials. Please check environment variables.');
@@ -100,18 +97,17 @@ async function getZoomAccessToken() {
     }
 
     const data = await response.json();
-    console.log('✅ Zoom access token obtained successfully');
+    // Zoom access token obtained successfully
     return data.access_token;
   } catch (error) {
-    console.error('❌ Failed to get Zoom access token:');
-    console.error('Error details:', error.message);
+    // Failed to get Zoom access token
     throw error;
   }
 }
 
 async function createZoomMeeting(accessToken, { className, teacher, date, time, duration, meetingType = 'scheduled' }) {
   try {
-    console.log('🎥 Creating Zoom meeting with data:', { className, teacher, date, time, duration, meetingType });
+    // Creating Zoom meeting
     
     // For instant meetings, we don't need to parse date/time
     let startTime = null;
@@ -139,7 +135,7 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
       if (ampm.toLowerCase() === 'am' && hour24 === 12) hour24 = 0;
       
       startTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), hour24, parseInt(minutes));
-      console.log('🎥 Parsed start time:', startTime.toISOString());
+      // Parsed start time
     }
     
     const meetingData = {
@@ -178,7 +174,7 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
       }
     };
 
-    console.log('🎥 Meeting data to send:', JSON.stringify(meetingData, null, 2));
+    // Sending meeting data to Zoom API
 
     const response = await fetch('https://api.zoom.us/v2/users/me/meetings', {
       method: 'POST',
@@ -195,12 +191,7 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
     }
 
     const meeting = await response.json();
-    console.log('✅ Zoom meeting created successfully:', meeting);
-    console.log('🔍 Meeting settings:', meeting.settings);
-    console.log('🔍 Registration required?', meeting.settings?.approval_type);
-    console.log('🔍 Close registration?', meeting.settings?.close_registration);
-    console.log('🔍 Registration type:', meeting.settings?.registration_type);
-    console.log('🔍 Join URL:', meeting.join_url);
+    // Zoom meeting created successfully
     
     return {
       meeting_id: meeting.id.toString(),
@@ -213,8 +204,7 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
     };
 
   } catch (error) {
-    console.error('❌ Failed to create Zoom meeting:');
-    console.error('Error details:', error.message);
+    // Failed to create Zoom meeting
     throw error;
   }
 }

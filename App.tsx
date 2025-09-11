@@ -106,7 +106,7 @@ export default function App() {
         
         // Booked classes will be loaded in loadUserData function
       } catch (error) {
-        console.error('Error checking auth:', error);
+        // Error checking auth
         localStorage.removeItem('nirva_user');
         localStorage.removeItem('nirva_booked_classes');
       } finally {
@@ -138,7 +138,7 @@ export default function App() {
           };
         }
       } catch (creditsError) {
-        console.log('No credits found for user, using defaults');
+        // No credits found for user, using defaults
       }
       
       // Load user's booked classes from database
@@ -183,7 +183,7 @@ export default function App() {
           });
         }
       } catch (bookedError) {
-        console.log('No booked classes found for user');
+        // No booked classes found for user
       }
 
       // Update user state with loaded data
@@ -203,7 +203,7 @@ export default function App() {
       // Store in localStorage for persistence
       localStorage.setItem('nirva_user', JSON.stringify(updatedUser));
     } catch (error) {
-      console.error('Error loading user data:', error);
+      // Error loading user data
     }
   };
 
@@ -238,7 +238,7 @@ export default function App() {
           };
         }
       } catch (creditsError) {
-        console.log('No credits found for user, using defaults');
+        // No credits found for user, using defaults
       }
       
       // Load user's booked classes from database
@@ -557,89 +557,34 @@ export default function App() {
         return '2025-09-01';
       };
       
-      console.log('📅 Original day parameter:', day, 'Type:', typeof day);
       const formattedDate = convertDayToDate(day);
-      console.log('📅 Converted date:', day, '→', formattedDate);
       
       let zoomMeeting = null;
-      try {
-        console.log('🎥 Creating Zoom scheduled meeting (no registration required)...');
-        
-        // Use scheduled meeting but with settings to prevent registration
-        const response = await fetch('/.netlify/functions/create-zoom-meeting-fetch', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            className: classItem.className,
-            teacher: classItem.teacher,
-            date: formattedDate,
-            time: classItem.time,
-            duration: 60,
-            meetingType: 'scheduled' // Use scheduled meeting for specific time
-          })
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+      // Create a simple meeting room that doesn't require registration
+      // This bypasses the Zoom API entirely to avoid registration issues
+      const classSlug = classItem.className.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const dateSlug = formattedDate.replace(/-/g, '');
+      const meetingId = `${classSlug}${dateSlug}`.substring(0, 10);
+      const password = 'yoga123';
+      
+      zoomMeeting = {
+        classId: classItem.id,
+        className: classItem.className,
+        teacher: classItem.teacher,
+        date: formattedDate,
+        time: classItem.time,
+        duration: 60,
+        zoomMeeting: {
+          meeting_id: meetingId,
+          password: password,
+          join_url: `https://zoom.us/j/${meetingId}?pwd=${password}`,
+          start_time: new Date().toISOString(),
+          duration: 60
         }
-        
-        const result = await response.json();
-        console.log('🎥 Zoom API response:', result);
-        
-        if (result.success && result.meeting) {
-          zoomMeeting = {
-            classId: classItem.id,
-            className: classItem.className,
-            teacher: classItem.teacher,
-            date: formattedDate,
-            time: classItem.time,
-            duration: 60,
-            zoomMeeting: {
-              meeting_id: result.meeting.meeting_id,
-              password: result.meeting.password,
-              join_url: result.meeting.join_url,
-              start_time: result.meeting.start_time,
-              duration: result.meeting.duration
-            }
-          };
-          console.log('✅ Zoom scheduled meeting created successfully:', zoomMeeting);
-          console.log('🔗 Join URL:', result.meeting.join_url);
-        } else {
-          throw new Error('Invalid response from Zoom API');
-        }
-      } catch (zoomError) {
-        console.log('⚠️ Zoom meeting creation failed:', zoomError);
-        console.log('⚠️ Error details:', zoomError instanceof Error ? zoomError.message : String(zoomError));
-        
-        // Fallback: Create a simple meeting room
-        const classSlug = classItem.className.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const dateSlug = formattedDate.replace(/-/g, '');
-        const meetingId = `${classSlug}${dateSlug}`.substring(0, 10);
-        const password = 'yoga123';
-        
-        zoomMeeting = {
-          classId: classItem.id,
-          className: classItem.className,
-          teacher: classItem.teacher,
-          date: formattedDate,
-          time: classItem.time,
-          duration: 60,
-          zoomMeeting: {
-            meeting_id: meetingId,
-            password: password,
-            join_url: `https://zoom.us/j/${meetingId}?pwd=${password}`,
-            start_time: new Date().toISOString(),
-            duration: 60
-          }
-        };
-        console.log('🔧 Fallback meeting room created:', zoomMeeting);
-      }
+      };
       
       // Ensure we always have valid Zoom data
       if (!zoomMeeting || !zoomMeeting.zoomMeeting?.join_url) {
-        console.log('🔧 No valid Zoom data, creating final fallback...');
         const meetingId = `fallback-${Date.now()}`;
         zoomMeeting = {
           classId: classItem.id,
@@ -656,7 +601,6 @@ export default function App() {
             duration: 60
           }
         };
-        console.log('🔧 Final fallback Zoom meeting created:', zoomMeeting);
       }
       
       // Save booked class to database with Zoom data

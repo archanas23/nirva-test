@@ -19,11 +19,11 @@ exports.handler = async (event, context) => {
 
   // Skip webhook verification for testing if no signature provided
   if (!sig || !endpointSecret) {
-    console.log('⚠️ Skipping webhook verification for testing');
+    // Skipping webhook verification for testing
     try {
       stripeEvent = JSON.parse(event.body);
     } catch (err) {
-      console.error('Failed to parse webhook body:', err.message);
+      // Failed to parse webhook body
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Invalid webhook body' })
@@ -33,7 +33,7 @@ exports.handler = async (event, context) => {
     try {
       stripeEvent = stripe.webhooks.constructEvent(event.body, sig, endpointSecret);
     } catch (err) {
-      console.error('Webhook signature verification failed:', err.message);
+      // Webhook signature verification failed
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Invalid signature' })
@@ -45,15 +45,11 @@ exports.handler = async (event, context) => {
   switch (stripeEvent.type) {
     case 'payment_intent.succeeded':
       const paymentIntent = stripeEvent.data.object;
-      console.log('Payment succeeded:', paymentIntent.id);
+      // Payment succeeded
       
         // Process successful payment
         try {
-          console.log('✅ Payment succeeded:', paymentIntent.id);
-          console.log('💰 Amount:', paymentIntent.amount);
-          console.log('💳 Currency:', paymentIntent.currency);
-          console.log('📧 Customer email:', paymentIntent.receipt_email);
-          console.log('📦 Metadata:', paymentIntent.metadata);
+          // Payment details processed
 
           // Extract payment details
           const studentEmail = paymentIntent.metadata.studentEmail;
@@ -61,12 +57,11 @@ exports.handler = async (event, context) => {
           const packageDetails = JSON.parse(paymentIntent.metadata.packageDetails || '{}');
           const classDetails = JSON.parse(paymentIntent.metadata.classDetails || '{}');
 
-          console.log('👤 Student:', studentName, studentEmail);
-          console.log('📦 Package:', packageDetails);
+          // Student and package details
 
           // Send payment confirmation email
           if (studentEmail) {
-            console.log('📧 Sending payment confirmation email...');
+            // Sending payment confirmation email
             
             const paymentAmount = (paymentIntent.amount / 100).toFixed(2);
             const paymentCurrency = paymentIntent.currency.toUpperCase();
@@ -86,12 +81,12 @@ exports.handler = async (event, context) => {
               })
             });
             
-            console.log('✅ Payment confirmation email sent');
+            // Payment confirmation email sent
           }
 
           // Process package purchase
           if (packageDetails.type) {
-            console.log('🛒 Processing package purchase...');
+            // Processing package purchase
 
             // TODO: Add database operations here
             // 1. Update user credits in database
@@ -99,12 +94,12 @@ exports.handler = async (event, context) => {
             // 3. Send notification email to admin
             // 4. Log the purchase
 
-            console.log(`✅ Package purchased: ${packageDetails.name} for $${packageDetails.price}`);
+            // Package purchased successfully
           }
 
           // Process single class booking
           if (classDetails.className) {
-            console.log('🧘‍♀️ Processing class booking...');
+            // Processing class booking
 
             // TODO: Add class booking logic here
             // 1. Book the class in database
@@ -112,19 +107,19 @@ exports.handler = async (event, context) => {
             // 3. Send confirmation email with Zoom link
             // 4. Update user credits
 
-            console.log(`✅ Class booked: ${classDetails.className}`);
+            // Class booked successfully
           }
 
-          console.log('✅ Payment processed successfully');
+          // Payment processed successfully
         } catch (error) {
-          console.error('❌ Error processing payment:', error);
+          // Error processing payment
         }
       
       break;
     
     case 'payment_intent.payment_failed':
       const failedPayment = stripeEvent.data.object;
-      console.log('Payment failed:', failedPayment.id);
+      // Payment failed
       
       // Handle failed payment:
       // 1. Send failure notification email
@@ -133,7 +128,7 @@ exports.handler = async (event, context) => {
       break;
     
     default:
-      console.log(`Unhandled event type: ${stripeEvent.type}`);
+      // Unhandled event type
   }
 
   return {
