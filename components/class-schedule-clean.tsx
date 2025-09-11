@@ -234,90 +234,66 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                     const isBooked = isClassBooked?.(classItem.id);
                     
                     return (
-                      <div key={classItem.id} className="p-3 bg-muted/50 rounded-lg space-y-2">
-                        <div className="flex items-start justify-between">
+                      <div key={classItem.id} className="p-3 bg-muted/50 rounded-lg">
+                        <div className="flex items-center justify-between">
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm">{classItem.name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {classItem.time} • {classItem.teacher}
+                            <div className="text-sm font-medium text-gray-900 mb-1">
+                              {classItem.time}
                             </div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className="font-medium text-sm text-gray-800 mb-1">
+                              {classItem.name}
+                            </div>
+                            <div className="text-xs text-gray-600 mb-1">
+                              {classItem.teacher}
+                            </div>
+                            <div className="text-xs text-gray-500">
                               {classItem.level} • {classItem.duration}
-                            </div>
                             </div>
                           </div>
                           
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex-shrink-0 ml-3">
                           {isPast ? (
                             <Badge variant="secondary">Past Class</Badge>
                           ) : classItem.registrationClosed ? (
                             <Badge variant="secondary">Registration Closed</Badge>
                           ) : isBooked ? (
-                            <div className="w-full space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                                  ✅ Booked
-                                </Badge>
+                            <div className="text-right">
+                              <Badge variant="default" className="bg-green-600 hover:bg-green-700 mb-2">
+                                ✅ Booked
+                              </Badge>
+                              <div className="space-y-1">
+                                {bookedClasses[classItem.id]?.zoomLink && (
+                                  <Button 
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-xs w-full"
+                                    onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
+                                  >
+                                    🔗 Join Zoom
+                                  </Button>
+                                )}
                                 <Button 
                                   size="sm"
                                   variant="destructive"
-                                  className="text-xs"
+                                  className="text-xs w-full"
                                   onClick={() => onCancelClass?.(classItem.id || '')}
                                   disabled={isPast}
                                 >
                                   {isPast ? 'Past' : 'Cancel'}
                                 </Button>
                               </div>
-                              
-                              {/* Zoom Details Section */}
-                              {bookedClasses[classItem.id]?.zoomLink && (
-                                <div className="bg-green-50 border border-green-200 rounded-lg p-2 space-y-1">
-                                  <div className="text-xs font-medium text-green-800">Zoom Details:</div>
-                                  <div className="text-xs text-green-700">
-                                    Meeting ID: {bookedClasses[classItem.id]?.meetingId || 'N/A'}
-                                  </div>
-                                  <div className="text-xs text-green-700">
-                                    Password: {bookedClasses[classItem.id]?.zoomPassword || 'N/A'}
-                                  </div>
-                                  <Button 
-                                    size="sm"
-                                    variant="outline"
-                                    className="text-xs w-full mt-1"
-                                    onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
-                                  >
-                                    🔗 Join Zoom Meeting
-                                  </Button>
-                                </div>
-                              )}
                             </div>
-                          ) : !user ? (
-                            <Button 
-                              onClick={() => onBookClass?.(classItem, formatDate(date))}
-                              size="sm"
-                              variant="outline"
-                              disabled={isPast}
-                            >
-                              {isPast ? 'Past Class' : 'Login to Book'}
-                            </Button>
-                          ) : !canBook ? (
-                            <Button 
-                              onClick={() => onPayForClass?.(classItem, formatDate(date))}
-                              size="sm"
-                              variant="outline"
-                              disabled={isPast}
-                            >
-                              {isPast ? 'Past Class' : 'Book Class'}
-                            </Button>
                           ) : (
                             <Button 
                               onClick={async () => await onBookClass?.(classItem, formatDate(date))}
                               size="sm"
-                              className="bg-primary hover:bg-primary/90"
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
                               disabled={isPast}
                             >
-                              {isPast ? 'Past Class' : 'Book Class'}
+                              {isPast ? 'Past' : 'Book'}
                             </Button>
                           )}
+                          </div>
                         </div>
                       </div>
                     );
