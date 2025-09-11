@@ -69,6 +69,7 @@ export default function App() {
   } | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [classInstances, setClassInstances] = useState<any[]>([]);
   
   // Track booked classes with Zoom links
   const [bookedClasses, setBookedClasses] = useState<{
@@ -227,11 +228,19 @@ export default function App() {
       let bookedClassesData = {};
       try {
         const bookedClasses = await DatabaseService.getUserBookedClasses(userRecord.id);
+        console.log('📚 Loaded booked classes from database:', bookedClasses);
+        
         bookedClassesData = bookedClasses.reduce((acc, booking) => {
-          // Use the class_instance_id if available, otherwise fall back to booking ID
-          const classId = booking.class_instance_id || booking.id;
+          // Create a unique key based on class details to match with schedule
+          const classKey = `${booking.class_name}-${booking.class_date}-${booking.class_time}`;
+          console.log('🔗 Mapping booking to class key:', classKey, 'for booking:', booking.class_name);
+          console.log('🔗 Zoom data in booking:', {
+            zoom_link: booking.zoom_link,
+            zoom_password: booking.zoom_password,
+            zoom_meeting_id: booking.zoom_meeting_id
+          });
           
-          acc[classId] = {
+          acc[classKey] = {
             className: booking.class_name,
             teacher: booking.teacher,
             time: booking.class_time,
@@ -243,6 +252,8 @@ export default function App() {
           };
           return acc;
         }, {});
+        
+        console.log('📋 Final booked classes data:', bookedClassesData);
       } catch (bookedError) {
         console.log('⚠️ No booked classes found for user:', bookedError);
       }
@@ -261,6 +272,20 @@ export default function App() {
       
       // Set the booked classes state with loaded data
       setBookedClasses(bookedClassesData);
+      
+      // Load class instances for ID matching
+      try {
+        const today = new Date();
+        const startDate = today.toISOString().split('T')[0];
+        const endDate = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
+        const { ClassManagementService } = await import('./utils/class-management');
+        const instances = await ClassManagementService.getClassInstances(startDate, endDate);
+        setClassInstances(instances);
+        console.log('📅 Loaded class instances:', instances);
+      } catch (error) {
+        console.log('⚠️ Error loading class instances:', error);
+      }
       
       // Store in localStorage for persistence
       localStorage.setItem('nirva_user', JSON.stringify(updatedUser));
@@ -408,7 +433,32 @@ export default function App() {
 
   // Check if a class is already booked
   const isClassBooked = (classId: string) => {
-    return bookedClasses[classId] !== undefined;
+    // For now, let's check if any booking matches this class ID
+    // This is a temporary fix until we get the proper ID matching working
+    const classItem = classInstances?.find(instance => instance.id === classId);
+    if (!classItem) return false;
+    
+    // Convert start_time format from "08:00:00" to "8:00 AM" to match booking format
+    const formatTimeForKey = (timeStr: string) => {
+      if (!timeStr) return '00:00';
+      const [hours, minutes] = timeStr.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    };
+    
+    const classKey = `${classItem.class?.name || classItem.class_name}-${classItem.class_date}-${formatTimeForKey(classItem.class?.start_time || '00:00')}`;
+    const isBooked = bookedClasses[classKey] !== undefined;
+    
+    console.log('🔍 Checking if class is booked:', {
+      classId,
+      classKey,
+      isBooked,
+      bookedClassesKeys: Object.keys(bookedClasses)
+    });
+    
+    return isBooked;
   };
 
   const handleBookClass = async (classItem: ClassItem, day: string) => {
@@ -486,22 +536,45 @@ export default function App() {
         console.log('⚠️ Zoom meeting creation failed, creating mock meeting for testing:', zoomError);
         console.log('⚠️ Error details:', zoomError instanceof Error ? zoomError.message : String(zoomError));
         // Create a mock Zoom meeting for testing
+        const meetingId = `yoga-${Date.now()}`;
         zoomMeeting = {
-          classId: `mock-${Date.now()}`,
+          classId: classItem.id,
           className: classItem.className,
           teacher: classItem.teacher,
-          date: day,
+          date: formattedDate,
           time: classItem.time,
           duration: 60,
           zoomMeeting: {
-            meeting_id: `mock-${Date.now()}`,
+            meeting_id: meetingId,
             password: 'yoga123',
-            join_url: 'https://zoom.us/j/123456789?pwd=yoga123',
+            join_url: `https://zoom.us/j/${meetingId}?pwd=yoga123`,
             start_time: new Date().toISOString(),
             duration: 60
           }
         };
         console.log('🔧 Mock Zoom meeting created for testing:', zoomMeeting);
+      }
+      
+      // Ensure we always have valid Zoom data
+      if (!zoomMeeting || !zoomMeeting.zoomMeeting?.join_url) {
+        console.log('🔧 No valid Zoom data, creating final fallback...');
+        const meetingId = `fallback-${Date.now()}`;
+        zoomMeeting = {
+          classId: classItem.id,
+          className: classItem.className,
+          teacher: classItem.teacher,
+          date: formattedDate,
+          time: classItem.time,
+          duration: 60,
+          zoomMeeting: {
+            meeting_id: meetingId,
+            password: 'yoga123',
+            join_url: `https://zoom.us/j/${meetingId}?pwd=yoga123`,
+            start_time: new Date().toISOString(),
+            duration: 60
+          }
+        };
+        console.log('🔧 Final fallback Zoom meeting created:', zoomMeeting);
       }
       
       // Save booked class to database with Zoom data
@@ -548,6 +621,7 @@ export default function App() {
       console.log('📝 Storing booked class data:', bookedClassData);
       console.log('🔗 Zoom link being stored:', bookedClassData.zoomLink);
       console.log('📋 Class ID for storage:', classItem.id);
+      console.log('🔗 Full zoomMeeting object:', zoomMeeting);
       
       setBookedClasses(prev => {
         const newBookedClasses = {

@@ -85,58 +85,14 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
       const timeFormatted = classTemplate.start_time.substring(0, 5); // Convert "08:00:00" to "08:00"
       const duration = parseInt(classTemplate.duration.replace(' min', '')); // Convert "60 min" to 60
 
-      // Create Zoom meeting automatically
-      let zoomData = null;
-      try {
-        console.log('🎥 Creating Zoom meeting for session...');
-        console.log('📅 Meeting details:', { 
-          className: classTemplate.name, 
-          teacher: classTemplate.teacher, 
-          date: formattedDate, 
-          time: timeFormatted 
-        });
-        
-        zoomData = await ZoomService.createClassMeeting(
-          classTemplate.name,
-          classTemplate.teacher,
-          formattedDate,
-          timeFormatted,
-          duration
-        );
-        console.log('✅ Zoom meeting created successfully:', zoomData);
-      } catch (zoomError) {
-        console.log('⚠️ Zoom meeting creation failed, creating mock meeting for testing:', zoomError);
-        // Create a mock Zoom meeting for testing
-        zoomData = {
-          classId: `mock-${Date.now()}`,
-          className: classTemplate.name,
-          teacher: classTemplate.teacher,
-          date: formattedDate,
-          time: timeFormatted,
-          duration: duration,
-          zoomMeeting: {
-            meeting_id: `mock-${Date.now()}`,
-            password: 'yoga123',
-            join_url: 'https://zoom.us/j/123456789?pwd=yoga123',
-            start_time: new Date().toISOString(),
-            duration: duration
-          }
-        };
-        console.log('🔧 Mock Zoom meeting created for testing:', zoomData);
-      }
-
-      // Create the class instance with Zoom data
+      // Create the class instance without Zoom data
+      // Zoom meetings will be created when students book the class
       await ClassManagementService.createClassInstance(
         sessionData.classId,
-        sessionData.classDate,
-        zoomData?.zoomMeeting ? {
-          meetingId: zoomData.zoomMeeting.meeting_id,
-          password: zoomData.zoomMeeting.password,
-          joinUrl: zoomData.zoomMeeting.join_url
-        } : undefined
+        sessionData.classDate
       );
       
-      toast.success('Session created successfully with Zoom meeting!');
+      toast.success('Session created successfully! Zoom meetings will be created when students book.');
       
       loadData();
       setShowAddSession(false);
@@ -242,38 +198,11 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
         const timeFormatted = classTemplate.start_time.substring(0, 5);
         const duration = parseInt(classTemplate.duration.replace(' min', ''));
 
-        // Create Zoom meeting automatically
-        let zoomData = null;
-        try {
-          zoomData = await ZoomService.createClassMeeting(
-            classTemplate.name,
-            classTemplate.teacher,
-            formattedDate,
-            timeFormatted,
-            duration
-          );
-        } catch (zoomError) {
-          console.log('⚠️ Zoom meeting creation failed for session, creating mock meeting:', zoomError);
-          zoomData = {
-            zoomMeeting: {
-              meeting_id: `mock-${Date.now()}`,
-              password: 'yoga123',
-              join_url: 'https://zoom.us/j/123456789?pwd=yoga123',
-              start_time: new Date().toISOString(),
-              duration: duration
-            }
-          };
-        }
-
-        // Create the class instance with Zoom data
+        // Create the class instance without Zoom data
+        // Zoom meetings will be created when students book the class
         await ClassManagementService.createClassInstance(
           sessionData.classId,
-          sessionData.classDate,
-          zoomData?.zoomMeeting ? {
-            meetingId: zoomData.zoomMeeting.meeting_id,
-            password: zoomData.zoomMeeting.password,
-            joinUrl: zoomData.zoomMeeting.join_url
-          } : undefined
+          sessionData.classDate
         );
       }
 
@@ -492,10 +421,7 @@ function AddSessionDialog({
 }) {
   const [formData, setFormData] = useState({
     classId: '',
-    classDate: '',
-    zoomMeetingId: '',
-    zoomPassword: '',
-    zoomLink: ''
+    classDate: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -542,35 +468,14 @@ function AddSessionDialog({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="zoomMeetingId">Zoom Meeting ID (Optional)</Label>
-              <Input
-                id="zoomMeetingId"
-                value={formData.zoomMeetingId}
-                onChange={(e) => setFormData({ ...formData, zoomMeetingId: e.target.value })}
-                placeholder="123 456 7890"
-              />
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span className="text-sm font-medium text-blue-800">Zoom Meeting</span>
             </div>
-            <div>
-              <Label htmlFor="zoomPassword">Zoom Password (Optional)</Label>
-              <Input
-                id="zoomPassword"
-                value={formData.zoomPassword}
-                onChange={(e) => setFormData({ ...formData, zoomPassword: e.target.value })}
-                placeholder="abc123"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="zoomLink">Zoom Join Link (Optional)</Label>
-            <Input
-              id="zoomLink"
-              value={formData.zoomLink}
-              onChange={(e) => setFormData({ ...formData, zoomLink: e.target.value })}
-              placeholder="https://zoom.us/j/123456789"
-            />
+            <p className="text-sm text-blue-700">
+              Zoom meetings will be automatically created when students book this class session.
+            </p>
           </div>
 
           <div className="flex justify-end gap-2">
@@ -599,9 +504,6 @@ function EditSessionDialog({
 }) {
   const [formData, setFormData] = useState({
     classDate: session.class_date,
-    zoomMeetingId: session.zoom_meeting_id || '',
-    zoomPassword: session.zoom_password || '',
-    zoomLink: session.zoom_link || '',
     is_cancelled: session.is_cancelled
   });
 
@@ -638,35 +540,22 @@ function EditSessionDialog({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="zoomMeetingId">Zoom Meeting ID</Label>
-              <Input
-                id="zoomMeetingId"
-                value={formData.zoomMeetingId}
-                onChange={(e) => setFormData({ ...formData, zoomMeetingId: e.target.value })}
-                placeholder="123 456 7890"
-              />
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span className="text-sm font-medium text-blue-800">Zoom Meeting</span>
             </div>
-            <div>
-              <Label htmlFor="zoomPassword">Zoom Password</Label>
-              <Input
-                id="zoomPassword"
-                value={formData.zoomPassword}
-                onChange={(e) => setFormData({ ...formData, zoomPassword: e.target.value })}
-                placeholder="abc123"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="zoomLink">Zoom Join Link</Label>
-            <Input
-              id="zoomLink"
-              value={formData.zoomLink}
-              onChange={(e) => setFormData({ ...formData, zoomLink: e.target.value })}
-              placeholder="https://zoom.us/j/123456789"
-            />
+            <p className="text-sm text-blue-700">
+              Zoom meetings are automatically created when students book this class session.
+            </p>
+            {session.zoom_meeting_id && (
+              <div className="mt-2 text-xs text-blue-600">
+                <p>Meeting ID: {session.zoom_meeting_id}</p>
+                {session.zoom_link && (
+                  <p>Join Link: <a href={session.zoom_link} target="_blank" rel="noopener noreferrer" className="underline">Click to join</a></p>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2">

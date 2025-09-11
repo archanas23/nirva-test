@@ -256,6 +256,25 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                     const isPast = isClassInPast(date, classItem.time);
                     const isBooked = isClassBooked?.(classItem.id);
                     
+                    // Debug logging
+                    console.log('🔍 Class Item ID:', classItem.id);
+                    console.log('🔍 Is Booked:', isBooked);
+                    console.log('🔍 Booked Classes:', bookedClasses);
+                    
+                    // Create the same key format as in App.tsx
+                    // Convert time format to match booking format
+                    const formatTimeForKey = (timeStr: string) => {
+                      if (!timeStr) return '00:00';
+                      const [hours, minutes] = timeStr.split(':');
+                      const hour = parseInt(hours);
+                      const ampm = hour >= 12 ? 'PM' : 'AM';
+                      const displayHour = hour % 12 || 12;
+                      return `${displayHour}:${minutes} ${ampm}`;
+                    };
+                    
+                    const classKey = `${classItem.name}-${date.toISOString().split('T')[0]}-${formatTimeForKey(classItem.time)}`;
+                    console.log('🔍 Class Key:', classKey);
+                    console.log('🔍 Zoom Link for this class:', bookedClasses[classKey]?.zoomLink);
                     
                     return (
                       <div key={classItem.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -286,12 +305,12 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                               <Badge variant="default" className="bg-green-600 hover:bg-green-700">
                                 ✅ Booked
                               </Badge>
-                              {bookedClasses[classItem.id]?.zoomLink && (
+                              {bookedClasses[classKey]?.zoomLink && (
                                 <Button 
                                   size="sm"
                                   variant="outline"
                                   className="text-xs"
-                                  onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
+                                  onClick={() => window.open(bookedClasses[classKey].zoomLink, '_blank')}
                                 >
                                   🔗 Join Zoom
                                 </Button>
