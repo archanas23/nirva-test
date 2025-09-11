@@ -7,6 +7,8 @@ import { Alert, AlertDescription } from './ui/alert';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
 export function PasswordResetPage() {
+  console.log('🎯 PasswordResetPage component rendered');
+  
   const [email, setEmail] = useState('');
   const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -25,11 +27,17 @@ export function PasswordResetPage() {
       emailParam,
       tokenParam,
       hasEmail: !!emailParam,
-      hasToken: !!tokenParam
+      hasToken: !!tokenParam,
+      currentView: 'password-reset'
     });
     
     if (emailParam) setEmail(emailParam);
     if (tokenParam) setToken(tokenParam);
+    
+    // Clear URL parameters after reading them
+    if (emailParam && tokenParam) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
     
     // Validate token if both email and token are present
     if (emailParam && tokenParam) {
@@ -39,10 +47,13 @@ export function PasswordResetPage() {
 
   const validateToken = async (email: string, token: string) => {
     try {
+      console.log('🔍 Validating token:', { email, token });
       // For now, we'll assume the token is valid if it exists
       // In a real implementation, you'd validate against the database
       setIsValidToken(true);
+      console.log('✅ Token validated successfully');
     } catch (error) {
+      console.log('❌ Token validation failed:', error);
       setIsValidToken(false);
       setMessage('Invalid or expired reset token. Please request a new password reset.');
     }

@@ -105,13 +105,15 @@ export default function App() {
           token,
           email,
           hasToken: !!token,
-          hasEmail: !!email
+          hasEmail: !!email,
+          currentView: currentView
         });
         
-        if (token && email) {
+        if (token && email && currentView !== 'password-reset') {
           // Navigate to password reset page
           console.log('🎯 Navigating to password reset page');
           setCurrentView('password-reset');
+          // Don't clear URL parameters yet - let the password reset page read them first
           return;
         }
 
@@ -476,6 +478,17 @@ export default function App() {
   // Handle URL changes and browser back/forward
   useEffect(() => {
     const handlePopState = () => {
+      // Check for password reset parameters first
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      const email = urlParams.get('email');
+      
+      if (token && email) {
+        console.log('🎯 PopState: Navigating to password reset page');
+        setCurrentView('password-reset');
+        return;
+      }
+      
       const path = window.location.pathname;
       if (path === "/" || path === "") {
         setCurrentView("home");
