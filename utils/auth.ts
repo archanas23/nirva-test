@@ -10,10 +10,23 @@ export class AuthService {
     return data
   }
 
-  static async signUp(email: string, password: string) {
+  static async signUp(email: string, password: string, name?: string) {
     const { data, error } = await supabase.auth.signUp({
       email,
-      password
+      password,
+      options: {
+        data: {
+          name: name || email.split('@')[0]
+        }
+      }
+    })
+    if (error) throw error
+    return data
+  }
+
+  static async resetPassword(email: string) {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`
     })
     if (error) throw error
     return data

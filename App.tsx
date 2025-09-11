@@ -212,16 +212,14 @@ export default function App() {
   const handleLogin = async (email: string, password?: string) => {
     // Password is required for all users
     if (!password) {
-      alert('Password is required. Please enter your password.');
-      return;
+      throw new Error('Password is required. Please enter your password.');
     }
 
     // Check for admin authentication
     if (email === 'nirvayogastudio@gmail.com') {
       // Admin password validation
       if (password !== 'nirva2024') {
-        alert('Incorrect password for admin account. Please try again.');
-        return;
+        throw new Error('Incorrect password for admin account. Please try again.');
       }
     } else {
       // For regular users, use Supabase authentication
@@ -230,19 +228,17 @@ export default function App() {
         const authResult = await AuthService.signIn(email, password);
         
         if (!authResult.user) {
-          alert('Invalid email or password. Please try again.');
-          return;
+          throw new Error('Invalid email or password. Please try again.');
         }
       } catch (authError: any) {
         console.error('Authentication failed:', authError);
         if (authError.message.includes('Invalid login credentials')) {
-          alert('Invalid email or password. Please try again.');
+          throw new Error('Invalid email or password. Please try again.');
         } else if (authError.message.includes('Email not confirmed')) {
-          alert('Please check your email and click the confirmation link to activate your account.');
+          throw new Error('Please check your email and click the confirmation link to activate your account.');
         } else {
-          alert('Login failed. Please try again or contact support.');
+          throw new Error('Login failed. Please try again or contact support.');
         }
-        return;
       }
     }
     
@@ -358,6 +354,44 @@ export default function App() {
         tenPack: 0
       }
     });
+    }
+  };
+
+  const handleSignup = async (email: string, password: string, name: string) => {
+    try {
+      const { AuthService } = await import('./utils/auth');
+      const authResult = await AuthService.signUp(email, password, name);
+      
+      if (!authResult.user) {
+        throw new Error('Failed to create account. Please try again.');
+      }
+      
+      // Account created successfully - user will need to confirm email
+      return authResult;
+    } catch (error: any) {
+      console.error('Signup failed:', error);
+      if (error.message.includes('User already registered')) {
+        throw new Error('An account with this email already exists. Please try logging in instead.');
+      } else if (error.message.includes('Password should be at least')) {
+        throw new Error('Password must be at least 6 characters long.');
+      } else {
+        throw new Error(error.message || 'Failed to create account. Please try again.');
+      }
+    }
+  };
+
+  const handleResetPassword = async (email: string) => {
+    try {
+      const { AuthService } = await import('./utils/auth');
+      await AuthService.resetPassword(email);
+      // Password reset email sent successfully
+    } catch (error: any) {
+      console.error('Password reset failed:', error);
+      if (error.message.includes('User not found')) {
+        throw new Error('No account found with this email address.');
+      } else {
+        throw new Error(error.message || 'Failed to send reset email. Please try again.');
+      }
     }
   };
 
@@ -1413,12 +1447,14 @@ export default function App() {
       {/* Admin Notification Display */}
       <AdminNotificationDisplay />
 
-      {/* Auth Modal */}
-      <AuthModal 
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onLogin={handleLogin}
-      />
+        {/* Auth Modal */}
+        <AuthModal 
+          isOpen={showAuthModal} 
+          onClose={() => setShowAuthModal(false)} 
+          onLogin={handleLogin}
+          onSignup={handleSignup}
+          onResetPassword={handleResetPassword}
+        />
 
       {/* Account Modal */}
       <Dialog open={showAccountModal} onOpenChange={setShowAccountModal}>
