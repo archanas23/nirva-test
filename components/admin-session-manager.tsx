@@ -318,7 +318,7 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">
-                      {session.class?.duration || 60} min
+                      {session.class?.duration || '60 min'}
                     </span>
                   </div>
                 </div>

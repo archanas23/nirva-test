@@ -103,9 +103,12 @@ export default function App() {
           // Load user's data from database
           await loadUserData(userData.email);
         }
+        
+        // Booked classes will be loaded in loadUserData function
       } catch (error) {
         console.error('Error checking auth:', error);
         localStorage.removeItem('nirva_user');
+        localStorage.removeItem('nirva_booked_classes');
       } finally {
         setIsLoading(false);
       }
@@ -152,8 +155,22 @@ export default function App() {
       try {
         const bookedClasses = await DatabaseService.getUserBookedClasses(userRecord.id);
         if (bookedClasses) {
+          // Use the same key format as the booking process
+          const formatTimeForKey = (timeStr: string) => {
+            if (!timeStr) return '00:00';
+            if (timeStr.includes('AM') || timeStr.includes('PM')) {
+              return timeStr; // Already formatted
+            }
+            const [hours, minutes] = timeStr.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const displayHour = hour % 12 || 12;
+            return `${displayHour}:${minutes} ${ampm}`;
+          };
+          
           bookedClasses.forEach(booking => {
-            bookedClassesData[booking.class_name + '-' + booking.class_date] = {
+            const classKey = `${booking.class_name}-${booking.class_date}-${formatTimeForKey(booking.class_time)}`;
+            bookedClassesData[classKey] = {
               className: booking.class_name,
               teacher: booking.teacher,
               time: booking.class_time,
@@ -270,8 +287,21 @@ export default function App() {
       
       setUser(updatedUser);
       
-      // Set the booked classes state with loaded data
-      setBookedClasses(bookedClassesData);
+      // Merge database data with localStorage data (localStorage takes precedence for recent bookings)
+      const storedBookedClasses = localStorage.getItem('nirva_booked_classes');
+      let finalBookedClasses = bookedClassesData;
+      
+      if (storedBookedClasses) {
+        const localStorageData = JSON.parse(storedBookedClasses);
+        finalBookedClasses = { ...bookedClassesData, ...localStorageData };
+        console.log('🔄 Merged database and localStorage booked classes:', finalBookedClasses);
+        console.log('🔄 localStorage keys:', Object.keys(localStorageData));
+        console.log('🔄 database keys:', Object.keys(bookedClassesData));
+        console.log('🔄 final keys:', Object.keys(finalBookedClasses));
+      }
+      
+      // Set the booked classes state with merged data
+      setBookedClasses(finalBookedClasses);
       
       // Load class instances for ID matching
       try {
@@ -686,6 +716,11 @@ export default function App() {
         };
         console.log('📋 Updated booked classes state:', newBookedClasses);
         console.log('📋 Keys in booked classes:', Object.keys(newBookedClasses));
+        
+        // Persist booked classes to localStorage
+        localStorage.setItem('nirva_booked_classes', JSON.stringify(newBookedClasses));
+        console.log('💾 Booked classes saved to localStorage');
+        
         return newBookedClasses;
       });
       

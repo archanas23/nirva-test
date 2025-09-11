@@ -147,7 +147,7 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
       settings: {
         host_video: true,
         participant_video: true,
-        join_before_host: false,
+        join_before_host: true, // Allow joining before host
         mute_upon_entry: true,
         watermark: false,
         use_pmi: false,
@@ -157,11 +157,11 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
         enforce_login: false,
         enforce_login_domains: '',
         alternative_hosts: '',
-        close_registration: false,
+        close_registration: true, // Disable registration - direct join only
         show_share_button: true,
         allow_multiple_devices: true,
         registrants_confirmation_email: false,
-        waiting_room: false,
+        waiting_room: false, // No waiting room
         request_permission_to_unmute_participants: false,
         global_dial_in_countries: ['US'],
         registrants_email_notification: false
