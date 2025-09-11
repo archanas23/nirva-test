@@ -84,7 +84,7 @@ export function PasswordResetPage() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       setMessage('Password reset successfully! You can now log in with your new password.');
-      setIsValidToken(false); // Hide the form
+      // Don't set isValidToken to false - keep it true to show success message
     } catch (error) {
       setMessage('Failed to reset password. Please try again or request a new reset link.');
     } finally {
