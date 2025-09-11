@@ -69,7 +69,7 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
       className: instance.class?.name || 'Unknown Class', // Add className field
       teacher: instance.class?.teacher || 'Unknown Teacher',
       time: timeFormatted,
-      duration: `${instance.class?.duration || 60} min`,
+      duration: instance.class?.duration || '60 min',
       level: instance.class?.level || 'All Levels',
       maxStudents: instance.class?.max_students || 10,
       registrationClosed: instance.is_cancelled
@@ -173,138 +173,130 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
     );
   }
 
-  return (
-    <div className="w-full max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-heading mb-4">Class Schedule</h2>
-        <p className="text-muted-foreground mb-6">
-          Book your yoga classes for the week. Only classes created by admin will appear here.
-        </p>
-        
-        {/* Navigation */}
-        <div className="flex items-center justify-center gap-4 mb-6">
-          <Button variant="outline" onClick={goToPreviousWeek}>
-            <ChevronLeft className="w-4 h-4 mr-2" />
-            Previous Week
-          </Button>
-          <Button variant="outline" onClick={goToCurrentWeek}>
-            <Calendar className="w-4 h-4 mr-2" />
-            This Week
-          </Button>
-          <Button variant="outline" onClick={goToNextWeek}>
-            Next Week
-            <ChevronRight className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
+  // Get all upcoming classes for the next 2 weeks
+  const getAllUpcomingClasses = (): Array<{ classItem: ClassItem; date: Date }> => {
+    const upcomingClasses: Array<{ classItem: ClassItem; date: Date }> = [];
+    
+    // Check next 14 days
+    for (let i = 0; i < 14; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() + i);
+      const classesForDate = getFutureClassesForDate(date);
+      
+      classesForDate.forEach(classItem => {
+        upcomingClasses.push({ classItem, date });
+      });
+    }
+    
+    return upcomingClasses.sort((a, b) => {
+      // Sort by date first, then by time
+      const dateCompare = a.date.getTime() - b.date.getTime();
+      if (dateCompare !== 0) return dateCompare;
+      
+      const timeA = a.classItem.time;
+      const timeB = b.classItem.time;
+      return timeA.localeCompare(timeB);
+    });
+  };
 
-        {/* User info */}
-        {user && (
-          <div className="bg-muted/50 rounded-lg p-4 mb-6">
-            <p className="text-sm text-muted-foreground">
-              Welcome back, {user.name}! You have {totalClasses} class{totalClasses !== 1 ? 'es' : ''} remaining.
-            </p>
+  const upcomingClasses = getAllUpcomingClasses();
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">CLASS SCHEDULE</h2>
+        <p className="text-gray-600 mb-4">Book your yoga classes for the week. Only classes created by admin will appear here.</p>
+      </div>
+
+      {/* Welcome Message */}
+      {user && (
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4 text-center">
+          <p className="text-amber-800 font-medium">
+            Welcome back, {user.name || user.email}! You have {user.classPacks?.singleClasses + user.classPacks?.fivePack + user.classPacks?.tenPack || 0} classes remaining.
+          </p>
+        </div>
+      )}
+
+      {/* Classes List */}
+      <div className="space-y-3">
+        {upcomingClasses.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No classes scheduled</p>
           </div>
+        ) : (
+          upcomingClasses.map(({ classItem, date }) => {
+            const isPast = isClassInPast(date, classItem.time);
+            const isBooked = isClassBooked?.(classItem.id);
+            
+            return (
+              <div key={`${classItem.id}-${date.toISOString()}`} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex-1">
+                  <div className="flex items-center gap-4">
+                    <div className="text-sm text-gray-500 min-w-[60px]">
+                      {date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </div>
+                    <div className="text-lg font-semibold text-gray-900 min-w-[80px]">
+                      {classItem.time}
+                    </div>
+                    <div className="text-lg font-medium text-gray-800">
+                      {classItem.name}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {classItem.teacher}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {classItem.level} • {classItem.duration}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0 ml-4">
+                  {isPast ? (
+                    <Badge variant="secondary">Past Class</Badge>
+                  ) : classItem.registrationClosed ? (
+                    <Badge variant="secondary">Registration Closed</Badge>
+                  ) : isBooked ? (
+                    <div className="flex items-center gap-2">
+                      <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                        ✅ Booked
+                      </Badge>
+                      {bookedClasses[classItem.id]?.zoomLink && (
+                        <Button 
+                          size="sm"
+                          variant="outline"
+                          className="text-xs"
+                          onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
+                        >
+                          🔗 Join Zoom
+                        </Button>
+                      )}
+                      <Button 
+                        size="sm"
+                        variant="destructive"
+                        className="text-xs"
+                        onClick={() => onCancelClass?.(classItem.id || '')}
+                        disabled={isPast}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button 
+                      onClick={async () => await onBookClass?.(classItem, formatDate(date))}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      disabled={isPast}
+                    >
+                      Book Class
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
-
-      {/* Week View */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7">
-        {getCurrentWeekDates().map((date) => {
-          const futureClasses = getFutureClassesForDate(date);
-          
-          return (
-            <Card key={date.toISOString()} className="h-full">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">
-                  {date.toLocaleDateString('en-US', { weekday: 'long' })}
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {futureClasses.length === 0 ? (
-                  <div className="text-center py-4">
-                    <p className="text-sm text-muted-foreground">No classes scheduled</p>
-                  </div>
-                ) : (
-                  futureClasses.map((classItem) => {
-                    const isPast = isClassInPast(date, classItem.time);
-                    const isBooked = isClassBooked?.(classItem.id);
-                    
-                    return (
-                      <div key={classItem.id} className="p-3 bg-muted/50 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-gray-900 mb-1">
-                              {classItem.time}
-                            </div>
-                            <div className="font-medium text-sm text-gray-800 mb-1">
-                              {classItem.name}
-                            </div>
-                            <div className="text-xs text-gray-600 mb-1">
-                              {classItem.teacher}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {classItem.level} • {classItem.duration}
-                            </div>
-                          </div>
-                          
-                          <div className="flex-shrink-0 ml-3">
-                          {isPast ? (
-                            <Badge variant="secondary">Past Class</Badge>
-                          ) : classItem.registrationClosed ? (
-                            <Badge variant="secondary">Registration Closed</Badge>
-                          ) : isBooked ? (
-                            <div className="text-right">
-                              <Badge variant="default" className="bg-green-600 hover:bg-green-700 mb-2">
-                                ✅ Booked
-                              </Badge>
-                              <div className="space-y-1">
-                                {bookedClasses[classItem.id]?.zoomLink && (
-                                  <Button 
-                                    size="sm"
-                                    variant="outline"
-                                    className="text-xs w-full"
-                                    onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
-                                  >
-                                    🔗 Join Zoom
-                                  </Button>
-                                )}
-                                <Button 
-                                  size="sm"
-                                  variant="destructive"
-                                  className="text-xs w-full"
-                                  onClick={() => onCancelClass?.(classItem.id || '')}
-                                  disabled={isPast}
-                                >
-                                  {isPast ? 'Past' : 'Cancel'}
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <Button 
-                              onClick={async () => await onBookClass?.(classItem, formatDate(date))}
-                              size="sm"
-                              className="bg-blue-600 hover:bg-blue-700 text-white"
-                              disabled={isPast}
-                            >
-                              {isPast ? 'Past' : 'Book'}
-                            </Button>
-                          )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
     </div>
   );
 }
