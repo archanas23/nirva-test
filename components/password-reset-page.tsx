@@ -5,6 +5,7 @@ import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Alert, AlertDescription } from './ui/alert';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { DatabaseService } from '../utils/database';
 
 export function PasswordResetPage() {
   console.log('🎯 PasswordResetPage component rendered');
@@ -79,12 +80,23 @@ export function PasswordResetPage() {
     setMessage('');
     
     try {
-      // Here you would call your password reset API
-      // For now, we'll simulate a successful reset
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Actually update the password in the database
+      console.log('🔍 Updating password for:', email);
+      console.log('🔍 New password:', newPassword);
       
-      setMessage('Password reset successfully! You can now log in with your new password.');
-      // Don't set isValidToken to false - keep it true to show success message
+      // Update the user's password in the database
+      const result = await DatabaseService.createOrUpdateUser({
+        email: email,
+        password: newPassword
+      });
+      
+      console.log('✅ Password updated successfully, result:', result);
+      
+      // Verify the password was actually updated by checking the hash
+      const updatedUser = await DatabaseService.getUserByEmail(email);
+      console.log('🔍 Updated user record:', updatedUser);
+      
+      setMessage('Password reset successfully! You will be redirected to the home page in a moment where you can log in with your new password.');
     } catch (error) {
       setMessage('Failed to reset password. Please try again or request a new reset link.');
     } finally {
