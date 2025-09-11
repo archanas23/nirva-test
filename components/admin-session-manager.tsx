@@ -70,15 +70,22 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
         throw new Error('Class template not found');
       }
 
-      // Convert date format for Zoom API
+      // Convert date format for Zoom API - use local date parsing to avoid timezone issues
       const convertDayToDate = (dateStr: string) => {
-        // Parse "2025-09-11" to "Sep 11" format for Zoom API
-        const date = new Date(dateStr);
+        // Parse "2025-09-25" to "Sep 25" format for Zoom API
+        // Use local date parsing to avoid timezone issues
+        const [year, month, day] = dateStr.split('-').map(Number);
+        const date = new Date(year, month - 1, day); // month is 0-indexed
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const month = monthNames[date.getMonth()];
-        const day = date.getDate();
-        return `${month} ${day}`;
+        const monthName = monthNames[date.getMonth()];
+        const dayNum = date.getDate();
+        console.log('🔍 Date conversion:', { 
+          input: dateStr, 
+          parsed: { year, month, day }, 
+          output: `${monthName} ${dayNum}` 
+        });
+        return `${monthName} ${dayNum}`;
       };
 
       const formattedDate = convertDayToDate(sessionData.class_date);
@@ -160,8 +167,16 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
       for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
         const currentDate = new Date(startDate);
         currentDate.setDate(startDate.getDate() + dayOffset);
-        const dateStr = currentDate.toISOString().split('T')[0];
+        // Use local date format to avoid timezone issues
+        const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
         const dayOfWeek = currentDate.getDay();
+        console.log('🔍 Quick add week date:', { 
+          original: startDate, 
+          dayOffset, 
+          currentDate: currentDate.toDateString(), 
+          dateStr, 
+          dayOfWeek 
+        });
 
         // Find classes that match this day of week
         const classesForDay = classes.filter(cls => 

@@ -128,6 +128,7 @@ export class ClassManagementService {
     joinUrl: string
   }): Promise<ClassInstance> {
     console.log('🔍 Creating class instance:', { classId, classDate, zoomData });
+    console.log('🔍 Date being stored in database:', classDate);
     
     // First get the class template to copy its details
     const { data: classTemplate, error: classError } = await supabase
