@@ -235,17 +235,17 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                     
                     return (
                       <div key={classItem.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                        <div className="flex-1">
-                          <div className="font-medium text-sm">{classItem.name}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm truncate">{classItem.name}</div>
                           <div className="text-xs text-muted-foreground">
                             {classItem.time} • {classItem.teacher}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {classItem.level} • {classItem.duration} min
+                            {classItem.level} • {classItem.duration}
                           </div>
                         </div>
                         
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-shrink-0">
                           {isPast ? (
                             <Badge variant="secondary">Past Class</Badge>
                           ) : classItem.registrationClosed ? (

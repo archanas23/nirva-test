@@ -39,9 +39,27 @@ CREATE TABLE class_instances (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Create user_booked_classes table (student bookings)
+CREATE TABLE user_booked_classes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL,
+  class_name VARCHAR(255) NOT NULL,
+  teacher VARCHAR(255) NOT NULL,
+  class_date DATE NOT NULL,
+  class_time VARCHAR(50) NOT NULL,
+  zoom_meeting_id VARCHAR(255),
+  zoom_password VARCHAR(255),
+  zoom_link TEXT,
+  booked_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  is_cancelled BOOLEAN DEFAULT false,
+  cancelled_at TIMESTAMP WITH TIME ZONE,
+  UNIQUE(user_id, class_name, class_date, class_time)
+);
+
 -- Enable RLS
 ALTER TABLE classes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE class_instances ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_booked_classes ENABLE ROW LEVEL SECURITY;
 
 -- Create comprehensive policies for classes table
 CREATE POLICY "Classes are viewable by everyone" ON classes
@@ -67,6 +85,19 @@ CREATE POLICY "Class instances can be updated by anyone" ON class_instances
   FOR UPDATE USING (true);
 
 CREATE POLICY "Class instances can be deleted by anyone" ON class_instances
+  FOR DELETE USING (true);
+
+-- Create comprehensive policies for user_booked_classes table
+CREATE POLICY "User booked classes are viewable by everyone" ON user_booked_classes
+  FOR SELECT USING (true);
+
+CREATE POLICY "User booked classes can be inserted by anyone" ON user_booked_classes
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "User booked classes can be updated by anyone" ON user_booked_classes
+  FOR UPDATE USING (true);
+
+CREATE POLICY "User booked classes can be deleted by anyone" ON user_booked_classes
   FOR DELETE USING (true);
 
 -- Insert sample classes
