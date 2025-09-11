@@ -111,6 +111,12 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
 
   const handleUpdateSession = async (instanceId: string, updates: Partial<ClassInstance>) => {
     try {
+      console.log('🔍 Updating session:', {
+        instanceId,
+        updates,
+        class_date: updates.class_date
+      });
+      
       await ClassManagementService.updateClassInstance(instanceId, updates);
       
       toast.success('Session updated successfully!');
@@ -232,7 +238,17 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    // Parse date string as local date to avoid timezone issues
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed
+    
+    console.log('🔍 Formatting date:', { 
+      input: dateString, 
+      parsed: { year, month, day }, 
+      result: date.toDateString() 
+    });
+    
+    return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -524,6 +540,11 @@ function EditSessionDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🔍 Edit Session Debug:', {
+      originalSessionDate: session.class_date,
+      formDataDate: formData.class_date,
+      sessionId: session.id
+    });
     onUpdateSession(session.id, formData);
   };
 
