@@ -310,7 +310,9 @@ exports.handler = async (event, context) => {
               <div style="background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 50%, #fff0f5 100%); padding: 40px 20px; text-align: center; color: #2d3748; border-radius: 12px 12px 0 0;">
                 <!-- Logo -->
                 <div style="margin-bottom: 20px;">
-                  <img src="https://nirva-yoga.com/favicon.svg" alt="Nirva Yoga Logo" style="width: 80px; height: 80px; margin: 0 auto; display: block; filter: brightness(1.1) contrast(1.25);" />
+                  <div style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);">
+                    <span style="font-family: 'Amatic SC', cursive; font-size: 32px; font-weight: bold; color: #2d3748; text-align: center; line-height: 1;">N</span>
+                  </div>
                 </div>
                 <h1 style="margin: 0; font-size: 32px; font-weight: 400; font-family: 'Amatic SC', cursive; color: #2d3748;">Welcome to Nirva Yoga</h1>
                 <p style="margin: 10px 0 0 0; font-size: 18px; color: #718096; font-style: italic;">Where Your Inner Peace Meets Your Outer Strength</p>
@@ -567,7 +569,9 @@ exports.handler = async (event, context) => {
               <div style="background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 50%, #fff0f5 100%); padding: 40px 20px; text-align: center; color: #2d3748; border-radius: 12px 12px 0 0;">
                 <!-- Logo -->
                 <div style="margin-bottom: 20px;">
-                  <img src="https://nirva-yoga.com/favicon.svg" alt="Nirva Yoga Logo" style="width: 80px; height: 80px; margin: 0 auto; display: block; filter: brightness(1.1) contrast(1.25);" />
+                  <div style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);">
+                    <span style="font-family: 'Amatic SC', cursive; font-size: 32px; font-weight: bold; color: #2d3748; text-align: center; line-height: 1;">N</span>
+                  </div>
                 </div>
                 <h1 style="margin: 0; font-size: 32px; font-weight: 400; font-family: 'Amatic SC', cursive; color: #2d3748;">Welcome to Nirva Yoga</h1>
                 <p style="margin: 10px 0 0 0; font-size: 18px; color: #718096; font-style: italic;">Where Your Inner Peace Meets Your Outer Strength</p>
@@ -678,10 +682,12 @@ exports.handler = async (event, context) => {
               <div style="background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 50%, #fff0f5 100%); padding: 40px 20px; text-align: center; color: #2d3748; border-radius: 12px 12px 0 0;">
                 <!-- Logo -->
                 <div style="margin-bottom: 20px;">
-                  <img src="https://nirva-yoga.com/favicon.svg" alt="Nirva Yoga Logo" style="width: 80px; height: 80px; margin: 0 auto; display: block; filter: brightness(1.1) contrast(1.25);" />
+                  <div style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);">
+                    <span style="font-family: 'Amatic SC', cursive; font-size: 32px; font-weight: bold; color: #2d3748; text-align: center; line-height: 1;">N</span>
+                  </div>
                 </div>
-                <h1 style="margin: 0; font-size: 32px; font-weight: 400; font-family: 'Amatic SC', cursive; color: #2d3748;">Password Reset</h1>
-                <p style="margin: 10px 0 0 0; font-size: 18px; color: #718096; font-style: italic;">Nirva Yoga Studio</p>
+                <h1 style="margin: 0; font-size: 32px; font-weight: 400; font-family: 'Amatic SC', cursive; color: #2d3748;">Nirva Yoga Studio</h1>
+                <p style="margin: 10px 0 0 0; font-size: 18px; color: #718096; font-style: italic;">Password Reset</p>
               </div>
 
               <!-- Main Content -->
@@ -696,7 +702,7 @@ exports.handler = async (event, context) => {
 
                 <!-- Reset Button -->
                 <div style="text-align: center; margin: 30px 0;">
-                  <a href="https://nirva-yoga.com/reset-password?token=${data.resetToken}&email=${data.studentEmail}" 
+                  <a href="https://nirva-yoga.com/?token=${data.resetToken}&email=${data.studentEmail}" 
                      style="background: #ff6b9d; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 500; display: inline-block; font-family: 'Lora', serif; font-size: 16px;">
                     Reset My Password
                   </a>
@@ -706,7 +712,7 @@ exports.handler = async (event, context) => {
                   If the button doesn't work, copy and paste this link into your browser:
                 </p>
                 <p style="font-size: 12px; line-height: 1.4; color: #718096; margin-bottom: 20px; font-family: 'Lora', serif; word-break: break-all; background: #faf5f0; padding: 10px; border-radius: 4px;">
-                  https://nirva-yoga.com/reset-password?token=${data.resetToken}&email=${data.studentEmail}
+                  https://nirva-yoga.com/?token=${data.resetToken}&email=${data.studentEmail}
                 </p>
 
                 <div style="background: #fef7f0; padding: 20px; border-radius: 8px; margin: 30px 0; border: 1px solid rgba(255, 107, 157, 0.15);">

@@ -8,6 +8,7 @@ import { VirtualInfo } from "./components/virtual-info";
 import { ContactSection } from "./components/contact-section";
 import { ContactPage } from "./components/contact-page";
 import { FlowingYogaGallery } from "./components/flowing-yoga-gallery";
+import { PasswordResetPage } from "./components/password-reset-page";
 import { PackagesSection } from "./components/packages-section";
 import { FAQSection } from "./components/faq-section";
 import { SEOMeta } from "./components/seo-meta";
@@ -53,7 +54,7 @@ interface User {
 }
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<"home" | "classes" | "teachers" | "packages" | "contact" | "register" | "faq" | "payment" | "admin">("home");
+  const [currentView, setCurrentView] = useState<"home" | "classes" | "teachers" | "packages" | "contact" | "register" | "faq" | "payment" | "admin" | "password-reset">("home");
   const [navigationHistory, setNavigationHistory] = useState<string[]>(["home"]);
   const [selectedClass, setSelectedClass] = useState<{
     className: string;
@@ -94,6 +95,17 @@ export default function App() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        // Check for password reset URL parameters first
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const email = urlParams.get('email');
+        
+        if (token && email) {
+          // Navigate to password reset page
+          setCurrentView('password-reset');
+          return;
+        }
+
         // Check if user is already logged in
         const storedUser = localStorage.getItem('nirva_user');
         if (storedUser) {
@@ -1394,6 +1406,9 @@ export default function App() {
             <AdminPanel user={user} onBack={handleBack} />
           </div>
         );
+        
+      case "password-reset":
+        return <PasswordResetPage />;
         
       default: // "home"
         return (
