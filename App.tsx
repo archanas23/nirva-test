@@ -100,8 +100,17 @@ export default function App() {
         const token = urlParams.get('token');
         const email = urlParams.get('email');
         
+        console.log('🔍 Password reset debug:', {
+          search: window.location.search,
+          token,
+          email,
+          hasToken: !!token,
+          hasEmail: !!email
+        });
+        
         if (token && email) {
           // Navigate to password reset page
+          console.log('🎯 Navigating to password reset page');
           setCurrentView('password-reset');
           return;
         }

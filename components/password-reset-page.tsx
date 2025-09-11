@@ -20,6 +20,14 @@ export function PasswordResetPage() {
     const emailParam = urlParams.get('email');
     const tokenParam = urlParams.get('token');
     
+    console.log('🔍 Password reset page debug:', {
+      search: window.location.search,
+      emailParam,
+      tokenParam,
+      hasEmail: !!emailParam,
+      hasToken: !!tokenParam
+    });
+    
     if (emailParam) setEmail(emailParam);
     if (tokenParam) setToken(tokenParam);
     

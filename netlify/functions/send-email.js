@@ -310,8 +310,22 @@ exports.handler = async (event, context) => {
               <div style="background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 50%, #fff0f5 100%); padding: 40px 20px; text-align: center; color: #2d3748; border-radius: 12px 12px 0 0;">
                 <!-- Logo -->
                 <div style="margin-bottom: 20px;">
-                  <div style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);">
-                    <span style="font-family: 'Amatic SC', cursive; font-size: 32px; font-weight: bold; color: #2d3748; text-align: center; line-height: 1;">N</span>
+                  <div style="width: 80px; height: 80px; margin: 0 auto; position: relative; display: inline-block;">
+                    <!-- Flower/Pinwheel Logo -->
+                    <div style="width: 80px; height: 80px; position: relative; transform: rotate(0deg);">
+                      <!-- Petal 1 (top) - light blue-grey -->
+                      <div style="position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 35px solid #a8b2d1; top: 5px; left: 20px; transform: rotate(0deg);"></div>
+                      <!-- Petal 2 (top-right) - vibrant pink -->
+                      <div style="position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 35px solid #ff6b9d; top: 5px; left: 20px; transform: rotate(72deg);"></div>
+                      <!-- Petal 3 (bottom-right) - light blue-grey -->
+                      <div style="position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 35px solid #a8b2d1; top: 5px; left: 20px; transform: rotate(144deg);"></div>
+                      <!-- Petal 4 (bottom-left) - vibrant pink -->
+                      <div style="position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 35px solid #ff6b9d; top: 5px; left: 20px; transform: rotate(216deg);"></div>
+                      <!-- Petal 5 (top-left) - light blue-grey -->
+                      <div style="position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 35px solid #a8b2d1; top: 5px; left: 20px; transform: rotate(288deg);"></div>
+                      <!-- Center circle -->
+                      <div style="position: absolute; width: 16px; height: 16px; background: #ff6b9d; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+                    </div>
                   </div>
                 </div>
                 <h1 style="margin: 0; font-size: 32px; font-weight: 400; font-family: 'Amatic SC', cursive; color: #2d3748;">Welcome to Nirva Yoga</h1>
@@ -569,8 +583,22 @@ exports.handler = async (event, context) => {
               <div style="background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 50%, #fff0f5 100%); padding: 40px 20px; text-align: center; color: #2d3748; border-radius: 12px 12px 0 0;">
                 <!-- Logo -->
                 <div style="margin-bottom: 20px;">
-                  <div style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);">
-                    <span style="font-family: 'Amatic SC', cursive; font-size: 32px; font-weight: bold; color: #2d3748; text-align: center; line-height: 1;">N</span>
+                  <div style="width: 80px; height: 80px; margin: 0 auto; position: relative; display: inline-block;">
+                    <!-- Flower/Pinwheel Logo -->
+                    <div style="width: 80px; height: 80px; position: relative; transform: rotate(0deg);">
+                      <!-- Petal 1 (top) - light blue-grey -->
+                      <div style="position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 35px solid #a8b2d1; top: 5px; left: 20px; transform: rotate(0deg);"></div>
+                      <!-- Petal 2 (top-right) - vibrant pink -->
+                      <div style="position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 35px solid #ff6b9d; top: 5px; left: 20px; transform: rotate(72deg);"></div>
+                      <!-- Petal 3 (bottom-right) - light blue-grey -->
+                      <div style="position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 35px solid #a8b2d1; top: 5px; left: 20px; transform: rotate(144deg);"></div>
+                      <!-- Petal 4 (bottom-left) - vibrant pink -->
+                      <div style="position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 35px solid #ff6b9d; top: 5px; left: 20px; transform: rotate(216deg);"></div>
+                      <!-- Petal 5 (top-left) - light blue-grey -->
+                      <div style="position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 35px solid #a8b2d1; top: 5px; left: 20px; transform: rotate(288deg);"></div>
+                      <!-- Center circle -->
+                      <div style="position: absolute; width: 16px; height: 16px; background: #ff6b9d; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+                    </div>
                   </div>
                 </div>
                 <h1 style="margin: 0; font-size: 32px; font-weight: 400; font-family: 'Amatic SC', cursive; color: #2d3748;">Welcome to Nirva Yoga</h1>
@@ -682,8 +710,22 @@ exports.handler = async (event, context) => {
               <div style="background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 50%, #fff0f5 100%); padding: 40px 20px; text-align: center; color: #2d3748; border-radius: 12px 12px 0 0;">
                 <!-- Logo -->
                 <div style="margin-bottom: 20px;">
-                  <div style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #ff6b9d 0%, #fef7f0 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);">
-                    <span style="font-family: 'Amatic SC', cursive; font-size: 32px; font-weight: bold; color: #2d3748; text-align: center; line-height: 1;">N</span>
+                  <div style="width: 80px; height: 80px; margin: 0 auto; position: relative; display: inline-block;">
+                    <!-- Flower/Pinwheel Logo -->
+                    <div style="width: 80px; height: 80px; position: relative; transform: rotate(0deg);">
+                      <!-- Petal 1 (top) - light blue-grey -->
+                      <div style="position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 35px solid #a8b2d1; top: 5px; left: 20px; transform: rotate(0deg);"></div>
+                      <!-- Petal 2 (top-right) - vibrant pink -->
+                      <div style="position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 35px solid #ff6b9d; top: 5px; left: 20px; transform: rotate(72deg);"></div>
+                      <!-- Petal 3 (bottom-right) - light blue-grey -->
+                      <div style="position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 35px solid #a8b2d1; top: 5px; left: 20px; transform: rotate(144deg);"></div>
+                      <!-- Petal 4 (bottom-left) - vibrant pink -->
+                      <div style="position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 35px solid #ff6b9d; top: 5px; left: 20px; transform: rotate(216deg);"></div>
+                      <!-- Petal 5 (top-left) - light blue-grey -->
+                      <div style="position: absolute; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 35px solid #a8b2d1; top: 5px; left: 20px; transform: rotate(288deg);"></div>
+                      <!-- Center circle -->
+                      <div style="position: absolute; width: 16px; height: 16px; background: #ff6b9d; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+                    </div>
                   </div>
                 </div>
                 <h1 style="margin: 0; font-size: 32px; font-weight: 400; font-family: 'Amatic SC', cursive; color: #2d3748;">Nirva Yoga Studio</h1>
