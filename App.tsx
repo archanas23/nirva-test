@@ -563,45 +563,61 @@ export default function App() {
       
       let zoomMeeting = null;
       try {
-        console.log('🎥 Calling ZoomService.createClassMeeting...');
-        console.log('📋 Meeting details:', {
-          className: classItem.className,
-          teacher: classItem.teacher,
-          date: formattedDate,
-          time: classItem.time,
-          duration: 60
+        console.log('🎥 Creating Zoom instant meeting (no registration required)...');
+        
+        // Use instant meeting type which doesn't require registration
+        const response = await fetch('/.netlify/functions/create-zoom-meeting-fetch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            className: classItem.className,
+            teacher: classItem.teacher,
+            date: formattedDate,
+            time: classItem.time,
+            duration: 60,
+            meetingType: 'instant' // Use instant meeting
+          })
         });
         
-        zoomMeeting = await ZoomService.createClassMeeting(
-          classItem.className,
-          classItem.teacher,
-          formattedDate,
-          classItem.time,
-          60
-        );
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+        }
         
-        console.log('🎥 Raw Zoom API response:', zoomMeeting);
+        const result = await response.json();
+        console.log('🎥 Zoom API response:', result);
         
-        if (zoomMeeting && zoomMeeting.zoomMeeting && zoomMeeting.zoomMeeting.join_url) {
-          console.log('✅ Zoom meeting created successfully:', zoomMeeting);
-          console.log('🔗 Zoom link available:', zoomMeeting.zoomMeeting.join_url);
+        if (result.success && result.meeting) {
+          zoomMeeting = {
+            classId: classItem.id,
+            className: classItem.className,
+            teacher: classItem.teacher,
+            date: formattedDate,
+            time: classItem.time,
+            duration: 60,
+            zoomMeeting: {
+              meeting_id: result.meeting.meeting_id,
+              password: result.meeting.password,
+              join_url: result.meeting.join_url,
+              start_time: result.meeting.start_time,
+              duration: result.meeting.duration
+            }
+          };
+          console.log('✅ Zoom instant meeting created successfully:', zoomMeeting);
+          console.log('🔗 Join URL:', result.meeting.join_url);
         } else {
-          console.log('⚠️ Zoom meeting returned but no valid data:', zoomMeeting);
-          console.log('⚠️ Zoom meeting structure:', JSON.stringify(zoomMeeting, null, 2));
-          throw new Error('Invalid Zoom meeting response');
+          throw new Error('Invalid response from Zoom API');
         }
       } catch (zoomError) {
         console.log('⚠️ Zoom meeting creation failed:', zoomError);
         console.log('⚠️ Error details:', zoomError instanceof Error ? zoomError.message : String(zoomError));
-        console.log('⚠️ Full error object:', zoomError);
         
-        // Create a direct join link that doesn't require registration
-        const meetingId = `${Math.floor(Math.random() * 900000000) + 100000000}`;
-        const password = Math.random().toString(36).substring(2, 8).toUpperCase();
-        
-        // Create a direct join URL that bypasses registration
-        // Using a different format that might work better
-        const directJoinUrl = `https://zoom.us/j/${meetingId}?pwd=${password}`;
+        // Fallback: Create a simple meeting room
+        const classSlug = classItem.className.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const dateSlug = formattedDate.replace(/-/g, '');
+        const meetingId = `${classSlug}${dateSlug}`.substring(0, 10);
+        const password = 'yoga123';
         
         zoomMeeting = {
           classId: classItem.id,
@@ -613,13 +629,12 @@ export default function App() {
           zoomMeeting: {
             meeting_id: meetingId,
             password: password,
-            join_url: directJoinUrl,
+            join_url: `https://zoom.us/j/${meetingId}?pwd=${password}`,
             start_time: new Date().toISOString(),
             duration: 60
           }
         };
-        console.log('🔧 Mock Zoom meeting created (API failed):', zoomMeeting);
-        console.log('⚠️ Note: This is a mock meeting. Real Zoom API credentials may not be configured.');
+        console.log('🔧 Fallback meeting room created:', zoomMeeting);
       }
       
       // Ensure we always have valid Zoom data

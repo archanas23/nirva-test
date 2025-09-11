@@ -23,9 +23,9 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { className, teacher, date, time, duration = 60 } = JSON.parse(event.body);
+    const { className, teacher, date, time, duration = 60, meetingType = 'scheduled' } = JSON.parse(event.body);
     
-    console.log('🎥 Creating Zoom meeting for:', { className, teacher, date, time });
+    console.log('🎥 Creating Zoom meeting for:', { className, teacher, date, time, meetingType });
 
     // Get access token
     const accessToken = await getZoomAccessToken();
@@ -39,7 +39,8 @@ exports.handler = async (event, context) => {
       teacher,
       date,
       time,
-      duration
+      duration,
+      meetingType
     });
 
     console.log('✅ Zoom meeting created:', meeting);
@@ -108,41 +109,45 @@ async function getZoomAccessToken() {
   }
 }
 
-async function createZoomMeeting(accessToken, { className, teacher, date, time, duration }) {
+async function createZoomMeeting(accessToken, { className, teacher, date, time, duration, meetingType = 'scheduled' }) {
   try {
-    console.log('🎥 Creating Zoom meeting with data:', { className, teacher, date, time, duration });
+    console.log('🎥 Creating Zoom meeting with data:', { className, teacher, date, time, duration, meetingType });
     
-    // Parse date and time to create start time
-    // Handle both YYYY-MM-DD and MM/DD/YYYY formats
-    let year, month, day;
-    if (date.includes('-')) {
-      // YYYY-MM-DD format
-      [year, month, day] = date.split('-');
-    } else {
-      // MM/DD/YYYY format
-      [month, day, year] = date.split('/');
+    // For instant meetings, we don't need to parse date/time
+    let startTime = null;
+    if (meetingType !== 'instant') {
+      // Parse date and time to create start time
+      // Handle both YYYY-MM-DD and MM/DD/YYYY formats
+      let year, month, day;
+      if (date.includes('-')) {
+        // YYYY-MM-DD format
+        [year, month, day] = date.split('-');
+      } else {
+        // MM/DD/YYYY format
+        [month, day, year] = date.split('/');
+      }
+      
+      // Parse time - handle formats like "6:00 pm" or "6:00 PM"
+      const timeMatch = time.match(/(\d+):(\d+)\s*(am|pm)/i);
+      if (!timeMatch) {
+        throw new Error(`Invalid time format: ${time}`);
+      }
+      
+      const [, hours, minutes, ampm] = timeMatch;
+      let hour24 = parseInt(hours);
+      if (ampm.toLowerCase() === 'pm' && hour24 !== 12) hour24 += 12;
+      if (ampm.toLowerCase() === 'am' && hour24 === 12) hour24 = 0;
+      
+      startTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), hour24, parseInt(minutes));
+      console.log('🎥 Parsed start time:', startTime.toISOString());
     }
-    
-    // Parse time - handle formats like "6:00 pm" or "6:00 PM"
-    const timeMatch = time.match(/(\d+):(\d+)\s*(am|pm)/i);
-    if (!timeMatch) {
-      throw new Error(`Invalid time format: ${time}`);
-    }
-    
-    const [, hours, minutes, ampm] = timeMatch;
-    let hour24 = parseInt(hours);
-    if (ampm.toLowerCase() === 'pm' && hour24 !== 12) hour24 += 12;
-    if (ampm.toLowerCase() === 'am' && hour24 === 12) hour24 = 0;
-    
-    const startTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), hour24, parseInt(minutes));
-    console.log('🎥 Parsed start time:', startTime.toISOString());
     
     const meetingData = {
       topic: `${className} with ${teacher}`,
-      type: 2, // Scheduled meeting
-      start_time: startTime.toISOString(),
+      type: meetingType === 'instant' ? 1 : 2, // Instant meeting (1) or Scheduled meeting (2)
+      start_time: meetingType === 'instant' ? undefined : startTime.toISOString(),
       duration: duration,
-      timezone: 'America/Los_Angeles', // Adjust to your timezone
+      timezone: meetingType === 'instant' ? undefined : 'America/Los_Angeles',
       agenda: `Yoga class: ${className}`,
       settings: {
         host_video: true,
