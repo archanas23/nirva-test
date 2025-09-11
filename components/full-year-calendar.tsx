@@ -10,7 +10,7 @@ interface ClassItem {
   name: string;
   teacher: string;
   time: string;
-  duration: number;
+  duration: string;
   level: string;
   maxStudents: number;
   registrationClosed?: boolean;
@@ -104,7 +104,7 @@ export function FullYearCalendar({
         teacher: 'Harshada',
         day_of_week: 1, // Monday
         start_time: '08:00',
-        duration: 60,
+        duration: '60 min',
         level: 'All Levels',
         max_students: 10,
         is_active: true,
@@ -117,7 +117,7 @@ export function FullYearCalendar({
         teacher: 'Archana',
         day_of_week: 1, // Monday
         start_time: '18:00',
-        duration: 60,
+        duration: '60 min',
         level: 'All Levels',
         max_students: 10,
         is_active: true,
@@ -130,7 +130,7 @@ export function FullYearCalendar({
         teacher: 'Harshada',
         day_of_week: 2, // Tuesday
         start_time: '08:00',
-        duration: 60,
+        duration: '60 min',
         level: 'All Levels',
         max_students: 10,
         is_active: true,
@@ -143,7 +143,7 @@ export function FullYearCalendar({
         teacher: 'Archana',
         day_of_week: 2, // Tuesday
         start_time: '18:00',
-        duration: 60,
+        duration: '60 min',
         level: 'All Levels',
         max_students: 10,
         is_active: true,
@@ -156,7 +156,7 @@ export function FullYearCalendar({
         teacher: 'Harshada',
         day_of_week: 3, // Wednesday
         start_time: '08:00',
-        duration: 60,
+        duration: '60 min',
         level: 'All Levels',
         max_students: 10,
         is_active: true,
@@ -169,7 +169,7 @@ export function FullYearCalendar({
         teacher: 'Archana',
         day_of_week: 3, // Wednesday
         start_time: '18:00',
-        duration: 60,
+        duration: '60 min',
         level: 'All Levels',
         max_students: 10,
         is_active: true,
@@ -182,7 +182,7 @@ export function FullYearCalendar({
         teacher: 'Harshada',
         day_of_week: 4, // Thursday
         start_time: '08:00',
-        duration: 60,
+        duration: '60 min',
         level: 'All Levels',
         max_students: 10,
         is_active: true,
@@ -195,7 +195,7 @@ export function FullYearCalendar({
         teacher: 'Archana',
         day_of_week: 4, // Thursday
         start_time: '18:00',
-        duration: 60,
+        duration: '60 min',
         level: 'All Levels',
         max_students: 10,
         is_active: true,
@@ -208,7 +208,7 @@ export function FullYearCalendar({
         teacher: 'Harshada',
         day_of_week: 5, // Friday
         start_time: '08:00',
-        duration: 60,
+        duration: '60 min',
         level: 'All Levels',
         max_students: 10,
         is_active: true,
@@ -221,7 +221,7 @@ export function FullYearCalendar({
         teacher: 'Archana',
         day_of_week: 5, // Friday
         start_time: '18:00',
-        duration: 60,
+        duration: '60 min',
         level: 'All Levels',
         max_students: 10,
         is_active: true,
@@ -234,7 +234,7 @@ export function FullYearCalendar({
         teacher: 'Harshada',
         day_of_week: 6, // Saturday
         start_time: '09:00',
-        duration: 60,
+        duration: '60 min',
         level: 'All Levels',
         max_students: 10,
         is_active: true,
@@ -247,7 +247,7 @@ export function FullYearCalendar({
         teacher: 'Archana',
         day_of_week: 6, // Saturday
         start_time: '17:00',
-        duration: 60,
+        duration: '60 min',
         level: 'All Levels',
         max_students: 10,
         is_active: true,
@@ -260,7 +260,7 @@ export function FullYearCalendar({
         teacher: 'Harshada',
         day_of_week: 0, // Sunday
         start_time: '09:00',
-        duration: 60,
+        duration: '60 min',
         level: 'All Levels',
         max_students: 10,
         is_active: true,
@@ -273,7 +273,7 @@ export function FullYearCalendar({
         teacher: 'Archana',
         day_of_week: 0, // Sunday
         start_time: '17:00',
-        duration: 60,
+        duration: '60 min',
         level: 'All Levels',
         max_students: 10,
         is_active: true,

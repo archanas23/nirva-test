@@ -12,7 +12,7 @@ export interface Class {
   teacher: string
   day_of_week: number // 0 = Sunday, 1 = Monday, etc.
   start_time: string // "09:00" format
-  duration: number // minutes
+  duration: string // "60 min" format
   level: string
   max_students: number
   is_active: boolean

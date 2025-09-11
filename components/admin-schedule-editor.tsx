@@ -322,7 +322,7 @@ function AddClassForm({
     teacher: '',
     day_of_week: 1, // Monday default
     start_time: '',
-    duration: 60,
+    duration: '60 min',
     level: 'All Levels',
     max_students: 10,
     is_active: true
@@ -395,7 +395,7 @@ function AddClassForm({
           id="duration"
           type="number"
           value={formData.duration}
-          onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, duration: `${e.target.value} min` }))}
           min="30"
           max="120"
         />
@@ -526,7 +526,7 @@ function EditClassForm({
           id="duration"
           type="number"
           value={formData.duration}
-          onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, duration: `${e.target.value} min` }))}
           min="30"
           max="120"
         />
