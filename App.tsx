@@ -108,7 +108,7 @@ export default function App() {
       } catch (error) {
         // Error checking auth
         localStorage.removeItem('nirva_user');
-        localStorage.removeItem('nirva_booked_classes');
+        // Note: We don't remove user-specific localStorage here since we don't know which user
       } finally {
         setIsLoading(false);
       }
@@ -288,7 +288,7 @@ export default function App() {
       setUser(updatedUser);
       
       // Merge database data with localStorage data (localStorage takes precedence for recent bookings)
-      const storedBookedClasses = localStorage.getItem('nirva_booked_classes');
+      const storedBookedClasses = localStorage.getItem(`nirva_booked_classes_${email}`);
       let finalBookedClasses = bookedClassesData;
       
       if (storedBookedClasses) {
@@ -335,12 +335,15 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    // Clear user-specific localStorage on logout
+    if (user?.email) {
+      localStorage.removeItem(`nirva_booked_classes_${user.email}`);
+    }
+    localStorage.removeItem('nirva_user');
+    
     setUser(null);
     setBookedClasses({});
     setShowAccountModal(false);
-    
-    // Clear localStorage on logout
-    localStorage.removeItem('nirva_user');
   };
 
   const navigateTo = (view: string) => {
@@ -722,8 +725,8 @@ export default function App() {
         console.log('📋 Updated booked classes state:', newBookedClasses);
         console.log('📋 Keys in booked classes:', Object.keys(newBookedClasses));
         
-        // Persist booked classes to localStorage
-        localStorage.setItem('nirva_booked_classes', JSON.stringify(newBookedClasses));
+        // Persist booked classes to localStorage per user
+        localStorage.setItem(`nirva_booked_classes_${user?.email}`, JSON.stringify(newBookedClasses));
         console.log('💾 Booked classes saved to localStorage');
         
         return newBookedClasses;
@@ -839,8 +842,8 @@ export default function App() {
         const newBookedClasses = { ...prev };
         delete newBookedClasses[classId];
         
-        // Update localStorage
-        localStorage.setItem('nirva_booked_classes', JSON.stringify(newBookedClasses));
+        // Update localStorage per user
+        localStorage.setItem(`nirva_booked_classes_${user?.email}`, JSON.stringify(newBookedClasses));
         console.log('💾 Updated localStorage after cancellation:', newBookedClasses);
         
         return newBookedClasses;
