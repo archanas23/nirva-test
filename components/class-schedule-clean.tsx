@@ -173,40 +173,45 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
     );
   }
 
-  // Get all upcoming classes for the next 2 weeks
-  const getAllUpcomingClasses = (): Array<{ classItem: ClassItem; date: Date }> => {
-    const upcomingClasses: Array<{ classItem: ClassItem; date: Date }> = [];
-    
-    // Check next 14 days
-    for (let i = 0; i < 14; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() + i);
-      const classesForDate = getFutureClassesForDate(date);
-      
-      classesForDate.forEach(classItem => {
-        upcomingClasses.push({ classItem, date });
-      });
-    }
-    
-    return upcomingClasses.sort((a, b) => {
-      // Sort by date first, then by time
-      const dateCompare = a.date.getTime() - b.date.getTime();
-      if (dateCompare !== 0) return dateCompare;
-      
-      const timeA = a.classItem.time;
-      const timeB = b.classItem.time;
-      return timeA.localeCompare(timeB);
-    });
-  };
-
-  const upcomingClasses = getAllUpcomingClasses();
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
         <h2 className="text-3xl font-bold text-gray-900 mb-2">CLASS SCHEDULE</h2>
         <p className="text-gray-600 mb-4">Book your yoga classes for the week. Only classes created by admin will appear here.</p>
+        
+        {/* Week Navigation */}
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentWeekOffset(prev => prev - 1)}
+            className="flex items-center gap-2"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Previous Week
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentWeekOffset(0)}
+            className="flex items-center gap-2"
+          >
+            <Calendar className="w-4 h-4" />
+            This Week
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentWeekOffset(prev => prev + 1)}
+            className="flex items-center gap-2"
+          >
+            Next Week
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Welcome Message */}
@@ -218,84 +223,107 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
         </div>
       )}
 
-      {/* Classes List */}
-      <div className="space-y-3">
-        {upcomingClasses.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">No classes scheduled</p>
-          </div>
-        ) : (
-          upcomingClasses.map(({ classItem, date }) => {
-            const isPast = isClassInPast(date, classItem.time);
-            const isBooked = isClassBooked?.(classItem.id);
-            
-            return (
-              <div key={`${classItem.id}-${date.toISOString()}`} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center gap-4">
-                    <div className="text-sm text-gray-500 min-w-[60px]">
-                      {date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                    </div>
-                    <div className="text-lg font-semibold text-gray-900 min-w-[80px]">
-                      {classItem.time}
-                    </div>
-                    <div className="text-lg font-medium text-gray-800">
-                      {classItem.name}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {classItem.teacher}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {classItem.level} • {classItem.duration}
-                    </div>
-                  </div>
+      {/* Weekly Schedule - List Format */}
+      <div className="space-y-4">
+        {getCurrentWeekDates().map((date, index) => {
+          const futureClasses = getFutureClassesForDate(date);
+          
+          return (
+            <div key={date.toISOString()} className="bg-white rounded-lg border border-gray-200 p-4">
+              {/* Day Header */}
+              <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {date.toLocaleDateString('en-US', { weekday: 'long' })}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  </p>
                 </div>
-                
-                <div className="flex-shrink-0 ml-4">
-                  {isPast ? (
-                    <Badge variant="secondary">Past Class</Badge>
-                  ) : classItem.registrationClosed ? (
-                    <Badge variant="secondary">Registration Closed</Badge>
-                  ) : isBooked ? (
-                    <div className="flex items-center gap-2">
-                      <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                        ✅ Booked
-                      </Badge>
-                      {bookedClasses[classItem.id]?.zoomLink && (
-                        <Button 
-                          size="sm"
-                          variant="outline"
-                          className="text-xs"
-                          onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
-                        >
-                          🔗 Join Zoom
-                        </Button>
-                      )}
-                      <Button 
-                        size="sm"
-                        variant="destructive"
-                        className="text-xs"
-                        onClick={() => onCancelClass?.(classItem.id || '')}
-                        disabled={isPast}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button 
-                      onClick={async () => await onBookClass?.(classItem, formatDate(date))}
-                      size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                      disabled={isPast}
-                    >
-                      Book Class
-                    </Button>
-                  )}
+                <div className="text-sm text-gray-500">
+                  {futureClasses.length} class{futureClasses.length !== 1 ? 'es' : ''}
                 </div>
               </div>
-            );
-          })
-        )}
+
+              {/* Classes for this day */}
+              {futureClasses.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-gray-500">No classes scheduled</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {futureClasses.map((classItem) => {
+                    const isPast = isClassInPast(date, classItem.time);
+                    const isBooked = isClassBooked?.(classItem.id);
+                    
+                    return (
+                      <div key={classItem.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-4">
+                            <div className="text-lg font-semibold text-gray-900 min-w-[80px]">
+                              {classItem.time}
+                            </div>
+                            <div className="text-lg font-medium text-gray-800">
+                              {classItem.name}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {classItem.teacher}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {classItem.level} • {classItem.duration}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex-shrink-0 ml-4">
+                          {isPast ? (
+                            <Badge variant="secondary">Past Class</Badge>
+                          ) : classItem.registrationClosed ? (
+                            <Badge variant="secondary">Registration Closed</Badge>
+                          ) : isBooked ? (
+                            <div className="flex items-center gap-2">
+                              <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                                ✅ Booked
+                              </Badge>
+                              {bookedClasses[classItem.id]?.zoomLink && (
+                                <Button 
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs"
+                                  onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
+                                >
+                                  🔗 Join Zoom
+                                </Button>
+                              )}
+                              <Button 
+                                size="sm"
+                                variant="destructive"
+                                className="text-xs"
+                                onClick={() => onCancelClass?.(classItem.id || '')}
+                                disabled={isPast}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button 
+                              onClick={async () => await onBookClass?.(classItem, formatDate(date))}
+                              size="sm"
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                              disabled={isPast}
+                            >
+                              Book Class
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
