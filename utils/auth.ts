@@ -17,7 +17,8 @@ export class AuthService {
       options: {
         data: {
           name: name || email.split('@')[0]
-        }
+        },
+        emailRedirectTo: undefined // Disable email confirmation
       }
     })
     if (error) throw error

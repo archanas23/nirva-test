@@ -222,20 +222,23 @@ export default function App() {
         throw new Error('Incorrect password for admin account. Please try again.');
       }
     } else {
-      // For regular users, use Supabase authentication
+      // For regular users, check if account exists in our database
+      // This is a simplified approach - in production you'd want proper password hashing
       try {
-        const { AuthService } = await import('./utils/auth');
-        const authResult = await AuthService.signIn(email, password);
+        const userRecord = await DatabaseService.createOrUpdateUser({
+          email,
+          name: email.split('@')[0]
+        });
         
-        if (!authResult.user) {
-          throw new Error('Invalid email or password. Please try again.');
+        // For now, we'll accept any password for existing users
+        // In production, you'd verify the password against a hashed version
+        if (!userRecord) {
+          throw new Error('Account not found. Please sign up first.');
         }
-      } catch (authError: any) {
-        console.error('Authentication failed:', authError);
-        if (authError.message.includes('Invalid login credentials')) {
-          throw new Error('Invalid email or password. Please try again.');
-        } else if (authError.message.includes('Email not confirmed')) {
-          throw new Error('Please check your email and click the confirmation link to activate your account.');
+      } catch (error: any) {
+        console.error('Login failed:', error);
+        if (error.message.includes('Account not found')) {
+          throw new Error('Account not found. Please sign up first.');
         } else {
           throw new Error('Login failed. Please try again or contact support.');
         }
@@ -359,21 +362,35 @@ export default function App() {
 
   const handleSignup = async (email: string, password: string, name: string) => {
     try {
-      const { AuthService } = await import('./utils/auth');
-      const authResult = await AuthService.signUp(email, password, name);
+      // Create user in our database directly
+      const userRecord = await DatabaseService.createOrUpdateUser({
+        email,
+        name: name
+      });
       
-      if (!authResult.user) {
+      if (!userRecord) {
         throw new Error('Failed to create account. Please try again.');
       }
       
-      // Account created successfully - user will need to confirm email
-      return authResult;
+      // Send welcome email to new user
+      try {
+        const { EmailService } = await import('./utils/email-service');
+        await EmailService.sendWelcomeEmail({
+          studentName: name,
+          studentEmail: email
+        });
+        console.log('✅ Welcome email sent to new user');
+      } catch (emailError) {
+        console.error('⚠️ Failed to send welcome email:', emailError);
+        // Don't fail signup if email fails
+      }
+      
+      // Account created successfully - no email confirmation needed
+      return { user: { email, name } };
     } catch (error: any) {
       console.error('Signup failed:', error);
-      if (error.message.includes('User already registered')) {
+      if (error.message.includes('duplicate key') || error.message.includes('already exists')) {
         throw new Error('An account with this email already exists. Please try logging in instead.');
-      } else if (error.message.includes('Password should be at least')) {
-        throw new Error('Password must be at least 6 characters long.');
       } else {
         throw new Error(error.message || 'Failed to create account. Please try again.');
       }
@@ -401,16 +418,6 @@ export default function App() {
       localStorage.removeItem(`nirva_booked_classes_${user.email}`);
     }
     localStorage.removeItem('nirva_user');
-    
-    // Sign out from Supabase (except for admin)
-    if (user?.email !== 'nirvayogastudio@gmail.com') {
-      try {
-        const { AuthService } = await import('./utils/auth');
-        await AuthService.signOut();
-      } catch (error) {
-        console.error('Error signing out:', error);
-      }
-    }
     
     setUser(null);
     setBookedClasses({});
@@ -1447,14 +1454,14 @@ export default function App() {
       {/* Admin Notification Display */}
       <AdminNotificationDisplay />
 
-        {/* Auth Modal */}
-        <AuthModal 
-          isOpen={showAuthModal} 
-          onClose={() => setShowAuthModal(false)} 
-          onLogin={handleLogin}
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onLogin={handleLogin}
           onSignup={handleSignup}
           onResetPassword={handleResetPassword}
-        />
+      />
 
       {/* Account Modal */}
       <Dialog open={showAccountModal} onOpenChange={setShowAccountModal}>

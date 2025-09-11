@@ -21,6 +21,11 @@ export interface PackagePurchaseNotification {
   totalClasses: number
 }
 
+export interface WelcomeEmailData {
+  studentName: string
+  studentEmail: string
+}
+
 export class EmailService {
   private static readonly ADMIN_EMAIL = 'nirvayogastudio@gmail.com'
   private static readonly FROM_EMAIL = 'noreply@nirva-yoga.com'
@@ -134,6 +139,34 @@ export class EmailService {
       }
     } catch (error) {
       console.error('❌ Failed to send package purchase confirmation:', error)
+    }
+  }
+
+  static async sendWelcomeEmail(data: WelcomeEmailData): Promise<void> {
+    try {
+      console.log('📧 Sending welcome email via Netlify function...')
+      
+      const response = await fetch('/.netlify/functions/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'welcome-email',
+          data: data
+        })
+      })
+
+      const result = await response.json()
+      
+      if (result.success) {
+        console.log('✅ Welcome email sent to new student')
+        console.log('📧 Response:', result)
+      } else {
+        console.error('❌ Failed to send welcome email:', result.error)
+      }
+    } catch (error) {
+      console.error('❌ Failed to send welcome email:', error)
     }
   }
 

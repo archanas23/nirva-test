@@ -437,6 +437,113 @@ exports.handler = async (event, context) => {
         };
         break;
 
+      case 'welcome-email':
+        emailData = {
+          from: 'Nirva Yoga Studio <noreply@nirva-yoga.com>',
+          to: data.studentEmail,
+          subject: 'Welcome to Nirva Yoga - Your Journey Begins Here 🧘‍♀️',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+              <!-- Header -->
+              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 28px; font-weight: 300;">Welcome to Nirva Yoga</h1>
+                <p style="margin: 10px 0 0 0; font-size: 18px; opacity: 0.9;">Where Your Inner Peace Meets Your Outer Strength</p>
+              </div>
+
+              <!-- Quote Section -->
+              <div style="padding: 30px 20px; text-align: center; background: #f8f9fa;">
+                <blockquote style="margin: 0; font-style: italic; font-size: 18px; color: #2D3748; line-height: 1.6;">
+                  "Yoga is not about touching your toes. It's about what you learn on the way down."
+                </blockquote>
+                <p style="margin: 10px 0 0 0; color: #718096; font-size: 14px;">— Jigar Gor</p>
+              </div>
+
+              <!-- Main Content -->
+              <div style="padding: 40px 20px;">
+                <p style="font-size: 16px; line-height: 1.6; color: #2D3748; margin-bottom: 20px;">
+                  Dear <strong>${data.studentName}</strong>,
+                </p>
+                
+                <p style="font-size: 16px; line-height: 1.6; color: #2D3748; margin-bottom: 20px;">
+                  Welcome to the Nirva Yoga family! We're thrilled to have you join our community of mindful practitioners. Your journey to inner peace, strength, and wellness begins now.
+                </p>
+
+                <p style="font-size: 16px; line-height: 1.6; color: #2D3748; margin-bottom: 20px;">
+                  At Nirva Yoga, we believe that yoga is more than just physical exercise—it's a path to self-discovery, healing, and transformation. Whether you're a beginner or an experienced practitioner, our classes are designed to meet you where you are and guide you toward your goals.
+                </p>
+
+                <p style="font-size: 16px; line-height: 1.6; color: #2D3748; margin-bottom: 30px;">
+                  We promise to provide you with a safe, supportive, and inspiring environment where you can grow, learn, and connect with your inner self. Your wellness journey is our commitment.
+                </p>
+
+                <!-- What's Next Section -->
+                <div style="background: #f7fafc; padding: 25px; border-radius: 8px; margin: 30px 0;">
+                  <h2 style="color: #2D3748; margin-top: 0; font-size: 20px;">What's Next?</h2>
+                  
+                  <div style="margin: 20px 0;">
+                    <div style="display: flex; align-items: center; margin: 15px 0;">
+                      <span style="font-size: 24px; margin-right: 15px;">📧</span>
+                      <div>
+                        <strong style="color: #2D3748;">Email Confirmation</strong><br>
+                        <span style="color: #718096; font-size: 14px;">You'll receive class schedules and booking instructions.</span>
+                      </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; margin: 15px 0;">
+                      <span style="font-size: 24px; margin-right: 15px;">📞</span>
+                      <div>
+                        <strong style="color: #2D3748;">Introductory Call</strong><br>
+                        <span style="color: #718096; font-size: 14px;">Talk to instructor for 10 mins about your yoga needs.</span>
+                      </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; margin: 15px 0;">
+                      <span style="font-size: 24px; margin-right: 15px;">🧘‍♀️</span>
+                      <div>
+                        <strong style="color: #2D3748;">Book Your First Class</strong><br>
+                        <span style="color: #718096; font-size: 14px;">Choose from our weekly schedule.</span>
+                      </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; margin: 15px 0;">
+                      <span style="font-size: 24px; margin-right: 15px;">💻</span>
+                      <div>
+                        <strong style="color: #2D3748;">Join via Zoom</strong><br>
+                        <span style="color: #718096; font-size: 14px;">Receive meeting links 24 hours before class.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- This Week's Classes -->
+                <div style="background: #e6fffa; padding: 25px; border-radius: 8px; margin: 30px 0;">
+                  <h3 style="color: #2D3748; margin-top: 0; font-size: 18px;">This Week's Classes</h3>
+                  <p style="color: #2D3748; margin: 10px 0; font-weight: 500;">Morning Flow • Evening Restore • Weekend Flow</p>
+                  <p style="color: #718096; margin: 5px 0; font-size: 14px;">All Levels • 60 minutes • Experienced Teachers</p>
+                  <div style="margin-top: 15px;">
+                    <a href="https://nirva-yoga.com/classes" style="background: #3182CE; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; display: inline-block;">View Full Schedule</a>
+                  </div>
+                </div>
+
+                <!-- Contact Info -->
+                <div style="background: #f0f4f8; padding: 25px; border-radius: 8px; margin: 30px 0;">
+                  <h3 style="color: #2D3748; margin-top: 0; font-size: 18px;">We're Here for You</h3>
+                  <p style="color: #2D3748; margin: 10px 0;"><strong>Email:</strong> nirvayogastudio@gmail.com</p>
+                  <p style="color: #2D3748; margin: 10px 0;"><strong>Website:</strong> nirva-yoga.com</p>
+                  <p style="color: #718096; margin: 15px 0 0 0; font-size: 14px;">Questions? We're always here to help guide your journey.</p>
+                </div>
+
+                <!-- Footer -->
+                <div style="text-align: center; margin-top: 40px; padding-top: 30px; border-top: 1px solid #e2e8f0;">
+                  <h3 style="color: #2D3748; margin: 0 0 10px 0; font-size: 20px;">Welcome to Your New Beginning</h3>
+                  <p style="color: #718096; margin: 0; font-size: 14px;">The Nirva Yoga Team</p>
+                </div>
+              </div>
+            </div>
+          `
+        };
+        break;
+
       default:
         return {
           statusCode: 400,
