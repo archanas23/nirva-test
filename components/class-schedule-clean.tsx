@@ -254,14 +254,8 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                 <div className="space-y-2">
                   {futureClasses.map((classItem) => {
                     const isPast = isClassInPast(date, classItem.time);
-                    const isBooked = isClassBooked?.(classItem.id);
                     
-                    // Debug logging
-                    console.log('🔍 Class Item ID:', classItem.id);
-                    console.log('🔍 Is Booked:', isBooked);
-                    console.log('🔍 Booked Classes:', bookedClasses);
-                    
-                    // Create the same key format as in App.tsx
+                    // Create the same key format as in App.tsx for direct lookup
                     // Convert time format to match booking format
                     const formatTimeForKey = (timeStr: string) => {
                       if (!timeStr) return '00:00';
@@ -273,7 +267,13 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                     };
                     
                     const classKey = `${classItem.name}-${date.toISOString().split('T')[0]}-${formatTimeForKey(classItem.time)}`;
+                    const isBooked = bookedClasses[classKey] !== undefined;
+                    
+                    // Debug logging
+                    console.log('🔍 Class Item ID:', classItem.id);
                     console.log('🔍 Class Key:', classKey);
+                    console.log('🔍 Is Booked:', isBooked);
+                    console.log('🔍 Booked Classes Keys:', Object.keys(bookedClasses));
                     console.log('🔍 Zoom Link for this class:', bookedClasses[classKey]?.zoomLink);
                     
                     return (

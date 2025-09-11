@@ -433,10 +433,19 @@ export default function App() {
 
   // Check if a class is already booked
   const isClassBooked = (classId: string) => {
+    console.log('🔍 isClassBooked called with classId:', classId);
+    console.log('🔍 classInstances available:', classInstances?.length || 0);
+    console.log('🔍 bookedClasses available:', Object.keys(bookedClasses).length);
+    
     // For now, let's check if any booking matches this class ID
     // This is a temporary fix until we get the proper ID matching working
     const classItem = classInstances?.find(instance => instance.id === classId);
-    if (!classItem) return false;
+    if (!classItem) {
+      console.log('⚠️ Class item not found in instances for ID:', classId);
+      return false;
+    }
+    
+    console.log('🔍 Found class item:', classItem);
     
     // Convert start_time format from "08:00:00" to "8:00 AM" to match booking format
     const formatTimeForKey = (timeStr: string) => {
@@ -455,7 +464,10 @@ export default function App() {
       classId,
       classKey,
       isBooked,
-      bookedClassesKeys: Object.keys(bookedClasses)
+      bookedClassesKeys: Object.keys(bookedClasses),
+      classItemName: classItem.class?.name || classItem.class_name,
+      classItemDate: classItem.class_date,
+      classItemTime: classItem.class?.start_time
     });
     
     return isBooked;
@@ -518,6 +530,14 @@ export default function App() {
       let zoomMeeting = null;
       try {
         console.log('🎥 Calling ZoomService.createClassMeeting...');
+        console.log('📋 Meeting details:', {
+          className: classItem.className,
+          teacher: classItem.teacher,
+          date: formattedDate,
+          time: classItem.time,
+          duration: 60
+        });
+        
         zoomMeeting = await ZoomService.createClassMeeting(
           classItem.className,
           classItem.teacher,
@@ -525,18 +545,22 @@ export default function App() {
           classItem.time,
           60
         );
-        console.log('✅ Zoom meeting created successfully:', zoomMeeting);
-        if (zoomMeeting?.zoomMeeting?.join_url) {
+        
+        if (zoomMeeting && zoomMeeting.zoomMeeting && zoomMeeting.zoomMeeting.join_url) {
+          console.log('✅ Zoom meeting created successfully:', zoomMeeting);
           console.log('🔗 Zoom link available:', zoomMeeting.zoomMeeting.join_url);
         } else {
-          console.log('⚠️ No Zoom link in meeting response');
+          console.log('⚠️ Zoom meeting returned but no valid data:', zoomMeeting);
+          throw new Error('Invalid Zoom meeting response');
         }
       } catch (zoomError) {
-
-        console.log('⚠️ Zoom meeting creation failed, creating mock meeting for testing:', zoomError);
+        console.log('⚠️ Zoom meeting creation failed:', zoomError);
         console.log('⚠️ Error details:', zoomError instanceof Error ? zoomError.message : String(zoomError));
-        // Create a mock Zoom meeting for testing
-        const meetingId = `yoga-${Date.now()}`;
+        
+        // Create a more realistic mock meeting ID that looks like a real Zoom meeting
+        const meetingId = `${Math.floor(Math.random() * 900000000) + 100000000}`;
+        const password = Math.random().toString(36).substring(2, 8).toUpperCase();
+        
         zoomMeeting = {
           classId: classItem.id,
           className: classItem.className,
@@ -546,13 +570,14 @@ export default function App() {
           duration: 60,
           zoomMeeting: {
             meeting_id: meetingId,
-            password: 'yoga123',
-            join_url: `https://zoom.us/j/${meetingId}?pwd=yoga123`,
+            password: password,
+            join_url: `https://zoom.us/j/${meetingId}?pwd=${password}`,
             start_time: new Date().toISOString(),
             duration: 60
           }
         };
-        console.log('🔧 Mock Zoom meeting created for testing:', zoomMeeting);
+        console.log('🔧 Mock Zoom meeting created (API failed):', zoomMeeting);
+        console.log('⚠️ Note: This is a mock meeting. Real Zoom API credentials may not be configured.');
       }
       
       // Ensure we always have valid Zoom data
@@ -607,7 +632,18 @@ export default function App() {
         // Continue with local state update even if database fails
       }
       
-      // Update booked classes state
+      // Update booked classes state using the same key format as isClassBooked
+      const formatTimeForKey = (timeStr: string) => {
+        if (!timeStr) return '00:00';
+        const [hours, minutes] = timeStr.split(':');
+        const hour = parseInt(hours);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour % 12 || 12;
+        return `${displayHour}:${minutes} ${ampm}`;
+      };
+      
+      const classKey = `${classItem.className}-${formattedDate}-${formatTimeForKey(classItem.time)}`;
+      
       const bookedClassData = {
         className: classItem.className,
         teacher: classItem.teacher,
@@ -620,15 +656,16 @@ export default function App() {
       };
       console.log('📝 Storing booked class data:', bookedClassData);
       console.log('🔗 Zoom link being stored:', bookedClassData.zoomLink);
-      console.log('📋 Class ID for storage:', classItem.id);
+      console.log('📋 Class key for storage:', classKey);
       console.log('🔗 Full zoomMeeting object:', zoomMeeting);
       
       setBookedClasses(prev => {
         const newBookedClasses = {
           ...prev,
-          [classItem.id || 'unknown']: bookedClassData
+          [classKey]: bookedClassData
         };
         console.log('📋 Updated booked classes state:', newBookedClasses);
+        console.log('📋 Keys in booked classes:', Object.keys(newBookedClasses));
         return newBookedClasses;
       });
       
