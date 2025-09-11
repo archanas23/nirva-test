@@ -560,28 +560,69 @@ export default function App() {
       const formattedDate = convertDayToDate(day);
       
       let zoomMeeting = null;
-      // Create a simple meeting room that doesn't require registration
-      // This bypasses the Zoom API entirely to avoid registration issues
-      const classSlug = classItem.className.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const dateSlug = formattedDate.replace(/-/g, '');
-      const meetingId = `${classSlug}${dateSlug}`.substring(0, 10);
-      const password = 'yoga123';
-      
-      zoomMeeting = {
-        classId: classItem.id,
-        className: classItem.className,
-        teacher: classItem.teacher,
-        date: formattedDate,
-        time: classItem.time,
-        duration: 60,
-        zoomMeeting: {
-          meeting_id: meetingId,
-          password: password,
-          join_url: `https://zoom.us/j/${meetingId}?pwd=${password}`,
-          start_time: new Date().toISOString(),
-          duration: 60
+      // Create real Zoom meeting using API
+      try {
+        const response = await fetch('/.netlify/functions/create-zoom-meeting-fetch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            className: classItem.className,
+            teacher: classItem.teacher,
+            date: formattedDate,
+            time: classItem.time,
+            duration: 60,
+            meetingType: 'scheduled'
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${await response.text()}`);
         }
-      };
+        
+        const result = await response.json();
+        
+        if (result.success && result.meeting) {
+          zoomMeeting = {
+            classId: classItem.id,
+            className: classItem.className,
+            teacher: classItem.teacher,
+            date: formattedDate,
+            time: classItem.time,
+            duration: 60,
+            zoomMeeting: {
+              meeting_id: result.meeting.meeting_id,
+              password: result.meeting.password,
+              join_url: result.meeting.join_url,
+              start_time: result.meeting.start_time,
+              duration: result.meeting.duration
+            }
+          };
+        } else {
+          throw new Error('Invalid response from Zoom API');
+        }
+      } catch (zoomError) {
+        // Fallback if API fails
+        const meetingId = 'nirva-yoga-classes';
+        const password = 'yoga123';
+        
+        zoomMeeting = {
+          classId: classItem.id,
+          className: classItem.className,
+          teacher: classItem.teacher,
+          date: formattedDate,
+          time: classItem.time,
+          duration: 60,
+          zoomMeeting: {
+            meeting_id: meetingId,
+            password: password,
+            join_url: `https://zoom.us/j/${meetingId}?pwd=${password}`,
+            start_time: new Date().toISOString(),
+            duration: 60
+          }
+        };
+      }
       
       // Ensure we always have valid Zoom data
       if (!zoomMeeting || !zoomMeeting.zoomMeeting?.join_url) {
