@@ -164,7 +164,8 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
         waiting_room: false, // No waiting room
         request_permission_to_unmute_participants: false,
         global_dial_in_countries: ['US'],
-        registrants_email_notification: false
+        registrants_email_notification: false,
+        registration_type: 1 // No registration required
       }
     };
 

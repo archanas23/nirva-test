@@ -833,6 +833,11 @@ export default function App() {
       setBookedClasses(prev => {
         const newBookedClasses = { ...prev };
         delete newBookedClasses[classId];
+        
+        // Update localStorage
+        localStorage.setItem('nirva_booked_classes', JSON.stringify(newBookedClasses));
+        console.log('💾 Updated localStorage after cancellation:', newBookedClasses);
+        
         return newBookedClasses;
       });
 

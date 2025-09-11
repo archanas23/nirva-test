@@ -333,7 +333,7 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                                 size="sm"
                                 variant="destructive"
                                 className="text-xs"
-                                onClick={() => onCancelClass?.(classItem.id || '')}
+                                onClick={() => onCancelClass?.(classKey)}
                                 disabled={isPast}
                               >
                                 Cancel
