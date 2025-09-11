@@ -14,49 +14,61 @@ export function DatabaseSetup() {
       setIsInitializing(true);
       setError(null);
       
-      console.log('🗄️ Initializing database with default classes...');
+      console.log('🗄️ Testing database connection and creating sample classes...');
       
-      // Create sample classes directly in the existing classes table
+      // First, test if we can access the classes table
+      const { data: existingClasses, error: fetchError } = await supabase
+        .from('classes')
+        .select('*')
+        .limit(1);
+
+      if (fetchError) {
+        console.error('Cannot access classes table:', fetchError);
+        setError(`Database access error: ${fetchError.message}. Please check your Supabase setup and run the SQL script in database-rls-fix.sql`);
+        return;
+      }
+
+      // If we can access the table, try to insert sample classes
       const sampleClasses = [
         {
           name: "Morning Flow",
           teacher: "Harshada",
           day_of_week: 1, // Monday
           start_time: "08:00:00",
-          end_time: "09:00:00",
           duration: "60 min",
           level: "All Levels",
-          max_students: 10
+          max_students: 10,
+          is_active: true
         },
         {
           name: "Evening Restore", 
           teacher: "Archana",
           day_of_week: 1, // Monday
           start_time: "18:00:00",
-          end_time: "19:00:00", 
           duration: "60 min",
           level: "All Levels",
-          max_students: 10
+          max_students: 10,
+          is_active: true
         },
         {
           name: "Morning Flow",
           teacher: "Harshada", 
           day_of_week: 2, // Tuesday
           start_time: "08:00:00",
-          end_time: "09:00:00",
           duration: "60 min",
           level: "All Levels",
-          max_students: 10
+          max_students: 10,
+          is_active: true
         },
         {
           name: "Evening Restore",
           teacher: "Archana",
           day_of_week: 2, // Tuesday  
           start_time: "18:00:00",
-          end_time: "19:00:00",
           duration: "60 min", 
           level: "All Levels",
-          max_students: 10
+          max_students: 10,
+          is_active: true
         }
       ];
 
@@ -70,7 +82,7 @@ export function DatabaseSetup() {
         // Don't throw error if classes already exist
       }
 
-      console.log('✅ Database initialized successfully!');
+      console.log('✅ Database connection successful!');
       setIsInitialized(true);
     } catch (err) {
       console.error('Database initialization error:', err);

@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from './ui/dialog';
 import { Calendar, Clock, Users, Plus, Edit, Trash2, AlertCircle, CheckCircle } from 'lucide-react';
 import { ClassManagementService, Class, ClassInstance } from '../utils/class-management';
 
@@ -159,6 +159,9 @@ export function AdminScheduleEditor({ onClose }: AdminScheduleEditorProps) {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add New Class</DialogTitle>
+              <DialogDescription>
+                Create a new recurring class template that will be used to generate class instances.
+              </DialogDescription>
             </DialogHeader>
             <AddClassForm 
               teachers={teachers}
@@ -281,6 +284,9 @@ export function AdminScheduleEditor({ onClose }: AdminScheduleEditorProps) {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Class</DialogTitle>
+              <DialogDescription>
+                Update the class template details. Changes will apply to future class instances.
+              </DialogDescription>
             </DialogHeader>
             <EditClassForm 
               classData={editingClass}
