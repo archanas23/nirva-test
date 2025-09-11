@@ -77,8 +77,14 @@ exports.handler = async (event, context) => {
                 <p><strong>Date:</strong> ${data.date}</p>
                 <p><strong>Time:</strong> ${data.time}</p>
                 ${data.zoomLink ? `
-                  <p><strong>Zoom Link:</strong> <a href="${data.zoomLink}" style="color: #3182CE;">Join Class</a></p>
-                  <p style="font-size: 14px; color: #718096;">Click the link above to join your class at the scheduled time.</p>
+                  <div style="background: #E6FFFA; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #38B2AC;">
+                    <h4 style="color: #2D3748; margin-top: 0; margin-bottom: 10px;">🔗 Zoom Meeting Details</h4>
+                    <p style="margin: 5px 0;"><strong>Meeting ID:</strong> ${data.zoomMeetingId || 'N/A'}</p>
+                    <p style="margin: 5px 0;"><strong>Password:</strong> ${data.zoomPassword || 'N/A'}</p>
+                    <p style="margin: 10px 0 5px 0;"><strong>Join Link:</strong></p>
+                    <a href="${data.zoomLink}" style="background: #38B2AC; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Join Zoom Meeting</a>
+                    <p style="font-size: 14px; color: #718096; margin: 10px 0 0 0;">Click the button above to join your class at the scheduled time.</p>
+                  </div>
                 ` : ''}
               </div>
               

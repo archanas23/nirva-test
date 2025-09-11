@@ -234,38 +234,30 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                     const isBooked = isClassBooked?.(classItem.id);
                     
                     return (
-                      <div key={classItem.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm truncate">{classItem.name}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {classItem.time} • {classItem.teacher}
+                      <div key={classItem.id} className="p-3 bg-muted/50 rounded-lg space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm">{classItem.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {classItem.time} • {classItem.teacher}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {classItem.level} • {classItem.duration}
+                            </div>
+                            </div>
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {classItem.level} • {classItem.duration}
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-2 flex-shrink-0">
+                          
+                          <div className="flex items-center justify-end gap-2">
                           {isPast ? (
                             <Badge variant="secondary">Past Class</Badge>
                           ) : classItem.registrationClosed ? (
                             <Badge variant="secondary">Registration Closed</Badge>
                           ) : isBooked ? (
-                            <div className="flex flex-col items-end gap-1">
-                              <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                                ✅ Booked
-                              </Badge>
-                              <div className="flex gap-1">
-                                {bookedClasses[classItem.id]?.zoomLink && (
-                                  <Button 
-                                    size="sm"
-                                    variant="outline"
-                                    className="text-xs"
-                                    onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
-                                  >
-                                    Join Zoom
-                                  </Button>
-                                )}
+                            <div className="w-full space-y-2">
+                              <div className="flex items-center justify-between">
+                                <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                                  ✅ Booked
+                                </Badge>
                                 <Button 
                                   size="sm"
                                   variant="destructive"
@@ -276,6 +268,27 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                                   {isPast ? 'Past' : 'Cancel'}
                                 </Button>
                               </div>
+                              
+                              {/* Zoom Details Section */}
+                              {bookedClasses[classItem.id]?.zoomLink && (
+                                <div className="bg-green-50 border border-green-200 rounded-lg p-2 space-y-1">
+                                  <div className="text-xs font-medium text-green-800">Zoom Details:</div>
+                                  <div className="text-xs text-green-700">
+                                    Meeting ID: {bookedClasses[classItem.id]?.meetingId || 'N/A'}
+                                  </div>
+                                  <div className="text-xs text-green-700">
+                                    Password: {bookedClasses[classItem.id]?.zoomPassword || 'N/A'}
+                                  </div>
+                                  <Button 
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-xs w-full mt-1"
+                                    onClick={() => window.open(bookedClasses[classItem.id].zoomLink, '_blank')}
+                                  >
+                                    🔗 Join Zoom Meeting
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                           ) : !user ? (
                             <Button 

@@ -611,7 +611,8 @@ export default function App() {
           date: day,
           time: classItem.time,
           zoomLink: zoomMeeting?.zoomMeeting?.join_url || '',
-          zoomPassword: zoomMeeting?.zoomMeeting?.password || ''
+          zoomPassword: zoomMeeting?.zoomMeeting?.password || '',
+          zoomMeetingId: zoomMeeting?.zoomMeeting?.meeting_id || ''
         };
         console.log('📧 Email data being sent:', emailData);
         console.log('🔗 Zoom link in email:', emailData.zoomLink);

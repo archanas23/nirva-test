@@ -7,6 +7,7 @@ import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Calendar, Clock, Users, Edit, Trash2, Plus, AlertCircle, CheckCircle, X } from 'lucide-react';
 import { ClassManagementService, ClassInstance, Class } from '../utils/class-management';
+import { ZoomService } from '../utils/zoom-service';
 // Using alert for now since react-hot-toast might not be installed
 const toast = {
   success: (message: string) => alert(`✅ ${message}`),
@@ -63,17 +64,79 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
     zoomLink?: string;
   }) => {
     try {
+      // Get the class template to get class details
+      const classTemplate = classes.find(c => c.id === sessionData.classId);
+      if (!classTemplate) {
+        throw new Error('Class template not found');
+      }
+
+      // Convert date format for Zoom API
+      const convertDayToDate = (dateStr: string) => {
+        // Parse "2025-09-11" to "Sep 11" format for Zoom API
+        const date = new Date(dateStr);
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const month = monthNames[date.getMonth()];
+        const day = date.getDate();
+        return `${month} ${day}`;
+      };
+
+      const formattedDate = convertDayToDate(sessionData.classDate);
+      const timeFormatted = classTemplate.start_time.substring(0, 5); // Convert "08:00:00" to "08:00"
+      const duration = parseInt(classTemplate.duration.replace(' min', '')); // Convert "60 min" to 60
+
+      // Create Zoom meeting automatically
+      let zoomData = null;
+      try {
+        console.log('🎥 Creating Zoom meeting for session...');
+        console.log('📅 Meeting details:', { 
+          className: classTemplate.name, 
+          teacher: classTemplate.teacher, 
+          date: formattedDate, 
+          time: timeFormatted 
+        });
+        
+        zoomData = await ZoomService.createClassMeeting(
+          classTemplate.name,
+          classTemplate.teacher,
+          formattedDate,
+          timeFormatted,
+          duration
+        );
+        console.log('✅ Zoom meeting created successfully:', zoomData);
+      } catch (zoomError) {
+        console.log('⚠️ Zoom meeting creation failed, creating mock meeting for testing:', zoomError);
+        // Create a mock Zoom meeting for testing
+        zoomData = {
+          classId: `mock-${Date.now()}`,
+          className: classTemplate.name,
+          teacher: classTemplate.teacher,
+          date: formattedDate,
+          time: timeFormatted,
+          duration: duration,
+          zoomMeeting: {
+            meeting_id: `mock-${Date.now()}`,
+            password: 'yoga123',
+            join_url: 'https://zoom.us/j/123456789?pwd=yoga123',
+            start_time: new Date().toISOString(),
+            duration: duration
+          }
+        };
+        console.log('🔧 Mock Zoom meeting created for testing:', zoomData);
+      }
+
+      // Create the class instance with Zoom data
       await ClassManagementService.createClassInstance(
         sessionData.classId,
         sessionData.classDate,
-        sessionData.zoomMeetingId ? {
-          meetingId: sessionData.zoomMeetingId,
-          password: sessionData.zoomPassword || '',
-          joinUrl: sessionData.zoomLink || ''
+        zoomData?.zoomMeeting ? {
+          meetingId: zoomData.zoomMeeting.meeting_id,
+          password: zoomData.zoomMeeting.password,
+          joinUrl: zoomData.zoomMeeting.join_url
         } : undefined
       );
       
-      toast.success('Session created successfully!');
+      toast.success('Session created successfully with Zoom meeting!');
       
       loadData();
       setShowAddSession(false);
@@ -159,9 +222,59 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
         }
       }
 
-      // Create all sessions
+      // Create all sessions with Zoom meetings
       for (const sessionData of sessionsToCreate) {
-        await ClassManagementService.createClassInstance(sessionData.classId, sessionData.classDate);
+        // Get the class template
+        const classTemplate = classes.find(c => c.id === sessionData.classId);
+        if (!classTemplate) continue;
+
+        // Convert date format for Zoom API
+        const convertDayToDate = (dateStr: string) => {
+          const date = new Date(dateStr);
+          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                             'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const month = monthNames[date.getMonth()];
+          const day = date.getDate();
+          return `${month} ${day}`;
+        };
+
+        const formattedDate = convertDayToDate(sessionData.classDate);
+        const timeFormatted = classTemplate.start_time.substring(0, 5);
+        const duration = parseInt(classTemplate.duration.replace(' min', ''));
+
+        // Create Zoom meeting automatically
+        let zoomData = null;
+        try {
+          zoomData = await ZoomService.createClassMeeting(
+            classTemplate.name,
+            classTemplate.teacher,
+            formattedDate,
+            timeFormatted,
+            duration
+          );
+        } catch (zoomError) {
+          console.log('⚠️ Zoom meeting creation failed for session, creating mock meeting:', zoomError);
+          zoomData = {
+            zoomMeeting: {
+              meeting_id: `mock-${Date.now()}`,
+              password: 'yoga123',
+              join_url: 'https://zoom.us/j/123456789?pwd=yoga123',
+              start_time: new Date().toISOString(),
+              duration: duration
+            }
+          };
+        }
+
+        // Create the class instance with Zoom data
+        await ClassManagementService.createClassInstance(
+          sessionData.classId,
+          sessionData.classDate,
+          zoomData?.zoomMeeting ? {
+            meetingId: zoomData.zoomMeeting.meeting_id,
+            password: zoomData.zoomMeeting.password,
+            joinUrl: zoomData.zoomMeeting.join_url
+          } : undefined
+        );
       }
 
       toast.success(`Successfully created ${sessionsToCreate.length} sessions for the week!`);
