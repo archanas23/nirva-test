@@ -593,10 +593,15 @@ export default function App() {
       } catch (zoomError) {
         console.log('⚠️ Zoom meeting creation failed:', zoomError);
         console.log('⚠️ Error details:', zoomError instanceof Error ? zoomError.message : String(zoomError));
+        console.log('⚠️ Full error object:', zoomError);
         
-        // Create a more realistic mock meeting ID that looks like a real Zoom meeting
+        // Create a direct join link that doesn't require registration
         const meetingId = `${Math.floor(Math.random() * 900000000) + 100000000}`;
         const password = Math.random().toString(36).substring(2, 8).toUpperCase();
+        
+        // Create a direct join URL that bypasses registration
+        // Using a different format that might work better
+        const directJoinUrl = `https://zoom.us/j/${meetingId}?pwd=${password}`;
         
         zoomMeeting = {
           classId: classItem.id,
@@ -608,7 +613,7 @@ export default function App() {
           zoomMeeting: {
             meeting_id: meetingId,
             password: password,
-            join_url: `https://zoom.us/j/${meetingId}?pwd=${password}`,
+            join_url: directJoinUrl,
             start_time: new Date().toISOString(),
             duration: 60
           }

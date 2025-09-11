@@ -147,25 +147,23 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
       settings: {
         host_video: true,
         participant_video: true,
-        join_before_host: true, // Allow joining before host
-        mute_upon_entry: true,
+        join_before_host: true,
+        mute_upon_entry: false,
         watermark: false,
         use_pmi: false,
-        approval_type: 0, // Automatically approve
+        approval_type: 0,
         audio: 'both',
         auto_recording: 'none',
         enforce_login: false,
-        enforce_login_domains: '',
         alternative_hosts: '',
-        close_registration: true, // Disable registration - direct join only
+        close_registration: true,
         show_share_button: true,
         allow_multiple_devices: true,
         registrants_confirmation_email: false,
-        waiting_room: false, // No waiting room
+        waiting_room: false,
         request_permission_to_unmute_participants: false,
         global_dial_in_countries: ['US'],
-        registrants_email_notification: false,
-        registration_type: 1 // No registration required
+        registrants_email_notification: false
       }
     };
 
@@ -187,6 +185,11 @@ async function createZoomMeeting(accessToken, { className, teacher, date, time, 
 
     const meeting = await response.json();
     console.log('✅ Zoom meeting created successfully:', meeting);
+    console.log('🔍 Meeting settings:', meeting.settings);
+    console.log('🔍 Registration required?', meeting.settings?.approval_type);
+    console.log('🔍 Close registration?', meeting.settings?.close_registration);
+    console.log('🔍 Registration type:', meeting.settings?.registration_type);
+    console.log('🔍 Join URL:', meeting.join_url);
     
     return {
       meeting_id: meeting.id.toString(),
