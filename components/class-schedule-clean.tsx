@@ -259,6 +259,13 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                     // Convert time format to match booking format
                     const formatTimeForKey = (timeStr: string) => {
                       if (!timeStr) return '00:00';
+                      
+                      // Check if time already has AM/PM
+                      if (timeStr.includes('AM') || timeStr.includes('PM')) {
+                        return timeStr; // Already formatted
+                      }
+                      
+                      // Convert from 24-hour format to 12-hour format
                       const [hours, minutes] = timeStr.split(':');
                       const hour = parseInt(hours);
                       const ampm = hour >= 12 ? 'PM' : 'AM';
@@ -266,12 +273,19 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                       return `${displayHour}:${minutes} ${ampm}`;
                     };
                     
+                    // Use the same key format as in App.tsx
                     const classKey = `${classItem.name}-${date.toISOString().split('T')[0]}-${formatTimeForKey(classItem.time)}`;
                     const isBooked = bookedClasses[classKey] !== undefined;
                     
                     // Debug logging
                     console.log('🔍 Class Item ID:', classItem.id);
                     console.log('🔍 Class Key:', classKey);
+                    console.log('🔍 Class item details:', {
+                      name: classItem.name,
+                      time: classItem.time,
+                      date: date.toISOString().split('T')[0],
+                      formattedTime: formatTimeForKey(classItem.time)
+                    });
                     console.log('🔍 Is Booked:', isBooked);
                     console.log('🔍 Booked Classes Keys:', Object.keys(bookedClasses));
                     console.log('🔍 Zoom Link for this class:', bookedClasses[classKey]?.zoomLink);
@@ -327,7 +341,7 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
                             </div>
                           ) : (
                             <Button 
-                              onClick={async () => await onBookClass?.(classItem, formatDate(date))}
+                              onClick={async () => await onBookClass?.(classItem, date.toISOString().split('T')[0])}
                               size="sm"
                               className="bg-blue-600 hover:bg-blue-700 text-white"
                               disabled={isPast}

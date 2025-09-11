@@ -509,21 +509,25 @@ export default function App() {
       console.log('🎥 Creating Zoom meeting for class...');
       console.log('📅 Meeting details:', { className: classItem.className, teacher: classItem.teacher, day, time: classItem.time });
       
-      // Convert day format from "Sep 9" to "2025-09-09" for Zoom API and database
+      // Convert day format to "YYYY-MM-DD" for Zoom API and database
       const convertDayToDate = (dayStr: string) => {
-        // Parse "Sep 9" to "2025-09-09"
-        const monthMap: { [key: string]: string } = {
-          'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
-          'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
-          'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
-        };
+        // If already in YYYY-MM-DD format, return as is
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dayStr)) {
+          return dayStr;
+        }
         
-        const parts = dayStr.split(' ');
-        const month = monthMap[parts[0]];
-        const day = parts[1].padStart(2, '0');
-        return `2025-${month}-${day}`;
+        // Try to parse as ISO date string
+        const date = new Date(dayStr);
+        if (!isNaN(date.getTime())) {
+          return date.toISOString().split('T')[0];
+        }
+        
+        // Fallback for other formats
+        console.error('Invalid day format:', dayStr);
+        return '2025-09-01';
       };
       
+      console.log('📅 Original day parameter:', day, 'Type:', typeof day);
       const formattedDate = convertDayToDate(day);
       console.log('📅 Converted date:', day, '→', formattedDate);
       
@@ -546,11 +550,14 @@ export default function App() {
           60
         );
         
+        console.log('🎥 Raw Zoom API response:', zoomMeeting);
+        
         if (zoomMeeting && zoomMeeting.zoomMeeting && zoomMeeting.zoomMeeting.join_url) {
           console.log('✅ Zoom meeting created successfully:', zoomMeeting);
           console.log('🔗 Zoom link available:', zoomMeeting.zoomMeeting.join_url);
         } else {
           console.log('⚠️ Zoom meeting returned but no valid data:', zoomMeeting);
+          console.log('⚠️ Zoom meeting structure:', JSON.stringify(zoomMeeting, null, 2));
           throw new Error('Invalid Zoom meeting response');
         }
       } catch (zoomError) {
@@ -635,6 +642,13 @@ export default function App() {
       // Update booked classes state using the same key format as isClassBooked
       const formatTimeForKey = (timeStr: string) => {
         if (!timeStr) return '00:00';
+        
+        // Check if time already has AM/PM
+        if (timeStr.includes('AM') || timeStr.includes('PM')) {
+          return timeStr; // Already formatted
+        }
+        
+        // Convert from 24-hour format to 12-hour format
         const [hours, minutes] = timeStr.split(':');
         const hour = parseInt(hours);
         const ampm = hour >= 12 ? 'PM' : 'AM';
@@ -657,6 +671,12 @@ export default function App() {
       console.log('📝 Storing booked class data:', bookedClassData);
       console.log('🔗 Zoom link being stored:', bookedClassData.zoomLink);
       console.log('📋 Class key for storage:', classKey);
+      console.log('📋 Class item details:', {
+        className: classItem.className,
+        time: classItem.time,
+        formattedDate: formattedDate,
+        formattedTime: formatTimeForKey(classItem.time)
+      });
       console.log('🔗 Full zoomMeeting object:', zoomMeeting);
       
       setBookedClasses(prev => {
