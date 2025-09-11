@@ -199,6 +199,20 @@ export class ClassManagementService {
 
   // Delete a class instance
   static async deleteClassInstance(instanceId: string): Promise<void> {
+    // First check if there are any bookings for this class instance
+    const { data: bookings, error: bookingsError } = await supabase
+      .from('user_booked_classes')
+      .select('id')
+      .eq('class_instance_id', instanceId)
+      .eq('is_cancelled', false)
+    
+    if (bookingsError) throw bookingsError
+    
+    if (bookings && bookings.length > 0) {
+      throw new Error(`Cannot delete class instance: ${bookings.length} student(s) have booked this class. Please cancel their bookings first or contact students to reschedule.`)
+    }
+    
+    // If no active bookings, proceed with deletion
     const { error } = await supabase
       .from('class_instances')
       .delete()
