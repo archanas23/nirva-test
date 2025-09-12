@@ -225,26 +225,56 @@ export class ClassManagementService {
 
   // Delete a class instance
   static async deleteClassInstance(instanceId: string): Promise<void> {
-    // First check if there are any bookings for this class instance
-    const { data: bookings, error: bookingsError } = await supabase
+    // First check if there are any ACTIVE bookings for this class instance
+    const { data: activeBookings, error: activeBookingsError } = await supabase
       .from('user_booked_classes')
       .select('id')
       .eq('class_instance_id', instanceId)
       .eq('is_cancelled', false)
     
-    if (bookingsError) throw bookingsError
+    if (activeBookingsError) throw activeBookingsError
     
-    if (bookings && bookings.length > 0) {
-      throw new Error(`Cannot delete class instance: ${bookings.length} student(s) have booked this class. Please cancel their bookings first or contact students to reschedule.`)
+    if (activeBookings && activeBookings.length > 0) {
+      throw new Error(`Cannot delete class instance: ${activeBookings.length} student(s) have active bookings for this class. Please cancel their bookings first or contact students to reschedule.`)
     }
     
-    // If no active bookings, proceed with deletion
+    // Check for cancelled bookings
+    const { data: cancelledBookings, error: cancelledBookingsError } = await supabase
+      .from('user_booked_classes')
+      .select('id')
+      .eq('class_instance_id', instanceId)
+      .eq('is_cancelled', true)
+    
+    if (cancelledBookingsError) throw cancelledBookingsError
+    
+    // If there are cancelled bookings, delete them first to remove foreign key constraint
+    if (cancelledBookings && cancelledBookings.length > 0) {
+      console.log(`🗑️ Deleting ${cancelledBookings.length} cancelled bookings before deleting class instance`);
+      
+      const { error: deleteCancelledError } = await supabase
+        .from('user_booked_classes')
+        .delete()
+        .eq('class_instance_id', instanceId)
+        .eq('is_cancelled', true)
+      
+      if (deleteCancelledError) {
+        console.error('Error deleting cancelled bookings:', deleteCancelledError);
+        throw new Error(`Failed to delete cancelled bookings: ${deleteCancelledError.message}`);
+      }
+    }
+    
+    // Now proceed with class instance deletion
     const { error } = await supabase
       .from('class_instances')
       .delete()
       .eq('id', instanceId)
     
-    if (error) throw error
+    if (error) {
+      console.error('Error deleting class instance:', error);
+      throw new Error(`Failed to delete class instance: ${error.message}`);
+    }
+    
+    console.log('✅ Class instance deleted successfully');
   }
 
   // Get all class instances for admin management
