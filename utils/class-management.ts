@@ -225,7 +225,35 @@ export class ClassManagementService {
 
   // Delete a class instance
   static async deleteClassInstance(instanceId: string): Promise<void> {
-    // First check if there are any ACTIVE bookings for this class instance
+    // First get the class instance details to check if it's in the past
+    const { data: classInstance, error: instanceError } = await supabase
+      .from('class_instances')
+      .select('class_date, start_time, class:classes(*)')
+      .eq('id', instanceId)
+      .single()
+    
+    if (instanceError) throw instanceError
+    
+    // Check if this class is in the past
+    const isClassInPast = (classDate: string, classTime: string): boolean => {
+      const now = new Date();
+      const [year, month, day] = classDate.split('-').map(Number);
+      const [hours, minutes] = classTime.split(':');
+      
+      const classDateTime = new Date(year, month - 1, day, parseInt(hours), parseInt(minutes), 0, 0);
+      const bufferTime = new Date(classDateTime.getTime() + 30 * 60 * 1000); // 30 min buffer
+      
+      return now > bufferTime;
+    };
+    
+    const isPast = isClassInPast(classInstance.class_date, classInstance.start_time);
+    console.log('🔍 Class instance details:', {
+      classDate: classInstance.class_date,
+      startTime: classInstance.start_time,
+      isPast
+    });
+    
+    // Check for active bookings
     const { data: activeBookings, error: activeBookingsError } = await supabase
       .from('user_booked_classes')
       .select('id')
@@ -234,7 +262,27 @@ export class ClassManagementService {
     
     if (activeBookingsError) throw activeBookingsError
     
-    if (activeBookings && activeBookings.length > 0) {
+    // If class is in the past, automatically cancel any active bookings before deletion
+    if (isPast && activeBookings && activeBookings.length > 0) {
+      console.log(`🕐 Class is in the past, automatically cancelling ${activeBookings.length} active bookings`);
+      
+      const { error: cancelBookingsError } = await supabase
+        .from('user_booked_classes')
+        .update({ 
+          is_cancelled: true, 
+          cancelled_at: new Date().toISOString() 
+        })
+        .eq('class_instance_id', instanceId)
+        .eq('is_cancelled', false)
+      
+      if (cancelBookingsError) {
+        console.error('Error cancelling past class bookings:', cancelBookingsError);
+        throw new Error(`Failed to cancel past class bookings: ${cancelBookingsError.message}`);
+      }
+      
+      console.log('✅ Past class bookings cancelled successfully');
+    } else if (!isPast && activeBookings && activeBookings.length > 0) {
+      // If class is not in the past and has active bookings, prevent deletion
       throw new Error(`Cannot delete class instance: ${activeBookings.length} student(s) have active bookings for this class. Please cancel their bookings first or contact students to reschedule.`)
     }
     
