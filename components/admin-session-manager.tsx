@@ -62,6 +62,8 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
   // Fetch bookings for a specific session (only active bookings)
   const fetchSessionBookings = async (sessionId: string) => {
     try {
+      console.log('🔍 Fetching bookings for session:', sessionId);
+      
       const { data, error } = await supabase
         .from('user_booked_classes')
         .select(`
@@ -72,13 +74,19 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
           class_date,
           class_time,
           booked_at,
+          class_instance_id,
           user:users(email, name)
         `)
         .eq('class_instance_id', sessionId)
         .eq('is_cancelled', false) // Only get active bookings
         .order('booked_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching session bookings:', error);
+        throw error;
+      }
+      
+      console.log('✅ Found bookings:', data);
       
       setSessionBookings(prev => ({
         ...prev,
@@ -291,7 +299,7 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
   };
 
   const formatDate = (dateString: string) => {
-    // Parse date string as local date to avoid timezone issues
+      // Parse date string as local date to avoid timezone issues
     const [year, month, day] = dateString.split('-').map(Number);
     const date = new Date(year, month - 1, day); // month is 0-indexed
     

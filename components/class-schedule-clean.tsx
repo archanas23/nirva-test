@@ -95,7 +95,8 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
 
   // Get classes for a given date (only admin-created classes)
   const getFutureClassesForDate = (date: Date): ClassItem[] => {
-    const dateStr = date.toISOString().split('T')[0];
+    // Use local date format to avoid timezone issues
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     
     // Only show classes that have been explicitly created by admin
     const instancesForDate = classInstances.filter(instance => 
