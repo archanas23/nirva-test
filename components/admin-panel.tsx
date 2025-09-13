@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Users, Calendar, DollarSign, Clock, Mail, User, Video, Copy, ExternalLink, Shield, AlertTriangle } from "lucide-react";
 import { AdminScheduleEditor } from "./admin-schedule-editor";
 import { AdminSessionManager } from "./admin-session-manager";
+import { AdminAnalytics } from "./admin-analytics";
 import { DatabaseSetup } from "./database-setup";
 import { DatabaseService } from "../utils/database";
 import { ZoomDebugTest } from "./zoom-debug-test";
@@ -309,6 +310,7 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
         <TabsList>
           <TabsTrigger value="schedule-editor">Schedule Editor</TabsTrigger>
           <TabsTrigger value="session-manager">Session Manager</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="zoom-classes">Zoom Classes</TabsTrigger>
           <TabsTrigger value="all-bookings">All Bookings</TabsTrigger>
           <TabsTrigger value="by-class">By Class</TabsTrigger>
@@ -356,6 +358,10 @@ export function AdminPanel({ user, onBack }: AdminPanelProps) {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <AdminAnalytics />
           </TabsContent>
 
           <TabsContent value="zoom-classes" className="space-y-6">

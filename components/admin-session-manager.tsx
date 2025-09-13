@@ -49,6 +49,9 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
         ClassManagementService.getAllClasses()
       ]);
       
+      console.log('📊 Loaded sessions:', sessionsData.map(s => ({ id: s.id, class_name: s.class?.name, class_date: s.class_date })));
+      console.log('📊 Loaded classes:', classesData.map(c => ({ id: c.id, name: c.name })));
+      
       setSessions(sessionsData);
       setClasses(classesData);
     } catch (err) {
@@ -111,6 +114,7 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
 
   // Toggle session expansion
   const toggleSessionExpansion = async (sessionId: string) => {
+    console.log('🔄 Toggling session expansion for:', sessionId);
     const isExpanded = expandedSessions.has(sessionId);
     
     if (!isExpanded) {
