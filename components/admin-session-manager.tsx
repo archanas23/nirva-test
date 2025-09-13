@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Calendar, Clock, Users, Edit, Trash2, Plus, AlertCircle, CheckCircle, X } from 'lucide-react';
 import { ClassManagementService, ClassInstance, Class } from '../utils/class-management';
 import { ZoomService } from '../utils/zoom-service';
+import { supabase } from '../lib/supabase';
 // Using alert for now since react-hot-toast might not be installed
 const toast = {
   success: (message: string) => alert(`✅ ${message}`),
@@ -28,6 +29,8 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState<string>('');
+  const [sessionBookings, setSessionBookings] = useState<Record<string, any[]>>({});
+  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
 
 
   // Load sessions and classes on mount
@@ -54,6 +57,56 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Fetch bookings for a specific session (only active bookings)
+  const fetchSessionBookings = async (sessionId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_booked_classes')
+        .select(`
+          id,
+          user_id,
+          class_name,
+          teacher,
+          class_date,
+          class_time,
+          booked_at,
+          user:users(email, name)
+        `)
+        .eq('class_instance_id', sessionId)
+        .eq('is_cancelled', false) // Only get active bookings
+        .order('booked_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      setSessionBookings(prev => ({
+        ...prev,
+        [sessionId]: data || []
+      }));
+    } catch (err) {
+      console.error('Error fetching session bookings:', err);
+    }
+  };
+
+  // Toggle session expansion
+  const toggleSessionExpansion = async (sessionId: string) => {
+    const isExpanded = expandedSessions.has(sessionId);
+    
+    if (!isExpanded) {
+      // Fetch bookings when expanding
+      await fetchSessionBookings(sessionId);
+    }
+    
+    setExpandedSessions(prev => {
+      const newSet = new Set(prev);
+      if (isExpanded) {
+        newSet.delete(sessionId);
+      } else {
+        newSet.add(sessionId);
+      }
+      return newSet;
+    });
   };
 
   const handleAddSession = async (sessionData: {
@@ -377,6 +430,44 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
                     </div>
                   </div>
                 )}
+
+                {/* Booking Details Section */}
+                <div className="border-t pt-4 mt-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleSessionExpansion(session.id)}
+                    className="w-full justify-between p-0 h-auto"
+                  >
+                    <span className="font-medium">
+                      Bookings ({sessionBookings[session.id]?.length || 0})
+                    </span>
+                    <span className="text-muted-foreground">
+                      {expandedSessions.has(session.id) ? '▼' : '▶'}
+                    </span>
+                  </Button>
+                  
+                  {expandedSessions.has(session.id) && (
+                    <div className="mt-3 space-y-2">
+                      {sessionBookings[session.id]?.length > 0 ? (
+                        <div className="space-y-1">
+                          {sessionBookings[session.id].map((booking) => (
+                            <div key={booking.id} className="p-2 bg-muted/50 rounded-lg">
+                              <span className="font-medium">
+                                {booking.user?.name || 'Unknown User'}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-muted-foreground">
+                          <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                          <p>No bookings yet</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 <div className="flex gap-2">
                   <Button 
