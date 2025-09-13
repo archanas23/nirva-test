@@ -76,13 +76,24 @@ export function AdminAnalytics() {
       }
       
       console.log('✅ Loaded bookings:', data?.length || 0);
+      console.log('🔍 Sample booking data:', data?.[0]);
       
       // Transform the data to match our interface
-      const transformedData = (data || []).map((booking: any) => ({
-        ...booking,
-        user: booking.user?.[0] || null // Supabase returns user as array, take first element
-      }));
+      const transformedData = (data || []).map((booking: any) => {
+        console.log('🔍 Processing booking:', {
+          id: booking.id,
+          user_id: booking.user_id,
+          user_data: booking.user,
+          class_name: booking.class_name
+        });
+        
+        return {
+          ...booking,
+          user: booking.user?.[0] || null // Supabase returns user as array, take first element
+        };
+      });
       
+      console.log('✅ Transformed bookings:', transformedData.slice(0, 2));
       setBookings(transformedData);
     } catch (err) {
       console.error('Error loading bookings:', err);
@@ -320,8 +331,12 @@ export function AdminAnalytics() {
                       <div className="flex items-center gap-2">
                         <User className="w-4 h-4 text-muted-foreground" />
                         <div>
-                          <p className="font-medium">{booking.user?.name || 'Unknown User'}</p>
-                          <p className="text-muted-foreground">{booking.user?.email || 'No email'}</p>
+                          <p className="font-medium">
+                            {booking.user?.name || `User ${booking.user_id?.slice(0, 8)}...`}
+                          </p>
+                          <p className="text-muted-foreground">
+                            {booking.user?.email || `ID: ${booking.user_id}`}
+                          </p>
                         </div>
                       </div>
                       
