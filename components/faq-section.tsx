@@ -24,7 +24,7 @@ export function FAQSection() {
     },
     {
       question: "Do you offer private sessions?",
-      answer: "Yes! We offer one-on-one virtual sessions for personalized instruction. Private sessions are $60 for 60 minutes. Contact us directly to schedule your private session with either Harshada or Archana."
+      answer: "Yes! We offer one-on-one virtual sessions for personalized instruction. Private sessions are $40 for 60 minutes. Contact us directly to schedule your private session with either Harshada or Archana."
     },
     {
       question: "What if I have injuries or physical limitations?",

@@ -240,7 +240,7 @@ export function ContactSection() {
                     <span className="font-medium">Private Sessions</span>
                     <p className="text-sm text-muted-foreground">60 minutes</p>
                   </div>
-                  <span className="text-2xl font-bold text-primary">$60</span>
+                  <span className="text-2xl font-bold text-primary">$40</span>
                 </div>
               </div>
             </CardContent>

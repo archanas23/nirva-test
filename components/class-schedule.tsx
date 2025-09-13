@@ -324,7 +324,7 @@ export function ClassSchedule({ onBookClass, onCancelClass, onPayForClass, user,
             Looking for personalized attention? Book a private one-on-one session with our certified instructors.
           </p>
           <div className="flex items-center justify-center gap-4 text-lg font-semibold">
-            <span className="text-primary">$60/hour</span>
+            <span className="text-primary">$40/hour</span>
             <span className="text-muted-foreground">•</span>
             <span className="text-foreground">Customized to your needs</span>
           </div>
