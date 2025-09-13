@@ -56,7 +56,7 @@ export function AdminAnalytics() {
           is_cancelled,
           cancelled_at,
           class_instance_id,
-          user:users(name, email)
+          users!user_booked_classes_user_id_fkey(name, email)
         `)
         .order('booked_at', { ascending: false });
 
@@ -83,13 +83,13 @@ export function AdminAnalytics() {
         console.log('🔍 Processing booking:', {
           id: booking.id,
           user_id: booking.user_id,
-          user_data: booking.user,
+          user_data: booking.users,
           class_name: booking.class_name
         });
         
         return {
           ...booking,
-          user: booking.user?.[0] || null // Supabase returns user as array, take first element
+          user: booking.users || null // Direct user object from the join
         };
       });
       
