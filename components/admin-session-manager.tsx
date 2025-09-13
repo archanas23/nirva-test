@@ -64,6 +64,15 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
     try {
       console.log('🔍 Fetching bookings for session:', sessionId);
       
+      // First, let's check what bookings exist for this class_instance_id
+      const { data: allBookings, error: allError } = await supabase
+        .from('user_booked_classes')
+        .select('*')
+        .eq('class_instance_id', sessionId);
+      
+      console.log('📊 All bookings for this session:', allBookings);
+      console.log('📊 All bookings error:', allError);
+      
       const { data, error } = await supabase
         .from('user_booked_classes')
         .select(`
@@ -75,6 +84,7 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
           class_time,
           booked_at,
           class_instance_id,
+          is_cancelled,
           user:users(email, name)
         `)
         .eq('class_instance_id', sessionId)
@@ -86,7 +96,9 @@ export function AdminSessionManager({ onClose }: AdminSessionManagerProps) {
         throw error;
       }
       
-      console.log('✅ Found bookings:', data);
+      console.log('✅ Found active bookings:', data);
+      console.log('📊 Total bookings (including cancelled):', allBookings?.length || 0);
+      console.log('📊 Active bookings:', data?.length || 0);
       
       setSessionBookings(prev => ({
         ...prev,
