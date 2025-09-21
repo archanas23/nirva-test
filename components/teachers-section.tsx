@@ -62,7 +62,7 @@ export function TeachersSection() {
                   src={teacher.image}
                   alt={`${teacher.name} - Yoga Teacher`}
                   className={`w-full h-full object-cover transition-transform hover:scale-105 ${
-                    teacher.name === "Archana" ? "object-bottom" : ""
+                    teacher.name === "Archana Soundararajan" ? "object-bottom" : ""
                   }`}
                 />
               </div>
