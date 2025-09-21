@@ -16,7 +16,7 @@ const teachers = [
   },
   {
     id: "2", 
-    name: "Archana",
+    name: "Archana Soundararajan",
     specialties: ["Vinyasa Flow", "Power Yoga", "Strength Building", "Dynamic Flow"],
     bio: "Archana combines strength and dynamic teaching style to create transformative yoga experiences. She provides individualized attention to help each student progress safely while building physical strength. Her classes guarantee measurable improvements in strength, balance, and mental focus through her energetic and supportive approach.",
     image: archanaImage,
